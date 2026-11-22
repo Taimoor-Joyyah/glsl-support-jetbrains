@@ -9,13 +9,32 @@ $base=[IO.Path]::GetFullPath("build/ide-tests/$($info.productCode)-$($info.build
 $run=Join-Path $base ([Guid]::NewGuid().ToString('N'))
 $project="$run/project"
 New-Item -Type Directory -Force "$project/.idea","$project/first","$project/second","$base/config","$base/system","$base/plugins","$base/log" | Out-Null
-[IO.Compression.ZipFile]::ExtractToDirectory([IO.Path]::GetFullPath('build/distributions/GLSL-Support-1.0.0.zip'),"$base/plugins",$true)
+[IO.Compression.ZipFile]::ExtractToDirectory([IO.Path]::GetFullPath('build/distributions/GLSL-Support-1.1.0.zip'),"$base/plugins",$true)
 Copy-Item -LiteralPath 'build/test-plugin/GLSLSupportTests' -Destination "$base/plugins" -Recurse -Force
 '<project version="4"><component name="ProjectModuleManager"><modules><module fileurl="file://$PROJECT_DIR$/shader.iml" filepath="$PROJECT_DIR$/shader.iml"/></modules></component></project>' | Set-Content -Encoding utf8NoBOM "$project/.idea/modules.xml"
 '<module type="EMPTY_MODULE" version="4"><component name="NewModuleRootManager"><content url="file://$MODULE_DIR$"/><orderEntry type="sourceFolder" forTests="false"/></component></module>' | Set-Content -Encoding utf8NoBOM "$project/shader.iml"
 '<project version="4"><component name="GlslAnalyzerSettings"><option name="shaderStageMacros" value="TESS_EVALUATION=OLD_TESS"/><option name="includeSearchPaths" value="legacy-headers"/></component></project>' | Set-Content -Encoding utf8NoBOM "$project/.idea/glslAnalyzer.xml"
 '<project version="4"><component name="GlslVariantSettings"><option name="files"><list><FileState><option name="url" value="file://$PROJECT_DIR$/legacy.glsl"/><option name="defaultVariantId" value="imported"/><option name="variants"><list><VariantState><option name="id" value="imported"/><option name="name" value="Imported"/><option name="definitions"><list><MacroState><option name="name" value="ZED"/><option name="value" value="2"/></MacroState><MacroState><option name="name" value="ALPHA"/><option name="value" value="1"/></MacroState></list></option></VariantState></list></option></FileState></list></option></component></project>' | Set-Content -Encoding utf8NoBOM "$project/.idea/glslVariants.xml"
 'const float value = 1.0;' | Set-Content -Encoding utf8NoBOM "$project/common.glslh"
+Copy-Item -LiteralPath 'test-data/editor/glslSupport.xml' -Destination "$project/settings-example.xml"
+@'
+#version 450
+void main(){
+    vec2 v = vec2(0);
+    float z = v.z;
+    gl_Position = vec4(z);
+}
+'@ | Set-Content -Encoding utf8NoBOM "$project/swizzle.vert"
+'#ifndef ROOT_SHADER
+#error Compile through the owning shader
+#endif
+float readValue(vec2 v){return v.z;}' | Set-Content -Encoding utf8NoBOM "$project/swizzle.glslh"
+'#version 450
+#define ROOT_SHADER 1
+#include "swizzle.glslh"
+void main(){}' | Set-Content -Encoding utf8NoBOM "$project/header-owner.frag"
+'glad_glDrawArrays(GL_TRIANGLES, 0, 3);' | Set-Content -Encoding utf8NoBOM "$project/calls.cpp"
+'GL.glBindTexture(target, texture)' | Set-Content -Encoding utf8NoBOM "$project/calls.py"
 'void main(){float x=1.;}' | Set-Content -Encoding utf8NoBOM "$project/format.frag"
 @'
 #version 450

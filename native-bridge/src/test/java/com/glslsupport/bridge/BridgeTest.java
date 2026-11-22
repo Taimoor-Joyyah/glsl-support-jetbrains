@@ -26,6 +26,26 @@ class BridgeTest {
             r.diagnostics("").stream().anyMatch(d -> d.file().endsWith("α.glsl") && d.line() == 2), r.log());
     }
     @Test
+    void invalidSwizzlesUseTheNativeCompilerForBothTargets() {
+        String path = "C:/shaders/scene.vert";
+        for (int target : List.of(0, 13)) {
+            var config = new ShaderConfig.Effective(ShaderConfig.Stage.VERTEX, target, 0, "core", Map.of());
+            for (String expression : List.of("v.z", "v.xr", "v.xx = vec2(1); float x = v.x", "v.x")) {
+                String source = "#version 450\nvoid main(){ vec2 v=vec2(0);\n"
+                    + (expression.contains("=") ? expression : "float x=" + expression)
+                    + ";\n gl_Position=vec4(x);}";
+                var result =
+                    NativeCompiler.compile(new NativeCompiler.Request(target, NativeCompiler.Operation.CHECK,
+                        List.of(new NativeCompiler.Unit(path, source, config)), Map.of(), List.of()));
+                assertEquals(expression.equals("v.x"), result.success(), result.log());
+                if (!result.success())
+                    assertTrue(result.diagnostics(path).stream().anyMatch(
+                                   d -> d.file().equals(path) && d.line() == 3 && d.severity().equals("ERROR")),
+                        result.log());
+            }
+        }
+    }
+    @Test
     void sourceMap() {
         var r = run("shaders/main.vert", "#version 450\nvoid main(){\n gl_Position=vec4(1);\n}",
             NativeCompiler.Operation.SPIRV, Map.of());

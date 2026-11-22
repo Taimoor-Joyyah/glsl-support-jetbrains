@@ -1,7 +1,7 @@
 <idea-plugin require-restart="true">
     <id>com.glslsupport.language</id>
     <name>GLSL Support</name>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <vendor>GLSL Support</vendor>
     <description>OpenGL and Vulkan GLSL editing, compiler diagnostics, block layout, and SPIR-V inspection.</description>
     <idea-version since-build="261"/>
@@ -54,12 +54,13 @@
         <typeDeclarationProvider implementation="com.glslsupport.ide.SymbolNavigation$Types"/>
         <definitionsScopedSearch implementation="com.glslsupport.ide.SymbolNavigation$Implementations"/>
         <callHierarchyProvider language="GLSL" implementationClass="com.glslsupport.ide.SymbolNavigation$Hierarchy"/>
-        <localInspection language="GLSL" shortName="GlslSupportAnalysis" displayName="Unused, shadowed and unreachable GLSL code" groupName="GLSL" enabledByDefault="true" level="WEAK WARNING" implementationClass="com.glslsupport.ide.Inspections"/>
+        <localInspection language="GLSL" shortName="GlslSupportAnalysis" displayName="GLSL declarations, directives and unreachable code" groupName="GLSL" enabledByDefault="true" level="WEAK WARNING" implementationClass="com.glslsupport.ide.Inspections"/>
         <projectService serviceImplementation="com.glslsupport.ide.CompilerSupport"/>
         <projectConfigurable id="glslsupport.settings" parentId="language" displayName="GLSL Support" instance="com.glslsupport.ide.SettingsUI"/>
-        <toolWindow id="Shader Variants" anchor="right" factoryClass="com.glslsupport.ide.Variants"/>
-        <toolWindow id="GLSL Inspector" anchor="right" canCloseContents="true" factoryClass="com.glslsupport.ide.ShaderViews"/>
-        <toolWindow id="OpenGL Docs" anchor="right" factoryClass="com.glslsupport.ide.ReferenceDocs"/>
+        <toolWindow id="Shader Variants" anchor="right" icon="/icons/variants.svg" factoryClass="com.glslsupport.ide.Variants"/>
+        <toolWindow id="GLSL Pipelines" anchor="right" icon="/icons/pipeline.svg" factoryClass="com.glslsupport.ide.PipelinePanel$Window"/>
+        <toolWindow id="GLSL Inspector" anchor="right" icon="/icons/inspector.svg" canCloseContents="true" factoryClass="com.glslsupport.ide.ShaderViews"/>
+        <toolWindow id="OpenGL Docs" anchor="right" icon="/icons/docs.svg" factoryClass="com.glslsupport.ide.ReferenceDocs"/>
         <intentionAction><className>com.glslsupport.ide.Intentions$Version</className><category>GLSL</category></intentionAction>
         <intentionAction><className>com.glslsupport.ide.Intentions$Extension</className><category>GLSL</category></intentionAction>
         <intentionAction><className>com.glslsupport.ide.Intentions$Include</className><category>GLSL</category></intentionAction>
@@ -72,11 +73,12 @@
         <listener class="com.glslsupport.ide.Diagnostics$Saved" topic="com.intellij.openapi.fileEditor.FileDocumentManagerListener"/>
     </applicationListeners>
     <actions>
-        <action id="GlslSupport.New" class="com.glslsupport.ide.Templates" text="GLSL Shader or Header"><add-to-group group-id="NewGroup" anchor="last"/></action>
-        <action id="GlslSupport.Spirv" class="com.glslsupport.ide.ShaderViews$Spirv" text="Show SPIR-V"><add-to-group group-id="EditorPopupMenu" anchor="last"/></action>
-        <action id="GlslSupport.Layout" class="com.glslsupport.ide.ShaderViews$Layout" text="Show GLSL Block Layout"><add-to-group group-id="EditorPopupMenu" anchor="last"/></action>
-        <action id="GlslSupport.Inline" class="com.glslsupport.ide.Actions$Inline" text="Inline GLSL Local Variable"><add-to-group group-id="RefactoringMenu" anchor="last"/></action>
-        <action id="GlslSupport.Extract" class="com.glslsupport.ide.Actions$Extract" text="Extract GLSL Function"><add-to-group group-id="RefactoringMenu" anchor="last"/></action>
-        <action id="GlslSupport.Pipeline" class="com.glslsupport.ide.Actions$Pipeline" text="Validate GLSL Pipeline"><add-to-group group-id="ToolsMenu" anchor="last"/></action>
+        <action id="GlslSupport.OpenReference" class="com.glslsupport.ide.ReferenceDocs$Open" text="Open OpenGL Reference" icon="/icons/docs.svg"><add-to-group group-id="EditorPopupMenu" anchor="last"/></action>
+        <action id="GlslSupport.New" class="com.glslsupport.ide.Templates" text="GLSL Shader or Header" icon="/icons/shader.svg"><add-to-group group-id="NewGroup" anchor="last"/></action>
+        <action id="GlslSupport.Spirv" class="com.glslsupport.ide.ShaderViews$Spirv" text="Show SPIR-V" icon="/icons/inspector.svg"><add-to-group group-id="EditorPopupMenu" anchor="last"/></action>
+        <action id="GlslSupport.Layout" class="com.glslsupport.ide.ShaderViews$Layout" text="Show GLSL Block Layout" icon="/icons/inspector.svg"><add-to-group group-id="EditorPopupMenu" anchor="last"/></action>
+        <action id="GlslSupport.Inline" class="com.glslsupport.ide.Actions$Inline" text="Inline GLSL Local Variable" icon="AllIcons.Actions.RefactoringBulb"><add-to-group group-id="RefactoringMenu" anchor="last"/></action>
+        <action id="GlslSupport.Extract" class="com.glslsupport.ide.Actions$Extract" text="Extract GLSL Function" icon="AllIcons.Nodes.Function"><add-to-group group-id="RefactoringMenu" anchor="last"/></action>
+        <action id="GlslSupport.Pipeline" class="com.glslsupport.ide.Actions$Pipeline" text="Validate GLSL Pipeline" icon="/icons/pipeline.svg"><add-to-group group-id="ToolsMenu" anchor="last"/></action>
     </actions>
 </idea-plugin>

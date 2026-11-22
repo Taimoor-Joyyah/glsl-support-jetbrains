@@ -203,7 +203,7 @@ void compile(const glsl_request &r, glsl_result &out) {
     std::vector<std::unique_ptr<glslang::TShader>> shaders;
     glslang::TProgram program;
     bool spirv = r.operation == GLSL_SPIRV;
-    EShMessages messages = EShMsgDefault;
+    EShMessages messages = EShMsgDisplayErrorColumn;
     if (r.vulkan)
         messages = EShMessages(messages | EShMsgVulkanRules | EShMsgSpvRules);
     else if (spirv)

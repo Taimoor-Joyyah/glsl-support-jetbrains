@@ -35,7 +35,7 @@ public final class ShaderConfig {
             defines = Collections.unmodifiableMap(new LinkedHashMap<>(defines));
         }
         public static Variant defaultVariant() {
-            return new Variant("Default", null, null, 0, "", Map.of());
+            return new Variant("Default", null, null, 0, "core", Map.of());
         }
     }
     public record Effective(Stage stage, int vulkan, int version, String profile, Map<String, String> defines) {

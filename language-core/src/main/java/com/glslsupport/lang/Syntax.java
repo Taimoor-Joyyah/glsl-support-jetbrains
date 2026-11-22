@@ -34,6 +34,10 @@ public final class Syntax {
     public final List<Span> spans = new ArrayList<>();
     public final List<Include> includes = new ArrayList<>();
     public final int[] match;
+    private final Map<String, List<Symbol>> byName = new HashMap<>();
+    public List<Symbol> named(String name) {
+        return byName.getOrDefault(name, List.of());
+    }
     private final Map<Integer, Symbol> declarations = new HashMap<>();
     public Syntax(String source) {
         this.source = source;
@@ -78,6 +82,9 @@ public final class Syntax {
                 spans.add(new Span(t.start(), t.end(), "comment"));
         symbols.sort(Comparator.comparingInt(Symbol::at));
     }
+    public boolean hasVersion() {
+        return code.stream().anyMatch(t -> t.kind() == DIRECTIVE && t.text().matches("(?s)#\\s*version\\b.*"));
+    }
     public Symbol declaration(int offset) {
         return declarations.get(offset);
     }
@@ -100,6 +107,7 @@ public final class Syntax {
     }
     private void add(Symbol s) {
         symbols.add(s);
+        byName.computeIfAbsent(s.name(), key -> new ArrayList<>()).add(s);
         declarations.put(s.at, s);
     }
     private int afterPair(int i, int end) {

@@ -154,54 +154,98 @@ public final class Calls {
         }
     }
     public static final class Colors implements ElementColorProvider {
-        record Literal(Syntax f, int open, int close, float[] rgb) {}
-        Literal literal(PsiElement e) {
-            if (!(e instanceof GlslLanguage.Element) || !Settings.of(e.getProject()).getState().colors)
+        private record
+            Anchor(com.intellij.openapi.project.Project project, com.intellij.openapi.editor.RangeMarker marker) {}
+        private record Literal(List<Lexer.Token> channels, Color color) {}
+        private static final com.intellij.openapi.util.Key<Anchor> ANCHOR =
+            com.intellij.openapi.util.Key.create("glsl.colorConstructor");
+        private static Lexer.Token next(CharSequence text, int from) {
+            while (from < text.length()) {
+                var t = Lexer.next(text, from, text.length());
+                if (!t.trivia())
+                    return t;
+                from = t.end();
+            }
+            return null;
+        }
+        private static Literal literal(CharSequence text, int at) {
+            if (at < 0 || at >= text.length())
+                return null;
+            var name = Lexer.next(text, at, text.length());
+            int count = switch (name.text()) {
+                case "vec3" -> 3;
+                case "vec4" -> 4;
+                default -> 0;
+            };
+            if (count == 0)
+                return null;
+            var token = next(text, name.end());
+            if (token == null || !token.text().equals("("))
+                return null;
+            var channels = new ArrayList<Lexer.Token>(count);
+            float[] rgba = {0, 0, 0, 1};
+            for (int i = 0; i < count; i++) {
+                var number = next(text, token.end());
+                if (number == null || number.kind() != Lexer.Kind.NUMBER)
+                    return null;
+                try {
+                    rgba[i] = Float.parseFloat(number.text());
+                } catch (NumberFormatException ex) {
+                    return null;
+                }
+                if (!Float.isFinite(rgba[i]) || rgba[i] < 0 || rgba[i] > 1)
+                    return null;
+                channels.add(number);
+                token = next(text, number.end());
+                if (token == null || !token.text().equals(i == count - 1 ? ")" : ","))
+                    return null;
+            }
+            return new Literal(channels, new Color(rgba[0], rgba[1], rgba[2], rgba[3]));
+        }
+        private static Anchor anchor(PsiElement e) {
+            var saved = e.getUserData(ANCHOR);
+            if (saved != null)
+                return saved.marker.isValid() ? saved : null;
+            if (!(e instanceof GlslLanguage.Element) || !e.isValid()
+                || !Settings.of(e.getProject()).getState().colors)
                 return null;
             String name = e.getText();
             if (!name.equals("vec3") && !name.equals("vec4"))
                 return null;
-            var f = ProjectAccess.model(e.getContainingFile());
-            int i = f.indexAt(e.getTextOffset()), open = i + 1;
-            if (!f.word(open).equals("(") || f.match[open] < 0)
+            var d = PsiDocumentManager.getInstance(e.getProject()).getDocument(e.getContainingFile());
+            int at = e.getTextOffset();
+            if (d == null || literal(d.getCharsSequence(), at) == null)
                 return null;
-            int count = name.equals("vec3") ? 3 : 4;
-            var args = Workspace.arguments(f, open);
-            if (args.size() != count)
-                return null;
-            float[] v = {0, 0, 0, 1};
-            for (int j = 0; j < count; j++) {
-                int pos = args.get(j);
-                if (pos != open + 1 + 2 * j)
-                    return null;
-                try {
-                    v[j] = Float.parseFloat(f.word(pos));
-                } catch (NumberFormatException ex) {
-                    return null;
-                }
-                if (!Float.isFinite(v[j]) || v[j] < 0 || v[j] > 1)
-                    return null;
-            }
-            return new Literal(f, open, f.match[open], v);
+            var anchor = new Anchor(e.getProject(), d.createRangeMarker(at, at + name.length()));
+            e.putUserData(ANCHOR, anchor);
+            return anchor;
         }
         public Color getColorFrom(@NotNull PsiElement e) {
-            var l = literal(e);
-            return l == null ? null : new Color(l.rgb[0], l.rgb[1], l.rgb[2], l.rgb[3]);
+            var a = anchor(e);
+            if (a == null)
+                return null;
+            var l = literal(a.marker.getDocument().getCharsSequence(), a.marker.getStartOffset());
+            return l == null ? null : l.color;
         }
         public void setColorTo(@NotNull PsiElement e, @NotNull Color color) {
-            var l = literal(e);
-            if (l == null)
+            var a = anchor(e);
+            if (a == null || a.project.isDisposed())
                 return;
-            var d = PsiDocumentManager.getInstance(e.getProject()).getDocument(e.getContainingFile());
-            if (d == null)
-                return;
-            float[] values = color.getRGBComponents(null);
-            var parts = new ArrayList<String>();
-            for (int n = 0; n < (e.getText().equals("vec3") ? 3 : 4); n++) parts.add(Float.toString(values[n]));
-            WriteCommandAction.runWriteCommandAction(e.getProject(),
-                ()
-                    -> d.replaceString(
-                        l.f.code.get(l.open).end(), l.f.code.get(l.close).start(), String.join(", ", parts)));
+            WriteCommandAction.runWriteCommandAction(a.project, "Change GLSL Color", null, () -> {
+                if (!a.marker.isValid())
+                    return;
+                var d = a.marker.getDocument();
+                var l = literal(d.getCharsSequence(), a.marker.getStartOffset());
+                if (l == null)
+                    return;
+                var values = color.getRGBComponents(null);
+                for (int i = l.channels.size() - 1; i >= 0; i--) {
+                    var n = l.channels.get(i);
+                    var value = Float.toString(values[i]);
+                    if (!value.equals(n.text()))
+                        d.replaceString(n.start(), n.end(), value);
+                }
+            });
         }
     }
 }

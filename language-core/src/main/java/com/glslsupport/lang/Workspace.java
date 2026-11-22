@@ -57,7 +57,7 @@ public final class Workspace {
         this.definitions = Map.copyOf(definitions);
     }
     public boolean active(String file, int offset) {
-        String root = path(file);
+        String root = files.containsKey(file) ? file : path(file);
         return translation(root).active(root, offset);
     }
     public String include(String file, Syntax.Include inc) {
@@ -81,10 +81,11 @@ public final class Workspace {
         }
     }
     public List<String> visible(String file) {
-        return translation(path(file)).visible;
+        return translation(files.containsKey(file) ? file : path(file)).visible;
     }
     public List<Location> resolve(String file, int offset) {
-        file = path(file);
+        if (!files.containsKey(file))
+            file = path(file);
         var f = files.get(file);
         if (f == null)
             return List.of();
@@ -107,8 +108,8 @@ public final class Workspace {
         int best = -1;
         for (String candidate : visible(file)) {
             var model = files.get(candidate);
-            for (var s : model.symbols) {
-                if (!s.name().equals(name) || !translation(file).active(candidate, s.at()))
+            for (var s : model.named(name)) {
+                if (!translation(file).active(candidate, s.at()))
                     continue;
                 int score = 0;
                 if (owner != null) {
@@ -231,7 +232,7 @@ public final class Workspace {
                     break;
                 }
             for (int d = dimensions; d < indexes; d++) {
-                if (type.matches("[iubd]?vec[234]"))
+                if (vector(type))
                     type = swizzle(type, 1);
                 else if (type.matches("d?mat[234](x[234])?"))
                     type = (type.startsWith("d") ? "dvec" : "vec") + type.charAt(type.length() - 1);
@@ -258,7 +259,7 @@ public final class Workspace {
             return "";
         if (f.word(i - 1).equals(".") && n.matches("([xyzw]{1,4}|[rgba]{1,4}|[stpq]{1,4})")) {
             String v = typeAt(file, i - 2, depth + 1);
-            if (v.matches("[iubd]?vec[234]"))
+            if (validSwizzle(v, n))
                 return swizzle(v, n.length());
         }
         var hits = lookup(file, i, depth + 1);
@@ -278,8 +279,28 @@ public final class Workspace {
             case "u" -> "uint";
             case "b" -> "bool";
             case "d" -> "double";
-            default -> "float";
+            case "" -> "float";
+            case "bf16" -> "bfloat16_t";
+            default ->
+                (prefix.startsWith("i")          ? "int"
+                        : prefix.startsWith("u") ? "uint"
+                                                 : "float")
+                    + prefix.substring(1) + "_t";
         } : prefix + "vec" + length;
+    }
+    private static boolean vector(String type) {
+        int n = type.length();
+        return n >= 4 && type.startsWith("vec", n - 4) && "234".indexOf(type.charAt(n - 1)) >= 0
+            && Catalog.has(type, "types");
+    }
+    public static boolean validSwizzle(String type, String name) {
+        if (!vector(type) || name.isEmpty() || name.length() > 4)
+            return false;
+        int width = type.charAt(type.length() - 1) - '0';
+        for (String alphabet : List.of("xyzw", "rgba", "stpq"))
+            if (name.chars().allMatch(c -> alphabet.indexOf(c) >= 0 && alphabet.indexOf(c) < width))
+                return true;
+        return false;
     }
     public List<String> completions(String file, int pos, boolean builtins) {
         var f = files.get(file);
@@ -297,13 +318,16 @@ public final class Workspace {
             ? f.source.substring(f.code.get(i).start(), pos)
             : "";
         var names = new LinkedHashSet<String>();
+        var layouts = LayoutQualifiers.suggestions(f, i, prefix, definitions.containsKey("VULKAN"));
+        if (layouts != null)
+            return layouts;
         if (f.word(i - 1).equals(".")) {
             String type = typeAt(file, i - 2, 0);
             for (String k : visible(file))
                 for (var s : files.get(k).symbols)
                     if (s.kind() == FIELD && s.owner().equals(type) && translation(file).active(k, s.at()))
                         names.add(s.name());
-            if (type.matches("[iubd]?vec[234]")) {
+            if (vector(type)) {
                 int count = type.charAt(type.length() - 1) - '0';
                 for (String set : List.of("xyzw", "rgba", "stpq")) {
                     String letters = set.substring(0, count);

@@ -176,6 +176,19 @@ public final class Editing {
     public static List<Finding> inspect(Workspace w, String file) {
         var f = w.files.get(file);
         var found = new ArrayList<Finding>();
+        var defined = new HashSet<String>();
+        var directive = java.util.regex.Pattern.compile("#\\s*(define|undef)\\s+([A-Za-z_]\\w*)");
+        for (var t : f.code)
+            if (t.kind() == Lexer.Kind.DIRECTIVE && w.active(file, t.start())) {
+                var m = directive.matcher(t.text());
+                if (!m.lookingAt())
+                    continue;
+                if (m.group(1).equals("undef"))
+                    defined.remove(m.group(2));
+                else if (!defined.add(m.group(2)))
+                    found.add(new Finding(t.start() + m.start(2), t.start() + m.end(2),
+                        "Duplicate macro definition '" + m.group(2) + "'"));
+            }
         for (var s : f.symbols) {
             if (s.kind() != LOCAL || !w.active(file, s.at()))
                 continue;
@@ -187,14 +200,82 @@ public final class Editing {
                 found.add(
                     new Finding(s.at(), s.at() + s.name().length(), "Declaration shadows '" + s.name() + "'"));
         }
-        for (int i = 0; i < f.code.size() - 1; i++)
-            if (f.word(i).equals("return") && (i == 0 || Set.of(";", "{", "}").contains(f.word(i - 1)))) {
-                int j = i;
-                while (j < f.code.size() && !f.word(j).equals(";")) j++;
-                if (j + 1 < f.code.size() && !Set.of("}", "case", "default").contains(f.word(j + 1))
-                    && f.code.get(j + 1).kind() != Lexer.Kind.DIRECTIVE)
-                    found.add(new Finding(f.code.get(j + 1).start(), f.code.get(j + 1).end(), "Unreachable code"));
-            }
+        for (var span : unreachable(f, at -> w.active(file, at)))
+            if (w.active(file, span.start()))
+                found.add(new Finding(span.start(), span.end(), "Unreachable code"));
         return found;
+    }
+
+    public static List<Syntax.Span> unreachable(Syntax f) {
+        var conditions = new Conditions(f, Map.of());
+        return unreachable(f, conditions::active);
+    }
+    public static List<Syntax.Span> unreachable(Syntax f, java.util.function.IntPredicate active) {
+        var ranges = new ArrayList<Syntax.Span>();
+        var code = new ArrayList<Integer>();
+        var position = new int[f.code.size()];
+        Arrays.fill(position, -1);
+        for (int i = 0; i < f.code.size(); i++) {
+            var t = f.code.get(i);
+            if (t.kind() == Lexer.Kind.DIRECTIVE || !active.test(t.start()))
+                continue;
+            position[i] = code.size();
+            code.add(i);
+        }
+        for (int i = 1; i < code.size(); i++) {
+            int token = code.get(i);
+            String word = f.word(token);
+            if ((word.equals("if") || word.equals("while")) && i + 4 < code.size()
+                && f.word(code.get(i + 1)).equals("(") && f.word(code.get(i + 3)).equals(")")
+                && f.word(code.get(i + 4)).equals("{")) {
+                int open = code.get(i + 4), close = f.match[open];
+                if (close > open && position[close] >= 0) {
+                    if (f.word(code.get(i + 2)).equals("false"))
+                        ranges.add(
+                            new Syntax.Span(f.code.get(open).end(), f.code.get(close).start(), "unreachable"));
+                    int after = position[close] + 1;
+                    if (word.equals("if") && f.word(code.get(i + 2)).equals("true") && after + 1 < code.size()
+                        && f.word(code.get(after)).equals("else") && f.word(code.get(after + 1)).equals("{")) {
+                        int other = code.get(after + 1), end = f.match[other];
+                        if (end > other)
+                            ranges.add(
+                                new Syntax.Span(f.code.get(other).end(), f.code.get(end).start(), "unreachable"));
+                    }
+                }
+            }
+            if (!Set.of("return", "break", "continue", "discard", "terminateInvocation", "terminateRayEXT",
+                        "ignoreIntersectionEXT")
+                    .contains(word)
+                || !Set.of("{", "}", ";", ":").contains(f.word(code.get(i - 1))))
+                continue;
+            int end = i + 1;
+            while (end < code.size() && !Set.of(";", "{", "}").contains(f.word(code.get(end)))) end++;
+            if (end >= code.size() || !f.word(code.get(end)).equals(";"))
+                continue;
+            int first = end + 1, j = first;
+            while (j < code.size() && !Set.of("}", "case", "default").contains(f.word(code.get(j)))) {
+                int at = code.get(j), close = f.match[at];
+                if (f.word(at).equals("{") && close > at && position[close] > j)
+                    j = position[close];
+                j++;
+            }
+            if (j > first) {
+                ranges.add(new Syntax.Span(
+                    f.code.get(code.get(first)).start(), f.code.get(code.get(j - 1)).end(), "unreachable"));
+                i = j - 1;
+            }
+        }
+        ranges.sort(Comparator.comparingInt(Syntax.Span::start));
+        var merged = new ArrayList<Syntax.Span>();
+        for (var range : ranges) {
+            if (range.end() <= range.start())
+                continue;
+            if (!merged.isEmpty() && range.start() <= merged.getLast().end()) {
+                var prior = merged.removeLast();
+                merged.add(new Syntax.Span(prior.start(), Math.max(prior.end(), range.end()), "unreachable"));
+            } else
+                merged.add(range);
+        }
+        return merged;
     }
 }

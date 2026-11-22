@@ -27,9 +27,10 @@ public final class Variants implements ToolWindowFactory {
     }
     static final class Panel extends JPanel {
         final Project p;
-        final JLabel path = new JLabel();
+        final JLabel path = new JLabel(), active = new JLabel();
+        String selectedId;
         final JComboBox<String> variant = new JComboBox<>(), stage = new JComboBox<>(), target = new JComboBox<>(),
-                                profile = new JComboBox<>(new String[] {"", "core", "compatibility", "es"});
+                                profile = new JComboBox<>(new String[] {"core", "compatibility", "es", "Inherit"});
         final JSpinner version = new JSpinner(new SpinnerNumberModel(0, 0, 999, 1));
         final SettingsUI.Grid macros = new SettingsUI.Grid("Definition", "Value");
         boolean refreshing;
@@ -43,8 +44,10 @@ public final class Variants implements ToolWindowFactory {
             for (var t : SettingsUI.TARGETS) target.addItem(t);
             var top = SettingsUI.form();
             top.add(path);
-            var bar = SettingsUI.row("Active variant", variant);
-            for (String label : java.util.List.of("Add", "Remove", "Apply")) {
+            top.add(SettingsUI.row("Edit variant", variant));
+            top.add(active);
+            var bar = new JPanel(new GridLayout(0, 3, 3, 3));
+            for (String label : java.util.List.of("Add", "Rename", "Remove", "Apply", "Set active")) {
                 var b = new JButton(label);
                 bar.add(b);
                 b.addActionListener(e -> {
@@ -59,11 +62,24 @@ public final class Variants implements ToolWindowFactory {
                             v.id = UUID.randomUUID().toString();
                             v.name = n;
                             f.variants.add(v);
-                            f.active = v.id;
+                            selectedId = v.id;
                         }
+                    } else if (label.equals("Rename")) {
+                        var v = f.variants.get(variant.getSelectedIndex());
+                        String n = Messages.showInputDialog(
+                            p, "Variant name", "Rename Shader Variant", null, v.name, null);
+                        if (n == null || n.isBlank()
+                            || f.variants.stream().anyMatch(other -> other != v && other.name.equals(n.strip())))
+                            return;
+                        v.name = n.strip();
                     } else if (label.equals("Remove") && f.variants.size() > 1) {
-                        f.variants.removeIf(v -> v.id.equals(f.active));
-                        f.active = f.variants.getFirst().id;
+                        f.variants.removeIf(v -> v.id.equals(selectedId));
+                        if (Objects.equals(f.active, selectedId))
+                            f.active = f.variants.getFirst().id;
+                        selectedId = f.active;
+                    } else if (label.equals("Set active")) {
+                        save();
+                        f.active = selectedId;
                     } else if (label.equals("Apply"))
                         save();
                     cfg.changed();
@@ -84,9 +100,7 @@ public final class Variants implements ToolWindowFactory {
                 var f = options();
                 int i = variant.getSelectedIndex();
                 if (i >= 0 && i < f.variants.size()) {
-                    f.active = f.variants.get(i).id;
-                    Settings.of(p).changed();
-                    DaemonCodeAnalyzer.getInstance(p).restart(file, "GLSL variant changed");
+                    selectedId = f.variants.get(i).id;
                     refresh();
                 }
             });
@@ -107,7 +121,7 @@ public final class Variants implements ToolWindowFactory {
             v.stage = stage.getSelectedIndex() == 0 ? "" : stage.getSelectedItem().toString();
             v.target =
                 target.getSelectedIndex() == 0 ? -1 : SettingsUI.target(target.getSelectedItem().toString());
-            v.profile = profile.getSelectedItem().toString();
+            v.profile = "Inherit".equals(profile.getSelectedItem()) ? "" : profile.getSelectedItem().toString();
             v.version = (Integer) version.getValue();
             v.macros.clear();
             for (var row : macros.rows()) v.macros.put(row[0], row[1]);
@@ -116,10 +130,14 @@ public final class Variants implements ToolWindowFactory {
             refreshing = true;
             try {
                 var selected = FileEditorManager.getInstance(p).getSelectedFiles();
-                file = selected.length == 0 ? null : PsiManager.getInstance(p).findFile(selected[0]);
+                var next = selected.length == 0 ? null : PsiManager.getInstance(p).findFile(selected[0]);
+                if (file != next)
+                    selectedId = null;
+                file = next;
                 variant.removeAllItems();
                 if (!(file instanceof GlslLanguage.File)) {
                     file = null;
+                    active.setText("");
                     path.setText("Open a GLSL shader to edit its variants");
                     macros.rows(java.util.List.of());
                     return;
@@ -131,13 +149,16 @@ public final class Variants implements ToolWindowFactory {
                     var v = f.variants.get(i);
                     variant.addItem(v.name);
                     if (v.id.equals(f.active))
+                        active.setText("Active: " + v.name);
+                    if (v.id.equals(selectedId == null ? f.active : selectedId))
                         pos = i;
                 }
                 variant.setSelectedIndex(pos);
                 var v = f.variants.get(pos);
+                selectedId = v.id;
                 stage.setSelectedItem(v.stage.isEmpty() ? "Inherit" : v.stage);
                 target.setSelectedItem(v.target < 0 ? "Inherit" : SettingsUI.target(v.target));
-                profile.setSelectedItem(v.profile);
+                profile.setSelectedItem(v.profile.isEmpty() ? "Inherit" : v.profile);
                 version.setValue(v.version);
                 macros.rows(
                     v.macros.entrySet().stream().map(e -> new String[] {e.getKey(), e.getValue()}).toList());

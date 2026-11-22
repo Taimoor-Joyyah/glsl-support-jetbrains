@@ -68,6 +68,10 @@ public final class EditorFeatures {
                         for (var visible : w.visible(key))
                             for (var symbol : w.files.get(visible).symbols)
                                 symbols.putIfAbsent(symbol.name(), symbol);
+                        int itemIndex = f.indexAt(pos);
+                        if (itemIndex > 0 && f.ident(itemIndex - 1) && f.code.get(itemIndex - 1).end() == pos)
+                            itemIndex--;
+                        boolean inLayout = LayoutQualifiers.item(f, itemIndex);
                         for (String name :
                             w.completions(key, pos, Settings.of(file.getProject()).getState().builtins)) {
                             if (!output.getPrefixMatcher().prefixMatches(name))
@@ -78,6 +82,21 @@ public final class EditorFeatures {
                             if (local != null)
                                 fun = local.kind() == Syntax.Kind.FUNCTION;
                             LookupElementBuilder item = LookupElementBuilder.create(name);
+                            if (inLayout && LayoutQualifiers.known(name))
+                                item =
+                                    item.withIcon(com.intellij.icons.AllIcons.Nodes.Property)
+                                        .withTypeText("layout qualifier", true)
+                                        .withTailText(LayoutQualifiers.takesValue(name) ? " = value" : "", true);
+                            else if (local != null)
+                                item = item.withIcon(GlslIcons.symbol(local.kind()));
+                            else if (!catalog.isEmpty())
+                                item = item.withIcon(fun             ? com.intellij.icons.AllIcons.Nodes.Function
+                                        : Catalog.has(name, "types") ? com.intellij.icons.AllIcons.Nodes.Class
+                                                                     : com.intellij.icons.AllIcons.Nodes.Constant);
+                            if (inLayout && LayoutQualifiers.known(name)) {
+                                output.addElement(item);
+                                continue;
+                            }
                             if (local != null)
                                 item = item.withTypeText(local.type(), true)
                                            .withTailText(
@@ -170,23 +189,24 @@ public final class EditorFeatures {
         public StructureViewBuilder getStructureViewBuilder(@NotNull PsiFile f) {
             return new TreeBasedStructureViewBuilder() {
                 public @NotNull StructureViewModel createStructureViewModel(Editor editor) {
-                    return new StructureViewModelBase(f, editor, new Item(f))
+                    return new StructureViewModelBase(f, editor, new Item(f, null))
                         .withSuitableClasses(GlslLanguage.Named.class);
                 }
             };
         }
         static final class Item extends PsiTreeElementBase<PsiElement> {
-            Item(PsiElement e) {
+            private final Syntax.Symbol symbol;
+            Item(PsiElement e, Syntax.Symbol symbol) {
                 super(e);
+                this.symbol = symbol;
+            }
+            @Override
+            public Icon getIcon(boolean open) {
+                return symbol == null ? GlslIcons.FILE : GlslIcons.symbol(symbol.kind());
             }
             public String getPresentableText() {
                 var e = getElement();
-                if (e instanceof PsiFile f)
-                    return f.getName();
-                if (e == null)
-                    return "";
-                var s = ProjectAccess.model(e.getContainingFile()).declaration(e.getTextOffset());
-                return s == null ? e.getText() : s.display();
+                return symbol != null ? symbol.display() : e instanceof PsiFile f ? f.getName() : "";
             }
             public @NotNull Collection<StructureViewTreeElement> getChildrenBase() {
                 var e = getElement();
@@ -196,12 +216,15 @@ public final class EditorFeatures {
                 var model = ProjectAccess.model(f);
                 var r = new ArrayList<StructureViewTreeElement>();
                 for (var s : model.symbols) {
-                    if (e instanceof PsiFile ? s.local() || s.kind() == Syntax.Kind.FIELD
-                                             : !s.owner().equals(e.getText()) || s.kind() != Syntax.Kind.FIELD)
+                    if (symbol == null) {
+                        if (s.local() || s.kind() == Syntax.Kind.FIELD)
+                            continue;
+                    } else if (!s.owner().equals(symbol.name()) || s.at() <= symbol.at() || s.at() >= symbol.end()
+                        || !(symbol.kind() == Syntax.Kind.FUNCTION ? s.local() : s.kind() == Syntax.Kind.FIELD))
                         continue;
-                    var named = ProjectAccess.named(f, new Workspace.Location(ProjectAccess.key(f), s));
-                    if (named != null)
-                        r.add(new Item(named));
+                    var leaf = f.findElementAt(s.at());
+                    if (leaf != null)
+                        r.add(new Item(leaf.getParent(), s));
                 }
                 return r;
             }

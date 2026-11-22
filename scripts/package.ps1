@@ -21,7 +21,7 @@ if($LASTEXITCODE){exit $LASTEXITCODE}
 Copy-Item -LiteralPath 'build/compiler/glsl_support.dll' -Destination "$lib/native/win-x64/" -Force
 New-Item -Type Directory -Force build/staging/GLSLSupport/licenses | Out-Null
 Copy-Item -Path 'licenses/*' -Destination build/staging/GLSLSupport/licenses -Force
-$zip=[IO.Path]::GetFullPath('build/distributions/GLSL-Support-1.0.0.zip')
+$zip=[IO.Path]::GetFullPath('build/distributions/GLSL-Support-1.1.0.zip')
 $tempZip="$zip.$([Guid]::NewGuid().ToString('N')).tmp"
 [IO.Compression.ZipFile]::CreateFromDirectory([IO.Path]::GetFullPath('build/staging'),$tempZip)
 $pages=[IO.Path]::GetFullPath("$pluginResources/reference_pages")

@@ -80,7 +80,18 @@ public final class Conditions {
             inactive.add(new int[] {start, file.source.length()});
     }
     public boolean active(int pos) {
-        return inactive.stream().noneMatch(r -> r[0] <= pos && pos < r[1]);
+        int first = 0, end = inactive.size();
+        while (first < end) {
+            int mid = (first + end) >>> 1;
+            var range = inactive.get(mid);
+            if (pos < range[0])
+                end = mid;
+            else if (pos >= range[1])
+                first = mid + 1;
+            else
+                return false;
+        }
+        return true;
     }
     public List<int[]> ranges() {
         return List.copyOf(inactive);

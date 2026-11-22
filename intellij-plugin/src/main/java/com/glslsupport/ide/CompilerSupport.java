@@ -17,7 +17,9 @@ import org.jetbrains.annotations.NotNull;
 public final class CompilerSupport implements Disposable {
     private final AnalysisCache cache = new AnalysisCache(32L << 20, NativeCompiler::compile);
     private final Map<VirtualFile, Set<String>> dependencies = new java.util.concurrent.ConcurrentHashMap<>();
-    private final Set<VirtualFile> pending = new HashSet<>();
+    private final Map<VirtualFile, Runnable> pending = new java.util.concurrent.ConcurrentHashMap<>();
+    private final com.intellij.util.Alarm alarm =
+        new com.intellij.util.Alarm(com.intellij.util.Alarm.ThreadToUse.SWING_THREAD, this);
     private final Project project;
     public CompilerSupport(Project project) {
         this.project = project;
@@ -25,8 +27,20 @@ public final class CompilerSupport implements Disposable {
             @Override
             public void documentChanged(@NotNull DocumentEvent event) {
                 VirtualFile changed = FileDocumentManager.getInstance().getFile(event.getDocument());
-                if (changed != null)
-                    headerChanged(changed.getPath());
+                if (changed == null)
+                    return;
+                if (changed.getFileType() == GlslLanguage.Type.INSTANCE
+                    && FileEditorManager.getInstance(project).isFileOpen(changed))
+                    schedule(changed);
+                var headers = dependencies.get(changed);
+                if (headers != null)
+                    for (var open : FileEditorManager.getInstance(project).getOpenFiles())
+                        if (headers.contains(open.getPath()))
+                            schedule(open);
+                dependencies.forEach((root, included) -> {
+                    if (included.contains(changed.getPath()))
+                        schedule(root);
+                });
             }
         }, this);
         project.getMessageBus().connect(this).subscribe(
@@ -34,6 +48,7 @@ public final class CompilerSupport implements Disposable {
                 @Override
                 public void fileClosed(@NotNull FileEditorManager manager, @NotNull VirtualFile file) {
                     dependencies.remove(file);
+                    ready(file);
                 }
             });
     }
@@ -46,43 +61,70 @@ public final class CompilerSupport implements Disposable {
                 dependencies.put(file, Set.copyOf(headers));
         }
     }
-    private void headerChanged(String path) {
-        synchronized (pending) {
-            boolean scheduled = !pending.isEmpty();
-            dependencies.forEach((root, headers) -> {
-                if (headers.contains(path))
-                    pending.add(root);
-            });
-            if (scheduled || pending.isEmpty())
-                return;
-        }
-        ApplicationManager.getApplication().invokeLater(() -> {
-            if (project.isDisposed())
-                return;
-            PsiDocumentManager.getInstance(project).performLaterWhenAllCommitted(() -> {
-                List<VirtualFile> roots;
-                synchronized (pending) {
-                    roots = List.copyOf(pending);
-                    pending.clear();
-                }
-                for (var v : roots)
-                    if (v.isValid() && FileEditorManager.getInstance(project).isFileOpen(v)) {
-                        var file = PsiManager.getInstance(project).findFile(v);
-                        if (file != null)
-                            DaemonCodeAnalyzer.getInstance(project).restart(file, "GLSL include changed");
-                    }
-            });
-        }, project.getDisposed());
+    List<PsiFile> owners(PsiFile file) {
+        String name = file.getName().toLowerCase(Locale.ROOT);
+        if (!name.endsWith(".glslh") && !name.endsWith(".glsl"))
+            return List.of();
+        String path = ProjectAccess.key(file);
+        return dependencies.entrySet()
+            .stream()
+            .filter(e -> e.getValue().contains(path) && e.getKey().isValid())
+            .sorted(Map.Entry.comparingByKey(Comparator.comparing(VirtualFile::getPath)))
+            .map(e -> PsiManager.getInstance(project).findFile(e.getKey()))
+            .filter(Objects::nonNull)
+            .toList();
+    }
+    private synchronized void schedule(VirtualFile file) {
+        ready(file);
+        if (project.isDisposed())
+            return;
+        var options = Settings.of(project).getState();
+        if (!options.diagnostics)
+            return;
+        var task = new Runnable() {
+            public void run() {
+                if (!pending.remove(file, this) || project.isDisposed())
+                    return;
+                PsiDocumentManager.getInstance(project).performLaterWhenAllCommitted(() -> {
+                    if (!file.isValid() || pending.containsKey(file)
+                        || !FileEditorManager.getInstance(project).isFileOpen(file))
+                        return;
+                    var psi = PsiManager.getInstance(project).findFile(file);
+                    if (psi != null)
+                        DaemonCodeAnalyzer.getInstance(project).restart(psi, "Validate edited GLSL source");
+                });
+            }
+        };
+        pending.put(file, task);
+        int delay = options.validationDelaySeconds == 0 ? 0 : Math.clamp(options.validationDelaySeconds, 5, 10);
+        alarm.addRequest(task, 1000 * delay);
+    }
+    boolean waiting(VirtualFile file) {
+        return file != null && pending.containsKey(file);
+    }
+    synchronized void ready(VirtualFile file) {
+        var previous = pending.remove(file);
+        if (previous != null)
+            alarm.cancelRequest(previous);
     }
     @Override
     public void dispose() {
+        pending.clear();
         dependencies.clear();
     }
     public static NativeCompiler.Request request(PsiFile file, String variant, NativeCompiler.Operation op) {
         var settings = Settings.of(file.getProject());
         var effective = settings.effective(file, variant);
+        if (file.getName().toLowerCase(Locale.ROOT).endsWith(".glslh") && effective.version() == 0
+            && !ProjectAccess.model(file).hasVersion())
+            effective = new ShaderConfig.Effective(
+                effective.stage(), effective.vulkan(), 460, "core", effective.defines());
+        return request(file, op, effective, variant == null);
+    }
+    private static NativeCompiler.Request request(
+        PsiFile file, NativeCompiler.Operation op, ShaderConfig.Effective effective, boolean useActiveGraph) {
         var graph =
-            variant == null ? ProjectAccess.graph(file) : ProjectAccess.graph(file, effective.editorDefines());
+            useActiveGraph ? ProjectAccess.graph(file) : ProjectAccess.graph(file, effective.editorDefines());
         var key = ProjectAccess.key(file);
         var headers = new LinkedHashMap<String, String>();
         graph.files.forEach((path, model) -> {
@@ -108,20 +150,32 @@ public final class CompilerSupport implements Disposable {
     }
     public static NativeCompiler.Request pipeline(Project p, String name) {
         var settings = Settings.of(p);
-        var members = settings.getState().pipelines.get(name);
-        if (members == null || members.isEmpty())
+        var pipeline = settings.pipelines().get(name);
+        if (pipeline == null || pipeline.stages.isEmpty())
             throw new IllegalArgumentException("Add shader stages to this pipeline in GLSL Support settings");
         int target = -1;
         var units = new ArrayList<NativeCompiler.Unit>();
         var headers = new LinkedHashMap<String, String>();
         var seen = new HashSet<ShaderConfig.Stage>();
-        for (String entry : members) {
-            String[] parts = entry.split("#", 2);
-            var path = java.nio.file.Path.of(Objects.requireNonNullElse(p.getBasePath(), "")).resolve(parts[0]);
+        for (var binding : pipeline.stages) {
+            var path =
+                java.nio.file.Path.of(Objects.requireNonNullElse(p.getBasePath(), "")).resolve(binding.file);
             var f = ProjectAccess.psi(p, Workspace.path(path.toString()));
             if (f == null)
-                throw new IllegalArgumentException("Missing stage file " + parts[0]);
-            var r = request(f, parts.length > 1 ? parts[1] : null, NativeCompiler.Operation.CHECK);
+                throw new IllegalArgumentException("Missing stage file " + binding.file);
+            if (!binding.variant.isBlank()
+                && settings.variants(f).stream().noneMatch(
+                    v -> v.id.equals(binding.variant) || v.name.equals(binding.variant)))
+                throw new IllegalArgumentException("Unknown variant " + binding.variant + " in " + binding.file);
+            var base = settings.effective(f, binding.variant.isBlank() ? null : binding.variant);
+            var assigned = binding.stage.isBlank() ? base.stage() : Settings.stage(binding.stage);
+            if (assigned == null)
+                throw new IllegalArgumentException("Unknown shader stage " + binding.stage);
+            var defines = new LinkedHashMap<>(base.defines());
+            defines.putAll(pipeline.definitions);
+            var config = new ShaderConfig.Effective(assigned,
+                pipeline.target < 0 ? base.vulkan() : pipeline.target, base.version(), base.profile(), defines);
+            var r = request(f, NativeCompiler.Operation.CHECK, config, false);
             if (target >= 0 && target != r.vulkan())
                 throw new IllegalArgumentException("Pipeline stages use different target environments");
             target = r.vulkan();

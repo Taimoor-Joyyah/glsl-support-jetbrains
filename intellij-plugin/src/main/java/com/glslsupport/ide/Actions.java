@@ -107,7 +107,7 @@ public final class Actions {
             var p = e.getProject();
             if (p == null)
                 return;
-            var names = Settings.of(p).getState().pipelines.keySet().toArray(String[] ::new);
+            var names = Settings.of(p).pipelines().keySet().toArray(String[] ::new);
             if (names.length == 0) {
                 com.intellij.openapi.options.ShowSettingsUtil.getInstance().showSettingsDialog(
                     p, SettingsUI.class);
@@ -118,6 +118,9 @@ public final class Actions {
                                                   "Validate GLSL Pipeline", null, names, names[0], null);
             if (name == null)
                 return;
+            validate(p, name);
+        }
+        static void validate(com.intellij.openapi.project.Project p, String name) {
             ApplicationManager.getApplication().executeOnPooledThread(() -> {
                 String output;
                 try {

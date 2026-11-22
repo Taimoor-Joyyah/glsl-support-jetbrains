@@ -12,34 +12,54 @@ import com.intellij.psi.*;
 import java.util.*;
 import org.jetbrains.annotations.*;
 
-public final class Diagnostics extends ExternalAnnotator<Diagnostics.Input, List<Diagnostics.Issue>> {
+public final class Diagnostics
+    extends ExternalAnnotator<Diagnostics.Input, Diagnostics.Report> implements DumbAware {
+    private static final java.util.regex.Pattern QUOTED = java.util.regex.Pattern.compile("'([^']+)'");
     static final Key<Long> SAVED = Key.create("glslsupport.savedVariants");
     record Job(String variant, NativeCompiler.Request request) {}
-    record Input(Project project, String main, Syntax file, List<Job> jobs) {}
-    record Issue(HighlightSeverity severity, int start, int end, String message) {}
+    public record Input(Project project, String main, Syntax file, List<Job> jobs, long stamp) {}
+    public record Report(long stamp, List<Issue> issues) {}
+    public record Issue(HighlightSeverity severity, int start, int end, String message) {}
+    @Override
+    public Input collectInformation(@NotNull PsiFile file, @NotNull Editor editor, boolean hasErrors) {
+        return collectInformation(file);
+    }
     @Override
     public Input collectInformation(@NotNull PsiFile file) {
-        if (!(file instanceof GlslLanguage.File) || file.getName().endsWith(".glslh"))
+        if (!(file instanceof GlslLanguage.File))
             return null;
         var settings = Settings.of(file.getProject());
-        if (!settings.getState().diagnostics)
+        if (!settings.getState().diagnostics
+            || CompilerSupport.of(file.getProject()).waiting(file.getVirtualFile()))
             return null;
         var jobs = new ArrayList<Job>();
         var document = PsiDocumentManager.getInstance(file.getProject()).getDocument(file);
-        if (document != null && Objects.equals(document.getUserData(SAVED), document.getModificationStamp())) {
-            for (var v : settings.variants(file))
-                jobs.add(new Job(v.name, CompilerSupport.request(file, v.id, NativeCompiler.Operation.CHECK)));
-        } else
-            jobs.add(new Job("", CompilerSupport.request(file, null, NativeCompiler.Operation.CHECK)));
-        var watched = new HashSet<String>();
-        for (var job : jobs) watched.addAll(job.request.headers().keySet());
-        CompilerSupport.of(file.getProject()).track(file, watched);
-        return new Input(file.getProject(), ProjectAccess.key(file), ProjectAccess.model(file), jobs);
+        boolean saved =
+            document != null && Objects.equals(document.getUserData(SAVED), document.getModificationStamp());
+        var compiler = CompilerSupport.of(file.getProject());
+        var roots = compiler.owners(file);
+        if (roots.isEmpty())
+            roots = List.of(file);
+        for (var root : roots) {
+            if (saved)
+                for (var v : settings.variants(root))
+                    jobs.add(new Job(v.name, CompilerSupport.request(root, v.id, NativeCompiler.Operation.CHECK)));
+            else
+                jobs.add(new Job(root == file ? "" : root.getName(),
+                    CompilerSupport.request(root, null, NativeCompiler.Operation.CHECK)));
+        }
+        if (roots.size() == 1 && roots.getFirst() == file) {
+            var watched = new HashSet<String>();
+            for (var job : jobs) watched.addAll(job.request.headers().keySet());
+            compiler.track(file, watched);
+        }
+        return new Input(file.getProject(), ProjectAccess.key(file), ProjectAccess.model(file), jobs,
+            file.getModificationStamp());
     }
     @Override
-    public List<Issue> doAnnotate(Input input) {
+    public Report doAnnotate(Input input) {
         if (input == null)
-            return List.of();
+            return null;
         var merged = new LinkedHashMap<Issue, Set<String>>();
         for (var job : input.jobs) {
             com.intellij.openapi.progress.ProgressManager.checkCanceled();
@@ -47,23 +67,43 @@ public final class Diagnostics extends ExternalAnnotator<Diagnostics.Input, List
             try {
                 result = CompilerSupport.of(input.project).analyze(job.request);
             } catch (LinkageError | IllegalStateException e) {
-                return List.of(new Issue(HighlightSeverity.WARNING, 0, Math.min(1, input.file.source.length()),
-                    "GLSL compiler unavailable: " + e.getMessage()));
+                return new Report(input.stamp,
+                    List.of(new Issue(HighlightSeverity.WARNING, 0, Math.min(1, input.file.source.length()),
+                        "GLSL compiler unavailable: " + e.getMessage())));
             }
-            for (var d : result.diagnostics(input.main)) {
+            String root = job.request.units().getFirst().path();
+            for (var d : result.diagnostics(root)) {
                 boolean local = d.file().equals(input.main);
+                if (!local && !root.equals(input.main))
+                    continue;
                 int a = 0, b = 0;
                 if (local) {
                     a = NativeCompiler.offset(input.file.source, d.line(), d.column());
                     b = input.file.source.indexOf('\n', a);
                     if (b < 0)
                         b = input.file.source.length();
-                    var quoted = java.util.regex.Pattern.compile("'([^']+)'").matcher(d.message());
+                    var quoted = QUOTED.matcher(d.message());
                     if (quoted.find()) {
-                        int hit = input.file.source.indexOf(quoted.group(1), a);
-                        if (hit >= a && hit < b) {
-                            a = hit;
-                            b = a + quoted.group(1).length();
+                        String word = quoted.group(1);
+                        int from = input.file.source.lastIndexOf('\n', Math.max(0, a - 1)) + 1;
+                        int nearest = -1, distance = Integer.MAX_VALUE;
+                        for (int i = input.file.indexAt(from);
+                            i < input.file.code.size() && input.file.code.get(i).start() < b; i++) {
+                            var token = input.file.code.get(i);
+                            if (!token.text().equals(word))
+                                continue;
+                            if (d.message().contains("swizzle") && !input.file.word(i - 1).equals("."))
+                                continue;
+                            int delta = Math.abs(token.start() - a);
+                            if (delta < distance) {
+                                distance = delta;
+                                nearest = i;
+                            }
+                        }
+                        if (nearest >= 0) {
+                            var token = input.file.code.get(nearest);
+                            a = token.start();
+                            b = token.end();
                         }
                     }
                 } else {
@@ -87,7 +127,7 @@ public final class Diagnostics extends ExternalAnnotator<Diagnostics.Input, List
                                    + (variants.size() == 1 && variants.contains("")
                                            ? ""
                                            : " [" + String.join(", ", variants) + "]"))));
-        return issues;
+        return new Report(input.stamp, issues);
     }
     private static Syntax.Include owningInclude(
         Syntax file, String path, String wanted, NativeCompiler.Request request, Set<String> seen) {
@@ -115,9 +155,10 @@ public final class Diagnostics extends ExternalAnnotator<Diagnostics.Input, List
         return null;
     }
     @Override
-    public void apply(@NotNull PsiFile file, List<Issue> issues, @NotNull AnnotationHolder holder) {
-        if (issues != null)
-            for (var i : issues) {
+    public void apply(@NotNull PsiFile file, Report report, @NotNull AnnotationHolder holder) {
+        if (report != null && report.stamp == file.getModificationStamp()
+            && PsiDocumentManager.getInstance(file.getProject()).isCommitted(file.getViewProvider().getDocument()))
+            for (var i : report.issues) {
                 int len = file.getTextLength();
                 int a = Math.min(i.start, len), b = Math.min(i.end, len);
                 var annotation = holder.newAnnotation(i.severity, i.message);
@@ -138,6 +179,7 @@ public final class Diagnostics extends ExternalAnnotator<Diagnostics.Input, List
             for (var p : ProjectManager.getInstance().getOpenProjects()) {
                 if (p.isDisposed())
                     continue;
+                CompilerSupport.of(p).ready(v);
                 var f = PsiManager.getInstance(p).findFile(v);
                 if (f != null)
                     DaemonCodeAnalyzer.getInstance(p).restart(f, "GLSL shader saved");

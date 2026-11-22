@@ -3,6 +3,7 @@ import com.glslsupport.lang.*;
 import com.intellij.openapi.components.*;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFile;
+import com.intellij.util.xmlb.annotations.*;
 import java.nio.file.*;
 import java.util.*;
 import org.jetbrains.annotations.NotNull;
@@ -10,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
 @State(name = "GlslSupport", storages = @Storage("glslSupport.xml"))
 public final class Settings implements PersistentStateComponent<Settings.Data> {
     public static final class Variant {
-        public String id = "Default", name = "Default", stage = "", profile = "";
+        public String id = "Default", name = "Default", stage = "", profile = "core";
         public int target = -1, version;
         @com.intellij.util.xmlb.annotations.MapAnnotation(sortBeforeSave = false)
         public Map<String, String> macros = new LinkedHashMap<>();
@@ -19,14 +20,52 @@ public final class Settings implements PersistentStateComponent<Settings.Data> {
         public String active = "Default";
         public List<Variant> variants = new ArrayList<>();
     }
+    @Tag("stage")
+    public static final class StageFile {
+        @Attribute public String stage = "", file = "", variant = "";
+        public StageFile() {}
+        public StageFile(String stage, String file, String variant) {
+            this.stage = stage;
+            this.file = file;
+            this.variant = variant;
+        }
+    }
+    @Tag("pipeline")
+    public static final class Pipeline {
+        @Attribute public String name = "", type = "Graphics";
+        @Attribute public int target = -1;
+        @XCollection(propertyElementName = "stages", elementName = "stage", style = XCollection.Style.v2)
+        public List<StageFile> stages = new ArrayList<>();
+        @XMap(propertyElementName = "definitions", entryTagName = "define", keyAttributeName = "name",
+            valueAttributeName = "value")
+        public Map<String, String> definitions = new LinkedHashMap<>();
+        Pipeline copy() {
+            var result = new Pipeline();
+            result.name = name;
+            result.type = type;
+            result.target = target;
+            stages.forEach(s -> result.stages.add(new StageFile(s.stage, s.file, s.variant)));
+            result.definitions.putAll(definitions);
+            return result;
+        }
+        List<Object> snapshot() {
+            return List.of(name, type, target,
+                stages.stream().map(s -> List.of(s.stage, s.file, s.variant)).toList(),
+                new ArrayList<>(definitions.entrySet()));
+        }
+    }
     public static final class Data {
         public int target;
+        public int validationDelaySeconds = 6;
         public String fallback = "VERTEX";
         public List<String> includes = new ArrayList<>();
         public Map<String, Integer> targets = new LinkedHashMap<>();
         public Map<String, String> stageMacros = new LinkedHashMap<>();
         public Map<String, FileOptions> files = new LinkedHashMap<>();
         public Map<String, List<String>> pipelines = new LinkedHashMap<>();
+        @XCollection(
+            propertyElementName = "pipelineDefinitions", elementName = "pipeline", style = XCollection.Style.v2)
+        public List<Pipeline> pipelineDefinitions = new ArrayList<>();
         public boolean diagnostics = true, builtins = true, colors = true, inlays = true, signatures = true,
                        semantic = true, onType = true, range = true, format = true, imported = false;
         public Data() {
@@ -52,6 +91,21 @@ public final class Settings implements PersistentStateComponent<Settings.Data> {
     public void loadState(@NotNull Data state) {
         data = state;
         changed();
+    }
+    public Map<String, Pipeline> pipelines() {
+        var result = new LinkedHashMap<String, Pipeline>();
+        data.pipelines.forEach((name, paths) -> {
+            var p = new Pipeline();
+            p.name = name;
+            p.type = "Custom";
+            for (String path : paths) {
+                var parts = path.split("#", 2);
+                p.stages.add(new StageFile("", parts[0], parts.length > 1 ? parts[1] : ""));
+            }
+            result.put(name, p);
+        });
+        for (var pipeline : data.pipelineDefinitions) result.put(pipeline.name, pipeline);
+        return result;
     }
     static String relative(Project p, String file) {
         var base = p.getBasePath();

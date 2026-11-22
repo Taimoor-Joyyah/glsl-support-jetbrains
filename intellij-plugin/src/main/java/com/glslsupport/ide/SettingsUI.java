@@ -26,15 +26,30 @@ public final class SettingsUI implements Configurable {
     static final class Grid extends JPanel {
         final DefaultTableModel data;
         final JTable table;
+        final JPanel rowButtons = new JPanel(new FlowLayout(FlowLayout.LEADING, 3, 0));
+        final JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEADING, 3, 0));
+        java.util.function.IntPredicate editableColumn = c -> true;
         Grid(String... columns) {
             super(new BorderLayout(0, 4));
-            data = new DefaultTableModel(columns, 0);
+            data = new DefaultTableModel(columns, 0) {
+                public boolean isCellEditable(int r, int c) {
+                    return editableColumn.test(c);
+                }
+            };
             table = new com.intellij.ui.table.JBTable(data);
             table.setFillsViewportHeight(true);
             add(new JBScrollPane(table));
-            var buttons = new JPanel(new FlowLayout(FlowLayout.LEADING, 3, 0));
+            buttons.add(rowButtons);
             for (String label : List.of("Add", "Remove", "Up", "Down")) {
-                var b = new JButton(label);
+                var icon = switch (label) {
+                    case "Add" -> com.intellij.icons.AllIcons.General.Add;
+                    case "Remove" -> com.intellij.icons.AllIcons.General.Remove;
+                    case "Up" -> com.intellij.icons.AllIcons.Actions.MoveUp;
+                    default -> com.intellij.icons.AllIcons.Actions.MoveDown;
+                };
+                var b = new JButton(icon);
+                b.setToolTipText(label);
+                b.getAccessibleContext().setAccessibleName(label);
                 b.addActionListener(e -> {
                     commit();
                     int row = table.getSelectedRow();
@@ -56,9 +71,17 @@ public final class SettingsUI implements Configurable {
                         }
                     }
                 });
-                buttons.add(b);
+                rowButtons.add(b);
             }
             add(buttons, BorderLayout.SOUTH);
+        }
+        void button(String name, Runnable run) {
+            var b = new JButton(name);
+            b.addActionListener(e -> {
+                commit();
+                run.run();
+            });
+            buttons.add(b);
         }
         void commit() {
             if (table.isEditing())
@@ -82,12 +105,14 @@ public final class SettingsUI implements Configurable {
             return values;
         }
     }
+    private final JComboBox<String> delay = new JComboBox<>(new String[] {
+        "After each edit", "5 seconds", "6 seconds", "7 seconds", "8 seconds", "9 seconds", "10 seconds"});
     private final Project project;
     private final JComboBox<String> target = new JComboBox<>(TARGETS);
     private final JComboBox<ShaderConfig.Stage> stage = new JComboBox<>(ShaderConfig.Stage.values());
     final Grid rules = new Grid("Folder or file", "Target"), includes = new Grid("Include directory"),
-               macros = new Grid("Macro", "Shader stage"),
-               pipelines = new Grid("Pipeline name", "Stage file or file#variant");
+               macros = new Grid("Macro", "Shader stage");
+    private PipelinePanel pipelines;
     private final Map<String, JCheckBox> flags = new LinkedHashMap<>();
     private String original;
     public SettingsUI(Project project) {
@@ -110,20 +135,33 @@ public final class SettingsUI implements Configurable {
     }
     public JComponent createComponent() {
         var tabs = new JBTabbedPane();
+        var choices = new ShaderChoices(project);
+        pipelines = new PipelinePanel(project, choices);
+        choices.complete(rules.table, 0, row -> "", choices::files);
+        browse(rules, choices, com.intellij.openapi.fileChooser.FileChooserDescriptorFactory.singleFileOrDir());
+        browse(includes, choices, com.intellij.openapi.fileChooser.FileChooserDescriptorFactory.singleDir());
+        rules.data.addTableModelListener(ev -> {
+            int r = ev.getFirstRow();
+            if (ev.getType() == javax.swing.event.TableModelEvent.UPDATE && ev.getColumn() == 0
+                && r < rules.data.getRowCount() && !rules.get(r, 0).isEmpty() && rules.get(r, 1).isEmpty())
+                rules.data.setValueAt(target(choices.suggestedTarget(rules.get(r, 0))), r, 1);
+        });
         var general = new JPanel(new BorderLayout(6, 8));
         var head = form();
         head.add(row("Default target", target));
         head.add(row("Fallback shader stage", stage));
         general.add(head, BorderLayout.NORTH);
         general.add(rules, BorderLayout.CENTER);
-        rules.table.getColumnModel().getColumn(1).setCellEditor(new DefaultCellEditor(new JComboBox<>(TARGETS)));
+        var targets = new JComboBox<>(TARGETS);
+        com.intellij.ui.ComboboxSpeedSearch.installOn(targets);
+        rules.table.getColumnModel().getColumn(1).setCellEditor(new DefaultCellEditor(targets));
         var stageNames = Arrays.stream(ShaderConfig.Stage.values()).map(Enum::name).toArray(String[] ::new);
         macros.table.getColumnModel().getColumn(1).setCellEditor(
             new DefaultCellEditor(new JComboBox<>(stageNames)));
-        tabs.addTab("Targets", general);
-        tabs.addTab("Includes", includes);
-        tabs.addTab("Stage macros", macros);
-        tabs.addTab("Pipelines", pipelines);
+        tabs.addTab("Targets", GlslIcons.FILE, general);
+        tabs.addTab("Includes", com.intellij.icons.AllIcons.Nodes.Folder, includes);
+        tabs.addTab("Stage macros", com.intellij.icons.AllIcons.Nodes.Constant, macros);
+        tabs.addTab("Pipelines", GlslIcons.PIPELINE, pipelines);
         var editor = form();
         for (String label : List.of("Compiler diagnostics", "Built-in completion", "Semantic highlighting",
                  "Parameter hints", "Signature help", "Color previews", "Code formatting", "Selection formatting",
@@ -132,30 +170,46 @@ public final class SettingsUI implements Configurable {
             flags.put(label, box);
             editor.add(box);
         }
-        tabs.addTab("Editor", editor);
+        editor.add(row("Validate after typing", delay));
+        tabs.addTab("Editor", com.intellij.icons.AllIcons.General.Settings, editor);
         reset();
         return tabs;
     }
+    private void browse(
+        Grid grid, ShaderChoices choices, com.intellij.openapi.fileChooser.FileChooserDescriptor descriptor) {
+        grid.button("Browse…", () -> {
+            int r = grid.table.getSelectedRow();
+            String path = choices.browse(grid, r < 0 ? "" : grid.get(r, 0), descriptor);
+            if (path == null)
+                return;
+            if (r < 0) {
+                grid.data.addRow(new String[grid.data.getColumnCount()]);
+                r = grid.data.getRowCount() - 1;
+            }
+            grid.data.setValueAt(path, r, 0);
+            grid.table.setRowSelectionInterval(r, r);
+        });
+    }
     private String snapshot() {
         return Arrays.deepToString(new Object[] {target.getSelectedItem(), stage.getSelectedItem(),
-            rules.rows().toArray(), includes.rows().toArray(), macros.rows().toArray(), pipelines.rows().toArray(),
+            delay.getSelectedIndex(), rules.rows().toArray(), includes.rows().toArray(), macros.rows().toArray(),
             flags.values().stream().map(AbstractButton::isSelected).toArray()});
     }
     public boolean isModified() {
         return rules.table.isEditing() || includes.table.isEditing() || macros.table.isEditing()
-            || pipelines.table.isEditing() || !Objects.equals(snapshot(), original);
+            || pipelines.modified() || !Objects.equals(snapshot(), original);
     }
     public void reset() {
         var d = Settings.of(project).getState();
         target.setSelectedItem(target(d.target));
+        delay.setSelectedIndex(
+            d.validationDelaySeconds == 0 ? 0 : Math.clamp(d.validationDelaySeconds, 5, 10) - 4);
         stage.setSelectedItem(Settings.stage(d.fallback));
         rules.rows(
             d.targets.entrySet().stream().map(e -> new String[] {e.getKey(), target(e.getValue())}).toList());
         includes.rows(d.includes.stream().map(v -> new String[] {v}).toList());
         macros.rows(d.stageMacros.entrySet().stream().map(e -> new String[] {e.getKey(), e.getValue()}).toList());
-        var pipes = new ArrayList<String[]>();
-        d.pipelines.forEach((n, v) -> v.forEach(f -> pipes.add(new String[] {n, f})));
-        pipelines.rows(pipes);
+        pipelines.reset();
         boolean[] values = {
             d.diagnostics, d.builtins, d.semantic, d.inlays, d.signatures, d.colors, d.format, d.range, d.onType};
         int i = 0;
@@ -163,7 +217,7 @@ public final class SettingsUI implements Configurable {
         original = snapshot();
     }
     public void apply() throws ConfigurationException {
-        for (var grid : List.of(rules, includes, macros, pipelines)) grid.commit();
+        for (var grid : List.of(rules, includes, macros)) grid.commit();
         var s = Settings.of(project);
         var d = s.getState();
         var newMacros = new LinkedHashMap<String, String>();
@@ -172,19 +226,17 @@ public final class SettingsUI implements Configurable {
                 throw new ConfigurationException("Select a stage for macro " + r[0]);
             newMacros.put(r[0], r[1]);
         }
-        var newPipes = new LinkedHashMap<String, List<String>>();
-        for (var r : pipelines.rows()) {
-            if (r[1].isBlank())
-                throw new ConfigurationException("Select a shader for pipeline " + r[0]);
-            newPipes.computeIfAbsent(r[0], k -> new ArrayList<>()).add(r[1]);
-        }
+        for (var row : rules.rows())
+            if (!Arrays.asList(TARGETS).contains(row[1]))
+                throw new ConfigurationException("Choose a target for " + row[0]);
+        pipelines.apply();
         d.target = target((String) target.getSelectedItem());
+        d.validationDelaySeconds = delay.getSelectedIndex() == 0 ? 0 : 4 + delay.getSelectedIndex();
         d.fallback = Objects.requireNonNull(stage.getSelectedItem()).toString();
         d.targets.clear();
         for (var r : rules.rows()) d.targets.put(r[0], target(r[1]));
         d.includes = new ArrayList<>(includes.rows().stream().map(r -> r[0]).toList());
         d.stageMacros = newMacros;
-        d.pipelines = newPipes;
         var f = flags.values().stream().map(AbstractButton::isSelected).toList();
         d.diagnostics = f.get(0);
         d.builtins = f.get(1);

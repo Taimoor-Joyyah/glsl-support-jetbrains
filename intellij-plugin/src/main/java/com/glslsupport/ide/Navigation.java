@@ -85,9 +85,9 @@ public final class Navigation {
                 return List.of();
             var list = new ArrayList<ShaderItem>();
             var d = Settings.of(p).getState();
-            d.pipelines.forEach((n, stages) -> {
-                if (!stages.isEmpty())
-                    list.add(new ShaderItem(p, n, stages.getFirst().split("#", 2)[0], null));
+            Settings.of(p).pipelines().forEach((name, pipeline) -> {
+                if (!pipeline.stages.isEmpty())
+                    list.add(new ShaderItem(p, name, pipeline.stages.getFirst().file, null));
             });
             d.files.forEach(
                 (file, options) -> options.variants.forEach(v -> list.add(new ShaderItem(p, v.name, file, v.id))));

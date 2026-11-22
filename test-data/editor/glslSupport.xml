@@ -1,0 +1,32 @@
+<project version="4">
+  <component name="GlslSupport">
+    <option name="imported" value="true"/>
+    <option name="target" value="0"/>
+    <option name="fallback" value="VERTEX"/>
+    <option name="includes"><list><option value="shaders/include"/><option value="shared/glsl"/></list></option>
+    <option name="targets"><map><entry key="shaders/vulkan" value="13"/></map></option>
+    <option name="stageMacros"><map><entry key="VERTEX_SHADER" value="VERTEX"/><entry key="FRAGMENT_SHADER" value="FRAGMENT"/></map></option>
+    <option name="files"><map><entry key="tools.vert"><value><FileOptions>
+      <option name="active" value="day"/>
+      <option name="variants"><list><Variant>
+        <option name="id" value="day"/>
+        <option name="name" value="Day"/>
+        <option name="version" value="460"/>
+        <option name="profile" value="core"/>
+        <option name="macros"><map><entry key="DAYLIGHT" value="1"/></map></option>
+      </Variant></list></option>
+    </FileOptions></value></entry></map></option>
+    <pipelineDefinitions>
+      <pipeline name="Forward" type="Graphics" target="13">
+        <stages>
+          <stage stage="VERTEX" file="tools.vert" variant="day"/>
+          <stage stage="FRAGMENT" file="tools.frag"/>
+        </stages>
+        <definitions><define name="LIGHT_COUNT" value="4"/></definitions>
+      </pipeline>
+      <pipeline name="Cull" type="Compute" target="-1">
+        <stages><stage stage="COMPUTE" file="shaders/cull.comp"/></stages>
+      </pipeline>
+    </pipelineDefinitions>
+  </component>
+</project>

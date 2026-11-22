@@ -20,7 +20,7 @@ public final class Catalog {
     private Catalog() {}
     private static Map<String, List<Entry>> read() {
         var result = new TreeMap<String, List<Entry>>();
-        for (String resource : List.of("catalog.tsv", "core46.tsv"))
+        for (String resource : List.of("catalog.tsv", "core46.tsv", "compiler-keywords.tsv"))
             try (var in = new BufferedReader(new InputStreamReader(
                      Objects.requireNonNull(Catalog.class.getResourceAsStream("/glsl/" + resource)),
                      StandardCharsets.UTF_8))) {
@@ -29,7 +29,8 @@ public final class Catalog {
                     if (resource.equals("core46.tsv"))
                         result.remove(f[1]);
                     result.computeIfAbsent(f[1], k -> new ArrayList<>())
-                        .add(new Entry(f[0], f[1], f[2], f[3], f[4], f[5]));
+                        .add(f.length == 2 ? new Entry(f[0], f[1], "", "", "", "")
+                                           : new Entry(f[0], f[1], f[2], f[3], f[4], f[5]));
                 }
             } catch (IOException e) {
                 throw new UncheckedIOException(e);

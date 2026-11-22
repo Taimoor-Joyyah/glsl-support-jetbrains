@@ -37,7 +37,7 @@ public final class GlslLanguage extends Language {
             return "glsl";
         }
         public Icon getIcon() {
-            return com.intellij.icons.AllIcons.FileTypes.Text;
+            return GlslIcons.FILE;
         }
     }
     public static final class File extends PsiFileBase {
@@ -235,6 +235,11 @@ public final class GlslLanguage extends Language {
         }
         public PsiElement getNameIdentifier() {
             return getFirstChild();
+        }
+        @Override
+        public Icon getIcon(int flags) {
+            var s = ProjectAccess.model(getContainingFile()).declaration(getTextOffset());
+            return s == null ? GlslIcons.FILE : GlslIcons.symbol(s.kind());
         }
         public @NotNull com.intellij.psi.search.SearchScope getUseScope() {
             return com.intellij.psi.search.GlobalSearchScope.projectScope(getProject());

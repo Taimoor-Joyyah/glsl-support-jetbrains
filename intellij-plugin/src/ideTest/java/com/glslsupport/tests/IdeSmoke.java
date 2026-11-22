@@ -65,11 +65,14 @@ public final class IdeSmoke implements ApplicationStarter {
                 check(header.getText().contains("gain") && shader.getText().contains("gain"), "multi-file Rename");
             });
             Features.verify(p, root);
+            EditorUpgrade.verify(p, root);
             Files.writeString(result,
                 "PASS file type, include navigation, symbol index, Find Usages, project Rename, native DLL, "
                     + "SPIR-V, source map, block and struct layout, pipeline link, variants, gated search, "
                     + "folding, "
-                    + "structure, documentation, colors, actions, settings, header template and IDE formatting\n");
+                    + "structure, documentation, colors, actions, settings, header template, IDE formatting, "
+                    + "semantic palette, live swizzles, repeated color edits, cross-language references and "
+                    + "pipeline XML\n");
             System.exit(0);
         } catch (Throwable t) {
             try {

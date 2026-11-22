@@ -32,15 +32,33 @@ public final class Intentions {
         }
         abstract void edit(Editor e, PsiFile f);
     }
-    public static final class Version extends Base {
+    public static final class Version extends Base implements com.intellij.codeInspection.LocalQuickFix {
         public Version() {
             super("Add #version directive");
         }
         boolean enabled(Editor e, PsiFile f) {
-            return ProjectAccess.model(f).code.stream().noneMatch(t -> t.text().matches("(?s)#\\s*version\\b.*"));
+            return !ProjectAccess.model(f).hasVersion();
         }
         void edit(Editor e, PsiFile f) {
-            e.getDocument().insertString(0, "#version 460 core\n");
+            insert(e.getDocument());
+        }
+        private static void insert(Document document) {
+            document.insertString(0, "#version 460 core\n");
+        }
+        public @NotNull String getName() {
+            return getText();
+        }
+        public void applyFix(
+            @NotNull Project project, @NotNull com.intellij.codeInspection.ProblemDescriptor descriptor) {
+            var file = descriptor.getPsiElement().getContainingFile();
+            if (file != null && !ProjectAccess.model(file).hasVersion()) {
+                var manager = PsiDocumentManager.getInstance(project);
+                var document = manager.getDocument(file);
+                if (document != null) {
+                    insert(document);
+                    manager.commitDocument(document);
+                }
+            }
         }
     }
     public static final class Main extends Base {

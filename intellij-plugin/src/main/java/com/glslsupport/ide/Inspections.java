@@ -11,10 +11,22 @@ public final class Inspections extends LocalInspectionTool {
                     return;
                 var w = ProjectAccess.graph(f);
                 var key = ProjectAccess.key(f);
+                var syntax = w.files.get(key);
+                if (!syntax.source.isEmpty() && !syntax.hasVersion()
+                    && (ShaderConfig.Stage.fromPath(key).isPresent()
+                        || f.getName().endsWith(".glsl")
+                            && syntax.named("main").stream().anyMatch(s -> s.kind() == Syntax.Kind.FUNCTION))
+                    && Settings.of(f.getProject()).effective(f, null).version() == 0) {
+                    holder.registerProblem(f, "Missing #version directive",
+                        ProblemHighlightType.GENERIC_ERROR_OR_WARNING,
+                        new com.intellij.openapi.util.TextRange(0, 1), new Intentions.Version());
+                }
                 for (var report : Editing.inspect(w, key)) {
                     var e = f.findElementAt(report.start());
                     if (e != null)
-                        holder.registerProblem(e, report.message(), ProblemHighlightType.WEAK_WARNING);
+                        holder.registerProblem(e, report.message(), ProblemHighlightType.WEAK_WARNING,
+                            new com.intellij.openapi.util.TextRange(report.start() - e.getTextOffset(),
+                                Math.min(report.end(), e.getTextRange().getEndOffset()) - e.getTextOffset()));
                 }
             }
         };
