@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml">
+  <head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' file: 'unsafe-inline' 'unsafe-eval'; style-src 'self' file: 'unsafe-inline'; font-src 'self' file: data:; img-src 'self' file: data:; connect-src 'self' file:; base-uri 'none'; object-src 'none'"/>
+    <title>gl_PrimitiveIDIn - OpenGL 4 Reference Pages</title>
+    <link rel="stylesheet" type="text/css" href="opengl-man.css"/>
+    <meta name="generator" content="DocBook XSL Stylesheets V1.79.2"/>
+    <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({
+                showMathMenu: false,
+                MathML: {
+                    extensions: ["content-mathml.js"]
+                },
+                tex2jax: {
+                    skipTags: ["script","noscript","style","textarea","pre","annotation","annotation-xml"],
+                    inlineMath: [['$','$'], ['\\(','\\)']]
+                }
+            });
+        </script>
+    <script type="text/javascript" src="mathjax/MathJax.js?config=TeX-AMS-MML_SVG"/>
+  <meta name="dcterms.source" content="https://registry.khronos.org/OpenGL-Refpages/gl4/html/gl_PrimitiveIDIn.xhtml"/></head>
+  <body>
+    <header/>
+    <div class="refentry" id="gl_PrimitiveIDIn">
+      <div class="titlepage"/>
+      <div class="refnamediv">
+        <h2>Name</h2>
+        <p>gl_PrimitiveIDIn — contains the index of the current primitive</p>
+      </div>
+      <div class="refsynopsisdiv">
+        <h2>Declaration</h2>
+        <code class="fieldsynopsis"><span class="modifier">in </span><span class="type">int </span><span class="varname">gl_PrimitiveIDIn </span>;</code>
+      </div>
+      <div class="refsect1" id="description">
+        <h2>Description</h2>
+        <p>
+            <code class="varname">gl_PrimitiveIDIn</code> is a geometry language input variable that holds
+            the number of primitives processed by the shader since the current set of rendering
+            primitives was started. The first primitive processed by the drawing command is numbered
+            zero and the primitive ID counter is incremented after every individual point, line
+            or triangle primitive is processed. For triangles drawn in point or line mode, the
+            primitive ID counter is incremented only once, even through multiple points or lines
+            may actually be drawn. Restarting a primitive topology using the primitive restart
+            index has no effect on the primitive ID counter.
+        </p>
+      </div>
+      
+      <div class="refsect1" id="seealso">
+        <h2>See Also</h2>
+        <p>
+            <a class="citerefentry" href="gl_InstanceID.xhtml"><span class="citerefentry"><span class="refentrytitle">gl_InstanceID</span></span></a>
+        </p>
+      </div>
+      
+    </div>
+    <footer><p><small>Khronos reference, offline edition by GLSL Support, 2026-11-22. <a href="sources.txt">Source and edition notes</a>.</small></p></footer>
+  </body>
+</html>

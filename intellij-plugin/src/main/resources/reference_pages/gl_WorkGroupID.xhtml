@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml">
+  <head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' file: 'unsafe-inline' 'unsafe-eval'; style-src 'self' file: 'unsafe-inline'; font-src 'self' file: data:; img-src 'self' file: data:; connect-src 'self' file:; base-uri 'none'; object-src 'none'"/>
+    <title>gl_WorkGroupID - OpenGL 4 Reference Pages</title>
+    <link rel="stylesheet" type="text/css" href="opengl-man.css"/>
+    <meta name="generator" content="DocBook XSL Stylesheets V1.79.2"/>
+    <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({
+                showMathMenu: false,
+                MathML: {
+                    extensions: ["content-mathml.js"]
+                },
+                tex2jax: {
+                    skipTags: ["script","noscript","style","textarea","pre","annotation","annotation-xml"],
+                    inlineMath: [['$','$'], ['\\(','\\)']]
+                }
+            });
+        </script>
+    <script type="text/javascript" src="mathjax/MathJax.js?config=TeX-AMS-MML_SVG"/>
+  <meta name="dcterms.source" content="https://registry.khronos.org/OpenGL-Refpages/gl4/html/gl_WorkGroupID.xhtml"/></head>
+  <body>
+    <header/>
+    <div class="refentry" id="gl_WorkGroupID">
+      <div class="titlepage"/>
+      <div class="refnamediv">
+        <h2>Name</h2>
+        <p>gl_WorkGroupID — contains the index of the workgroup currently being operated on by a compute shader</p>
+      </div>
+      <div class="refsynopsisdiv">
+        <h2>Declaration</h2>
+        <code class="fieldsynopsis"><span class="modifier">in </span><span class="type">uvec3 </span><span class="varname">gl_WorkGroupID </span>;</code>
+      </div>
+      <div class="refsect1" id="description">
+        <h2>Description</h2>
+        <p>
+            In the compute language, <code class="varname">gl_WorkGroupID</code>
+            contains the 3-dimensional index of the global work group
+            that the current compute shader invocation is executing within. The possible values range
+            across the parameters passed into <code class="varname">glDispatchCompute</code>, i.e., from (0, 0, 0) to
+            (<code class="varname">gl_NumWorkGroups.x</code> - 1, <code class="varname">gl_NumWorkGroups.y</code> - 1, <code class="varname">gl_NumWorkGroups.z</code> - 1).
+        </p>
+      </div>
+      
+      <div class="refsect1" id="seealso">
+        <h2>See Also</h2>
+        <p>
+            <a class="citerefentry" href="gl_NumWorkGroups.xhtml"><span class="citerefentry"><span class="refentrytitle">gl_NumWorkGroups</span></span></a>,
+            <a class="citerefentry" href="gl_WorkGroupID.xhtml"><span class="citerefentry"><span class="refentrytitle">gl_WorkGroupID</span></span></a>,
+            <a class="citerefentry" href="gl_LocalInvocationID.xhtml"><span class="citerefentry"><span class="refentrytitle">gl_LocalInvocationID</span></span></a>
+        </p>
+      </div>
+      
+    </div>
+    <footer><p><small>Khronos reference, offline edition by GLSL Support, 2026-11-22. <a href="sources.txt">Source and edition notes</a>.</small></p></footer>
+  </body>
+</html>

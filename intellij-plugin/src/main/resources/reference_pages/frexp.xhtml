@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml">
+  <head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' file: 'unsafe-inline' 'unsafe-eval'; style-src 'self' file: 'unsafe-inline'; font-src 'self' file: data:; img-src 'self' file: data:; connect-src 'self' file:; base-uri 'none'; object-src 'none'"/>
+    <title>frexp - OpenGL 4 Reference Pages</title>
+    <link rel="stylesheet" type="text/css" href="opengl-man.css"/>
+    <meta name="generator" content="DocBook XSL Stylesheets V1.79.2"/>
+    <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({
+                showMathMenu: false,
+                MathML: {
+                    extensions: ["content-mathml.js"]
+                },
+                tex2jax: {
+                    skipTags: ["script","noscript","style","textarea","pre","annotation","annotation-xml"],
+                    inlineMath: [['$','$'], ['\\(','\\)']]
+                }
+            });
+        </script>
+    <script type="text/javascript" src="mathjax/MathJax.js?config=TeX-AMS-MML_SVG"/>
+  <meta name="dcterms.source" content="https://registry.khronos.org/OpenGL-Refpages/gl4/html/frexp.xhtml"/></head>
+  <body>
+    <header/>
+    <div class="refentry" id="frexp">
+      <div class="titlepage"/>
+      <div class="refnamediv">
+        <h2>Name</h2>
+        <p>frexp — split a floating point number</p>
+      </div>
+      <div class="refsynopsisdiv">
+        <h2>Declaration</h2>
+        <div class="funcsynopsis">
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">genType <strong class="fsfunc">frexp</strong>(</code>
+              </td>
+              <td>genType <var class="pdparam">x</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>out genIType <var class="pdparam">exp</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">genDType <strong class="fsfunc">frexp</strong>(</code>
+              </td>
+              <td>genDType <var class="pdparam">x</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>out genIType <var class="pdparam">exp</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+        </div>
+      </div>
+      <div class="refsect1" id="parameters">
+        <h2>Parameters</h2>
+        <div class="variablelist">
+          <dl class="variablelist">
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>x</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>
+                    Specifies the value from which significand and exponent are to be extracted.
+                </p>
+            </dd>
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>out exp</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>
+                    Specifies the variable into which to place the exponent
+                </p>
+            </dd>
+          </dl>
+        </div>
+      </div>
+      <div class="refsect1" id="description">
+        <h2>Description</h2>
+        <p>
+            <code class="function">frexp</code> extracts <em class="parameter"><code>x</code></em> into a floating-point significand
+            in the range [0.5, 1.0) and in integral exponent of two, such that:
+        </p>
+        <p>
+            <mml:math xmlns:mml="http://www.w3.org/1998/Math/MathML" overflow="scroll">
+                <mml:mi>x</mml:mi>
+                <mml:mo>=</mml:mo>
+                <mml:mi>significand</mml:mi>
+                <mml:mo lspace="2px" rspace="2px">⋅</mml:mo>
+                <mml:msup>
+                <mml:mn>2</mml:mn>
+                <mml:mi>exponent</mml:mi>
+                </mml:msup>
+            </mml:math>
+        </p>
+        <p>
+            The significand is returned by the function and the exponent is returned in the output
+            parameter <em class="parameter"><code>exp</code></em>. For a floating-point value of zero, the
+            significand and exponent are both zero. For a floating-point value that is an
+            infinity or a floating-point NaN, the results are undefined.
+        </p>
+      </div>
+      
+      <div class="refsect1" id="seealso">
+        <h2>See Also</h2>
+        <p>
+            <a class="citerefentry" href="ldexp.xhtml"><span class="citerefentry"><span class="refentrytitle">ldexp</span></span></a>
+        </p>
+      </div>
+      
+    </div>
+    <footer><p><small>Khronos reference, offline edition by GLSL Support, 2026-11-22. <a href="sources.txt">Source and edition notes</a>.</small></p></footer>
+  </body>
+</html>

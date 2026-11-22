@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml">
+  <head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' file: 'unsafe-inline' 'unsafe-eval'; style-src 'self' file: 'unsafe-inline'; font-src 'self' file: data:; img-src 'self' file: data:; connect-src 'self' file:; base-uri 'none'; object-src 'none'"/>
+    <title>unpackUnorm - OpenGL 4 Reference Pages</title>
+    <link rel="stylesheet" type="text/css" href="opengl-man.css"/>
+    <meta name="generator" content="DocBook XSL Stylesheets V1.79.2"/>
+    <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({
+                showMathMenu: false,
+                MathML: {
+                    extensions: ["content-mathml.js"]
+                },
+                tex2jax: {
+                    skipTags: ["script","noscript","style","textarea","pre","annotation","annotation-xml"],
+                    inlineMath: [['$','$'], ['\\(','\\)']]
+                }
+            });
+        </script>
+    <script type="text/javascript" src="mathjax/MathJax.js?config=TeX-AMS-MML_SVG"/>
+  <meta name="dcterms.source" content="https://registry.khronos.org/OpenGL-Refpages/gl4/html/unpackUnorm.xhtml"/></head>
+  <body>
+    <header/>
+    <div class="refentry" id="unpackUnorm">
+      <div class="titlepage"/>
+      <div class="refnamediv">
+        <h2>Name</h2>
+        <p>unpackUnorm2x16, unpackUnorm4x8, unpackSnorm4x8 — unpack floating-point values from an unsigned integer</p>
+      </div>
+      <div class="refsynopsisdiv">
+        <h2>Declaration</h2>
+        <div class="funcsynopsis">
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">vec2 <strong class="fsfunc">unpackUnorm2x16</strong>(</code>
+              </td>
+              <td>uint <var class="pdparam">p</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">vec2 <strong class="fsfunc">unpackSnorm2x16</strong>(</code>
+              </td>
+              <td>uint <var class="pdparam">p</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">vec4 <strong class="fsfunc">unpackUnorm4x8</strong>(</code>
+              </td>
+              <td>uint <var class="pdparam">p</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">vec4 <strong class="fsfunc">unpackSnorm4x8</strong>(</code>
+              </td>
+              <td>uint <var class="pdparam">p</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+        </div>
+      </div>
+      <div class="refsect1" id="parameters">
+        <h2>Parameters</h2>
+        <div class="variablelist">
+          <dl class="variablelist">
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>p</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>
+                    Specifies an unsigned integer containing packed floating-point values.
+                </p>
+            </dd>
+          </dl>
+        </div>
+      </div>
+      <div class="refsect1" id="description">
+        <h2>Description</h2>
+        <p>
+            <code class="function">unpackUnorm2x16</code>, <code class="function">unpackSnorm2x16</code>, <code class="function">unpackUnorm4x8</code> and <code class="function">unpackSnorm4x8</code> unpack
+            single 32-bit unsigned integers, specified in the parameter <em class="parameter"><code>p</code></em> into a pair of 16-bit unsigned integers,
+            four 8-bit unsigned integers or four 8-bit signed integers. Then, each component is converted to a normalized floating-point
+            value to generate the returned two- or four-component vector.
+        </p>
+        <p>
+            The conversion for unpacked fixed point value <span class="emphasis"><em>f</em></span> to floating-point is performed as follows:
+            </p>
+        <div class="itemizedlist">
+          <ul class="itemizedlist" style="list-style-type: disc; ">
+            <li class="listitem">
+              <p><code class="function">packUnorm2x16</code>: <code class="code">f / 65535.0</code></p>
+            </li>
+            <li class="listitem">
+              <p><code class="function">packSnorm2x16</code>: <code class="code"><code class="function">clamp</code>(f / 32727.0, -1.0, 1.0)</code></p>
+            </li>
+            <li class="listitem">
+              <p><code class="function">packUnorm4x8</code>: <code class="code">f / 255.0</code></p>
+            </li>
+            <li class="listitem">
+              <p><code class="function">packSnorm4x8</code>: <code class="code"><code class="function">clamp</code>(f / 127.0, -1.0, 1.0)</code></p>
+            </li>
+          </ul>
+        </div>
+        <p>
+        </p>
+        <p>
+            The first component of the returned vector will be extracted from the least significant bits of the input;
+            the last component will be extracted from the most significant bits.
+        </p>
+      </div>
+      
+      <div class="refsect1" id="seealso">
+        <h2>See Also</h2>
+        <p>
+             <code class="function">packUnorm2x16</code>,
+             <code class="function">packUnorm4x8</code>,
+             <code class="function">packSnorm4x8</code>
+        </p>
+      </div>
+      
+    </div>
+    <footer><p><small>Khronos reference, offline edition by GLSL Support, 2026-11-22. <a href="sources.txt">Source and edition notes</a>.</small></p></footer>
+  </body>
+</html>

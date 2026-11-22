@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml">
+  <head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' file: 'unsafe-inline' 'unsafe-eval'; style-src 'self' file: 'unsafe-inline'; font-src 'self' file: data:; img-src 'self' file: data:; connect-src 'self' file:; base-uri 'none'; object-src 'none'"/>
+    <title>interpolateAtSample - OpenGL 4 Reference Pages</title>
+    <link rel="stylesheet" type="text/css" href="opengl-man.css"/>
+    <meta name="generator" content="DocBook XSL Stylesheets V1.79.2"/>
+    <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({
+                showMathMenu: false,
+                MathML: {
+                    extensions: ["content-mathml.js"]
+                },
+                tex2jax: {
+                    skipTags: ["script","noscript","style","textarea","pre","annotation","annotation-xml"],
+                    inlineMath: [['$','$'], ['\\(','\\)']]
+                }
+            });
+        </script>
+    <script type="text/javascript" src="mathjax/MathJax.js?config=TeX-AMS-MML_SVG"/>
+  <meta name="dcterms.source" content="https://registry.khronos.org/OpenGL-Refpages/gl4/html/interpolateAtSample.xhtml"/></head>
+  <body>
+    <header/>
+    <div class="refentry" id="interpolateAtSample">
+      <div class="titlepage"/>
+      <div class="refnamediv">
+        <h2>Name</h2>
+        <p>interpolateAtSample — sample a varying at the location of a specified sample</p>
+      </div>
+      <div class="refsynopsisdiv">
+        <h2>Declaration</h2>
+        <div class="funcsynopsis">
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">float <strong class="fsfunc">interpolateAtSample</strong>(</code>
+              </td>
+              <td>float <var class="pdparam">interpolant</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>int <var class="pdparam">sample</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">vec2 <strong class="fsfunc">interpolateAtSample</strong>(</code>
+              </td>
+              <td>vec2 <var class="pdparam">interpolant</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>int <var class="pdparam">sample</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">vec3 <strong class="fsfunc">interpolateAtSample</strong>(</code>
+              </td>
+              <td>vec3 <var class="pdparam">interpolant</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>int <var class="pdparam">sample</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">vec4 <strong class="fsfunc">interpolateAtSample</strong>(</code>
+              </td>
+              <td>vec4 <var class="pdparam">interpolant</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>int <var class="pdparam">sample</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+        </div>
+      </div>
+      <div class="refsect1" id="parameters">
+        <h2>Parameters</h2>
+        <div class="variablelist">
+          <dl class="variablelist">
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>interpolant</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>
+                    Specifies the interpolant to be sampled at the location of sample <em class="parameter"><code>sample</code></em>.
+                </p>
+            </dd>
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>sample</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>
+                    Specifies the index of the sample whose location will be used to sample <em class="parameter"><code>interpolant</code></em>.
+                </p>
+            </dd>
+          </dl>
+        </div>
+      </div>
+      <div class="refsect1" id="description">
+        <h2>Description</h2>
+        <p>
+            <code class="function">interpolateAtSample</code> returns the value of the input varying <em class="parameter"><code>interpolant</code></em>
+            sampled at the location of sample number <em class="parameter"><code>sample</code></em>. If multisample buffers are not available,
+            the input varying will be evaluated at the center of the pixel. If sample <em class="parameter"><code>sample</code></em> does not
+            exist, the position used to interpolate the input varying is undefined.
+        </p>
+      </div>
+      
+      <div class="refsect1" id="seealso">
+        <h2>See Also</h2>
+        <p>
+            <a class="citerefentry" href="interpolateAtCentroid.xhtml"><span class="citerefentry"><span class="refentrytitle">interpolateAtCentroid</span></span></a>,
+            <a class="citerefentry" href="interpolateAtOffset.xhtml"><span class="citerefentry"><span class="refentrytitle">interpolateAtOffset</span></span></a>
+        </p>
+      </div>
+      
+    </div>
+    <footer><p><small>Khronos reference, offline edition by GLSL Support, 2026-11-22. <a href="sources.txt">Source and edition notes</a>.</small></p></footer>
+  </body>
+</html>

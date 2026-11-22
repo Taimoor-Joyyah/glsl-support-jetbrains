@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' file: 'unsafe-inline' 'unsafe-eval'; style-src 'self' file: 'unsafe-inline'; font-src 'self' file: data:; img-src 'self' file: data:; connect-src 'self' file:; base-uri 'none'; object-src 'none'"/><title>glSpecializeShader | GLSL Support</title><link rel="stylesheet" type="text/css" href="opengl-man.css"/></head>
+<body><h1>glSpecializeShader</h1>
+<p>OpenGL 4.6 command</p>
+<pre>void glSpecializeShader(GLuint shader, const GLchar *entryPoint, GLuint count, const GLuint *ids, const GLuint *values);</pre>
+<p>Select the entry point of a SPIR-V shader loaded with glShaderBinary. Supply specialization IDs and their 32-bit value representations before linking the program. IDs omitted from the call retain their module defaults.</p>
+<pre>GLuint id = 4, count = 8;
+glSpecializeShader(shader, &quot;main&quot;, 1, &amp;id, &amp;count);</pre>
+<p>Check GL_COMPILE_STATUS and the shader info log after specialization. To specialize another entry point or another set of constants, load the module again.</p>
+<p><a href="GL_SHADER_BINARY_FORMAT_SPIR_V.xhtml">GL_SHADER_BINARY_FORMAT_SPIR_V</a> · <a href="GL_SPIR_V_BINARY.xhtml">GL_SPIR_V_BINARY</a> · <a href="constant_id.xhtml">constant_id</a></p>
+<p>GLSL Support supplement based on the <a href="specs/glspec46.core.pdf">Khronos OpenGL 4.6 core specification</a></p>
+</body></html>

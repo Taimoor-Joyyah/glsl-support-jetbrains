@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml">
+  <head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' file: 'unsafe-inline' 'unsafe-eval'; style-src 'self' file: 'unsafe-inline'; font-src 'self' file: data:; img-src 'self' file: data:; connect-src 'self' file:; base-uri 'none'; object-src 'none'"/>
+    <title>glScissorIndexed - OpenGL 4 Reference Pages</title>
+    <link rel="stylesheet" type="text/css" href="opengl-man.css"/>
+    <meta name="generator" content="DocBook XSL Stylesheets V1.79.2"/>
+    <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({
+                showMathMenu: false,
+                MathML: {
+                    extensions: ["content-mathml.js"]
+                },
+                tex2jax: {
+                    skipTags: ["script","noscript","style","textarea","pre","annotation","annotation-xml"],
+                    inlineMath: [['$','$'], ['\\(','\\)']]
+                }
+            });
+        </script>
+    <script type="text/javascript" src="mathjax/MathJax.js?config=TeX-AMS-MML_SVG"/>
+  <meta name="dcterms.source" content="https://registry.khronos.org/OpenGL-Refpages/gl4/html/glScissorIndexed.xhtml"/></head>
+  <body>
+    <header/>
+    <div class="refentry" id="glScissorIndexed">
+      <div class="titlepage"/>
+      <div class="refnamediv">
+        <h2>Name</h2>
+        <p>glScissorIndexed — define the scissor box for a specific viewport</p>
+      </div>
+      <div class="refsynopsisdiv">
+        <h2>C Specification</h2>
+        <div class="funcsynopsis">
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">void <strong class="fsfunc">glScissorIndexed</strong>(</code>
+              </td>
+              <td>GLuint <var class="pdparam">index</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>GLint <var class="pdparam">left</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>GLint <var class="pdparam">bottom</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>GLsizei <var class="pdparam">width</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>GLsizei <var class="pdparam">height</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">void <strong class="fsfunc">glScissorIndexedv</strong>(</code>
+              </td>
+              <td>GLuint <var class="pdparam">index</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>const GLint *<var class="pdparam">v</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+        </div>
+      </div>
+      <div class="refsect1" id="parameters">
+        <h2>Parameters</h2>
+        <div class="variablelist">
+          <dl class="variablelist">
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>index</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>
+                Specifies the index of the viewport whose scissor box to modify.
+            </p>
+            </dd>
+            <dt>
+              <span class="term"><em class="parameter"><code>left</code></em>, </span>
+              <span class="term">
+                <em class="parameter">
+                  <code>bottom</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>
+                Specify the coordinate of the bottom left corner of the scissor box, in pixels.
+            </p>
+            </dd>
+            <dt>
+              <span class="term"><em class="parameter"><code>width</code></em>, </span>
+              <span class="term">
+                <em class="parameter">
+                  <code>height</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>
+                Specify ths dimensions of the scissor box, in pixels.
+            </p>
+            </dd>
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>v</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>
+                For <code class="function">glScissorIndexedv</code>, specifies the address of an array containing the left, bottom, width and height of each
+                scissor box, in that order.
+            </p>
+            </dd>
+          </dl>
+        </div>
+      </div>
+      <div class="refsect1" id="description">
+        <h2>Description</h2>
+        <p>
+            <code class="function">glScissorIndexed</code> defines the scissor box for a specified viewport.
+            <em class="parameter"><code>index</code></em> specifies the index of scissor box to modify.
+            <em class="parameter"><code>index</code></em> must be less than the value of <code class="constant">GL_MAX_VIEWPORTS</code>.
+            For <code class="function">glScissorIndexed</code>, <em class="parameter"><code>left</code></em>, <em class="parameter"><code>bottom</code></em>,
+            <em class="parameter"><code>width</code></em> and <em class="parameter"><code>height</code></em> specify the left, bottom, width
+            and height of the scissor box, in pixels, respectively.
+            For <code class="function">glScissorIndexedv</code>, <em class="parameter"><code>v</code></em> specifies the address of an
+            array containing integers specifying the lower left corner of the scissor box, and the width and
+            height of the scissor box, in that order.
+        </p>
+        <p>
+            To enable and disable the scissor test, call
+            <a class="citerefentry" href="glEnable.xhtml"><span class="citerefentry"><span class="refentrytitle">glEnable</span></span></a> and  <code class="function">glDisable</code> with argument
+            <code class="constant">GL_SCISSOR_TEST</code>. The test is initially disabled for all viewports.
+            While the test is enabled, only pixels that lie within the scissor box
+            can be modified by drawing commands.
+            Window coordinates have integer values at the shared corners of
+            frame buffer pixels.
+            <code class="code">glScissor(0,0,1,1)</code> allows modification of only the lower left
+            pixel in the window, and <code class="code">glScissor(0,0,0,0)</code> doesn't allow
+            modification of any pixels in the window.
+        </p>
+        <p>
+            When the scissor test is disabled,
+            it is as though the scissor box includes the entire window.
+        </p>
+      </div>
+      <div class="refsect1" id="errors">
+        <h2>Errors</h2>
+        <p>
+            <code class="constant">GL_INVALID_VALUE</code> is generated if <em class="parameter"><code>index</code></em> is greater than or equal to
+            the value of <code class="constant">GL_MAX_VIEWPORTS</code>.
+        </p>
+        <p>
+            <code class="constant">GL_INVALID_VALUE</code> is generated if any width or height specified in the array <em class="parameter"><code>v</code></em> is negative.
+        </p>
+      </div>
+      <div class="refsect1" id="associatedgets">
+        <h2>Associated Gets</h2>
+        <p>
+            <a class="citerefentry" href="glGet.xhtml"><span class="citerefentry"><span class="refentrytitle">glGet</span></span></a> with argument <code class="constant">GL_SCISSOR_BOX</code>
+        </p>
+        <p>
+            <a class="citerefentry" href="glIsEnabled.xhtml"><span class="citerefentry"><span class="refentrytitle">glIsEnabled</span></span></a> with argument <code class="constant">GL_SCISSOR_TEST</code>
+        </p>
+      </div>
+      
+      <div class="refsect1" id="seealso">
+        <h2>See Also</h2>
+        <p>
+            <a class="citerefentry" href="glEnable.xhtml"><span class="citerefentry"><span class="refentrytitle">glEnable</span></span></a>,
+            <a class="citerefentry" href="glScissor.xhtml"><span class="citerefentry"><span class="refentrytitle">glScissor</span></span></a>,
+            <a class="citerefentry" href="glScissorArray.xhtml"><span class="citerefentry"><span class="refentrytitle">glScissorArray</span></span></a>
+        </p>
+      </div>
+      
+    </div>
+    <footer><p><small>Khronos reference, offline edition by GLSL Support, 2026-11-22. <a href="sources.txt">Source and edition notes</a>.</small></p></footer>
+  </body>
+</html>

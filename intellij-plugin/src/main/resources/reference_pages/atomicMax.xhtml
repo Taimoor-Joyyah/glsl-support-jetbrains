@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml">
+  <head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' file: 'unsafe-inline' 'unsafe-eval'; style-src 'self' file: 'unsafe-inline'; font-src 'self' file: data:; img-src 'self' file: data:; connect-src 'self' file:; base-uri 'none'; object-src 'none'"/>
+    <title>atomicMax - OpenGL 4 Reference Pages</title>
+    <link rel="stylesheet" type="text/css" href="opengl-man.css"/>
+    <meta name="generator" content="DocBook XSL Stylesheets V1.79.2"/>
+    <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({
+                showMathMenu: false,
+                MathML: {
+                    extensions: ["content-mathml.js"]
+                },
+                tex2jax: {
+                    skipTags: ["script","noscript","style","textarea","pre","annotation","annotation-xml"],
+                    inlineMath: [['$','$'], ['\\(','\\)']]
+                }
+            });
+        </script>
+    <script type="text/javascript" src="mathjax/MathJax.js?config=TeX-AMS-MML_SVG"/>
+  <meta name="dcterms.source" content="https://registry.khronos.org/OpenGL-Refpages/gl4/html/atomicMax.xhtml"/></head>
+  <body>
+    <header/>
+    <div class="refentry" id="atomicMax">
+      <div class="titlepage"/>
+      <div class="refnamediv">
+        <h2>Name</h2>
+        <p>atomicMax — perform an atomic max operation to a variable</p>
+      </div>
+      <div class="refsynopsisdiv">
+        <h2>Declaration</h2>
+        <div class="funcsynopsis">
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">int <strong class="fsfunc">atomicMax</strong>(</code>
+              </td>
+              <td>inout int <var class="pdparam">mem</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>int <var class="pdparam">data</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">uint <strong class="fsfunc">atomicMax</strong>(</code>
+              </td>
+              <td>inout uint <var class="pdparam">mem</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>uint <var class="pdparam">data</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+        </div>
+      </div>
+      <div class="refsect1" id="parameters">
+        <h2>Parameters</h2>
+        <div class="variablelist">
+          <dl class="variablelist">
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>mem</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>
+                    The variable to use as the target of the operation.
+                </p>
+            </dd>
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>data</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>
+                    The data to be compared to <em class="parameter"><code>mem</code></em>.
+                </p>
+            </dd>
+          </dl>
+        </div>
+      </div>
+      <div class="refsect1" id="description">
+        <h2>Description</h2>
+        <p>
+            <code class="function">atomicMax</code> performs an atomic comparison of <em class="parameter"><code>data</code></em> to the contents of
+            <em class="parameter"><code>mem</code></em>, writes the maximum value into <em class="parameter"><code>mem</code></em> and returns the original contents of <em class="parameter"><code>mem</code></em>
+            from before the comparison occurred. The contents of the memory being updated by the atomic operation are
+            guaranteed not to be modified by any other assignment or atomic memory function in any shader
+            invocation between the time the original value is read and the time the new value is written.
+        </p>
+        <p>
+            Atomic memory functions are supported only for a limited set of variables.  A shader will fail to compile
+            if the value passed to the mem argument of  an atomic memory function does not correspond to a buffer or
+            shared variable.  It is acceptable to pass an element of an array or a single component of a vector to the
+            mem argument of an atomic memory function, as long as the underlying array or vector is a buffer or
+            shared variable.
+        </p>
+      </div>
+      
+      <div class="refsect1" id="seealso">
+        <h2>See Also</h2>
+        <p>
+            <a class="citerefentry" href="atomicAdd.xhtml"><span class="citerefentry"><span class="refentrytitle">atomicAdd</span></span></a>,
+            <a class="citerefentry" href="atomicAnd.xhtml"><span class="citerefentry"><span class="refentrytitle">atomicAnd</span></span></a>,
+            <a class="citerefentry" href="atomicOr.xhtml"><span class="citerefentry"><span class="refentrytitle">atomicOr</span></span></a>,
+            <a class="citerefentry" href="atomicXor.xhtml"><span class="citerefentry"><span class="refentrytitle">atomicXor</span></span></a>,
+            <a class="citerefentry" href="atomicMin.xhtml"><span class="citerefentry"><span class="refentrytitle">atomicMin</span></span></a>,
+            <a class="citerefentry" href="atomicExchange.xhtml"><span class="citerefentry"><span class="refentrytitle">atomicExchange</span></span></a>,
+            <a class="citerefentry" href="atomicCompSwap.xhtml"><span class="citerefentry"><span class="refentrytitle">atomicCompSwap</span></span></a>
+        </p>
+      </div>
+      
+    </div>
+    <footer><p><small>Khronos reference, offline edition by GLSL Support, 2026-11-22. <a href="sources.txt">Source and edition notes</a>.</small></p></footer>
+  </body>
+</html>

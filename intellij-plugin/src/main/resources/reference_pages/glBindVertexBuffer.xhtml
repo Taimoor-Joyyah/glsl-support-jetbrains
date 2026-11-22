@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml">
+  <head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' file: 'unsafe-inline' 'unsafe-eval'; style-src 'self' file: 'unsafe-inline'; font-src 'self' file: data:; img-src 'self' file: data:; connect-src 'self' file:; base-uri 'none'; object-src 'none'"/>
+    <title>glBindVertexBuffer - OpenGL 4 Reference Pages</title>
+    <link rel="stylesheet" type="text/css" href="opengl-man.css"/>
+    <meta name="generator" content="DocBook XSL Stylesheets V1.79.2"/>
+    <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({
+                showMathMenu: false,
+                MathML: {
+                    extensions: ["content-mathml.js"]
+                },
+                tex2jax: {
+                    skipTags: ["script","noscript","style","textarea","pre","annotation","annotation-xml"],
+                    inlineMath: [['$','$'], ['\\(','\\)']]
+                }
+            });
+        </script>
+    <script type="text/javascript" src="mathjax/MathJax.js?config=TeX-AMS-MML_SVG"/>
+  <meta name="dcterms.source" content="https://registry.khronos.org/OpenGL-Refpages/gl4/html/glBindVertexBuffer.xhtml"/></head>
+  <body>
+    <header/>
+    <div class="refentry" id="glBindVertexBuffer">
+      <div class="titlepage"/>
+      <div class="refnamediv">
+        <h2>Name</h2>
+        <p>glBindVertexBuffer, glVertexArrayVertexBuffer — bind a buffer to a vertex buffer bind point</p>
+      </div>
+      <div class="refsynopsisdiv">
+        <h2>C Specification</h2>
+        <div class="funcsynopsis">
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">void <strong class="fsfunc">glBindVertexBuffer</strong>(</code>
+              </td>
+              <td>GLuint <var class="pdparam">bindingindex</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>GLuint <var class="pdparam">buffer</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>GLintptr <var class="pdparam">offset</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>GLsizei <var class="pdparam">stride</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">void <strong class="fsfunc">glVertexArrayVertexBuffer</strong>(</code>
+              </td>
+              <td>GLuint <var class="pdparam">vaobj</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>GLuint <var class="pdparam">bindingindex</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>GLuint <var class="pdparam">buffer</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>GLintptr <var class="pdparam">offset</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>GLsizei <var class="pdparam">stride</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+        </div>
+      </div>
+      <div class="refsect1" id="parameters">
+        <h2>Parameters</h2>
+        <div class="variablelist">
+          <dl class="variablelist">
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>vaobj</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>Specifies the name of the vertex array object to be used by
+          <code class="function">glVertexArrayVertexBuffer</code> function.</p>
+            </dd>
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>bindingindex</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>The index of the vertex buffer binding point to which to bind
+          the buffer.</p>
+            </dd>
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>buffer</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>The name of a buffer to bind to the vertex buffer binding
+          point.</p>
+            </dd>
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>offset</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>The offset of the first element of the buffer.</p>
+            </dd>
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>stride</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>The distance between elements within the buffer.</p>
+            </dd>
+          </dl>
+        </div>
+      </div>
+      <div class="refsect1" id="description">
+        <h2>Description</h2>
+        <p><code class="function">glBindVertexBuffer</code> and
+    <code class="function">glVertexArrayVertexBuffer</code> bind the buffer named
+    <em class="parameter"><code>buffer</code></em> to the vertex buffer binding point whose
+    index is given by <em class="parameter"><code>bindingindex</code></em>.
+    <code class="function">glBindVertexBuffer</code> modifies the binding of the
+    currently bound vertex array object, whereas
+    <code class="function">glVertexArrayVertexBuffer</code> allows the caller to
+    specify ID of the vertex array object with an argument named
+    <em class="parameter"><code>vaobj</code></em>, for which the binding should be modified.
+    <em class="parameter"><code>offset</code></em> and <em class="parameter"><code>stride</code></em> specify
+    the offset of the first element within the buffer and the distance between
+    elements within the buffer, respectively, and are both measured in basic
+    machine units. <em class="parameter"><code>bindingindex</code></em> must be less than the
+    value of <code class="constant">GL_MAX_VERTEX_ATTRIB_BINDINGS</code>.
+    <em class="parameter"><code>offset</code></em> and <em class="parameter"><code>stride</code></em> must be
+    greater than or equal to zero. If <em class="parameter"><code>buffer</code></em> is zero,
+    then any buffer currently bound to the specified binding point is
+    unbound.</p>
+        <p>If <em class="parameter"><code>buffer</code></em> is not the name of an existing
+    buffer object, the GL first creates a new state vector, initialized with a
+    zero-sized memory buffer and comprising all the state and with the same
+    initial values as in case of <code class="function">glBindBuffer</code>.
+    <em class="parameter"><code>buffer</code></em> is then attached to the specified
+    <em class="parameter"><code>bindingindex</code></em> of the vertex array object.</p>
+      </div>
+      <div class="refsect1" id="errors">
+        <h2>Errors</h2>
+        <p><code class="constant">GL_INVALID_OPERATION</code> is generated by
+    <code class="function">glBindVertexBuffer</code> if no vertex array object is
+    bound.</p>
+        <p><code class="constant">GL_INVALID_OPERATION</code> is generated by
+    <code class="function">glVertexArrayVertexBuffer</code> if
+    <em class="parameter"><code>vaobj</code></em> is not the name of an existing vertex array
+    object.</p>
+        <p><code class="constant">GL_INVALID_VALUE</code> is generated if
+    <em class="parameter"><code>bindingindex</code></em> is greater than or equal to the value
+    of <code class="constant">GL_MAX_VERTEX_ATTRIB_BINDINGS</code>.</p>
+        <p><code class="constant">GL_INVALID_VALUE</code> is generated if
+    <em class="parameter"><code>offset</code></em> or <em class="parameter"><code>stride</code></em> is less
+    than zero, or if stride is greater than the value of
+    <code class="constant">GL_MAX_VERTEX_ATTRIB_STRIDE</code>.</p>
+        <p><code class="constant">GL_INVALID_VALUE</code> is generated if
+    <em class="parameter"><code>buffer</code></em> is not zero or the name of an existing
+    buffer object (as returned by <code class="function">glGenBuffers</code> or
+    <code class="function">glCreateBuffers</code>).</p>
+      </div>
+      <div class="refsect1" id="associatedgets">
+        <h2>Associated Gets</h2>
+        <p>
+        <a class="citerefentry" href="glGet.xhtml"><span class="citerefentry"><span class="refentrytitle">glGet</span></span></a>
+        with argument <code class="constant">GL_MAX_VERTEX_ATTRIB_BINDINGS</code>.
+    </p>
+      </div>
+      
+      <div class="refsect1" id="seealso">
+        <h2>See Also</h2>
+        <p>
+        <a class="citerefentry" href="glVertexAttribBinding.xhtml"><span class="citerefentry"><span class="refentrytitle">glVertexAttribBinding</span></span></a>,
+        <a class="citerefentry" href="glVertexAttribFormat.xhtml"><span class="citerefentry"><span class="refentrytitle">glVertexAttribFormat</span></span></a>,
+        <a class="citerefentry" href="glVertexAttribPointer.xhtml"><span class="citerefentry"><span class="refentrytitle">glVertexAttribPointer</span></span></a>,
+        <a class="citerefentry" href="glVertexBindingDivisor.xhtml"><span class="citerefentry"><span class="refentrytitle">glVertexBindingDivisor</span></span></a>.
+    </p>
+      </div>
+      
+    </div>
+    <footer><p><small>Khronos reference, offline edition by GLSL Support, 2026-11-22. <a href="sources.txt">Source and edition notes</a>.</small></p></footer>
+  </body>
+</html>

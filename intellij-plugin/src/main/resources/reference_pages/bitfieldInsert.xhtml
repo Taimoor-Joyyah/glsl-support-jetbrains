@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml">
+  <head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' file: 'unsafe-inline' 'unsafe-eval'; style-src 'self' file: 'unsafe-inline'; font-src 'self' file: data:; img-src 'self' file: data:; connect-src 'self' file:; base-uri 'none'; object-src 'none'"/>
+    <title>bitfieldInsert - OpenGL 4 Reference Pages</title>
+    <link rel="stylesheet" type="text/css" href="opengl-man.css"/>
+    <meta name="generator" content="DocBook XSL Stylesheets V1.79.2"/>
+    <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({
+                showMathMenu: false,
+                MathML: {
+                    extensions: ["content-mathml.js"]
+                },
+                tex2jax: {
+                    skipTags: ["script","noscript","style","textarea","pre","annotation","annotation-xml"],
+                    inlineMath: [['$','$'], ['\\(','\\)']]
+                }
+            });
+        </script>
+    <script type="text/javascript" src="mathjax/MathJax.js?config=TeX-AMS-MML_SVG"/>
+  <meta name="dcterms.source" content="https://registry.khronos.org/OpenGL-Refpages/gl4/html/bitfieldInsert.xhtml"/></head>
+  <body>
+    <header/>
+    <div class="refentry" id="bitfieldInsert">
+      <div class="titlepage"/>
+      <div class="refnamediv">
+        <h2>Name</h2>
+        <p>bitfieldInsert — insert a range of bits into an integer</p>
+      </div>
+      <div class="refsynopsisdiv">
+        <h2>Declaration</h2>
+        <div class="funcsynopsis">
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">genIType <strong class="fsfunc">bitfieldInsert</strong>(</code>
+              </td>
+              <td>genIType <var class="pdparam">base</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>genIType <var class="pdparam">insert</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>int <var class="pdparam">offset</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>int <var class="pdparam">bits</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">genUType <strong class="fsfunc">bitfieldInsert</strong>(</code>
+              </td>
+              <td>genUType <var class="pdparam">base</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>genUType <var class="pdparam">insert</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>int <var class="pdparam">offset</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>int <var class="pdparam">bits</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+        </div>
+      </div>
+      <div class="refsect1" id="parameters">
+        <h2>Parameters</h2>
+        <div class="variablelist">
+          <dl class="variablelist">
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>base</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>
+                    Specifies the integer into which to insert <em class="parameter"><code>insert</code></em>.
+                </p>
+            </dd>
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>insert</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>
+                    Specifies the value of the bits to insert.
+                </p>
+            </dd>
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>offset</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>
+                    Specifies the index of the first bit to insert.
+                </p>
+            </dd>
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>bits</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>
+                    Specifies the number of bits to insert.
+                </p>
+            </dd>
+          </dl>
+        </div>
+      </div>
+      <div class="refsect1" id="description">
+        <h2>Description</h2>
+        <p>
+            <code class="function">bitfieldInsert</code> inserts the <em class="parameter"><code>bits</code></em> least significant bits of <em class="parameter"><code>insert</code></em>
+            into <em class="parameter"><code>base</code></em> at offset <em class="parameter"><code>offset</code></em>. The returned value will have bits
+            [<em class="parameter"><code>offset</code></em>, <em class="parameter"><code>offset</code></em> + <em class="parameter"><code>bits</code></em> + 1] taken from [0, <em class="parameter"><code>bits</code></em> - 1]
+            of <em class="parameter"><code>insert</code></em> and all other bits taken directly from the corresponding bits of <em class="parameter"><code>base</code></em>. If
+            <em class="parameter"><code>bits</code></em> is zero, the result will simply be the original value of <em class="parameter"><code>base</code></em>. The result will
+            be undefined if <em class="parameter"><code>offset</code></em> or <em class="parameter"><code>bits</code></em> is negative, or if the sum of <em class="parameter"><code>offset</code></em>
+            and <em class="parameter"><code>bits</code></em> is greater than the number of bits used to store the operand.
+        </p>
+      </div>
+      
+      <div class="refsect1" id="seealso">
+        <h2>See Also</h2>
+        <p>
+            <a class="citerefentry" href="bitfieldExtract.xhtml"><span class="citerefentry"><span class="refentrytitle">bitfieldExtract</span></span></a>
+        </p>
+      </div>
+      
+    </div>
+    <footer><p><small>Khronos reference, offline edition by GLSL Support, 2026-11-22. <a href="sources.txt">Source and edition notes</a>.</small></p></footer>
+  </body>
+</html>

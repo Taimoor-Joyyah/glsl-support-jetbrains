@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml">
+  <head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' file: 'unsafe-inline' 'unsafe-eval'; style-src 'self' file: 'unsafe-inline'; font-src 'self' file: data:; img-src 'self' file: data:; connect-src 'self' file:; base-uri 'none'; object-src 'none'"/>
+    <title>imageLoad - OpenGL 4 Reference Pages</title>
+    <link rel="stylesheet" type="text/css" href="opengl-man.css"/>
+    <meta name="generator" content="DocBook XSL Stylesheets V1.79.2"/>
+    <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({
+                showMathMenu: false,
+                MathML: {
+                    extensions: ["content-mathml.js"]
+                },
+                tex2jax: {
+                    skipTags: ["script","noscript","style","textarea","pre","annotation","annotation-xml"],
+                    inlineMath: [['$','$'], ['\\(','\\)']]
+                }
+            });
+        </script>
+    <script type="text/javascript" src="mathjax/MathJax.js?config=TeX-AMS-MML_SVG"/>
+  <meta name="dcterms.source" content="https://registry.khronos.org/OpenGL-Refpages/gl4/html/imageLoad.xhtml"/></head>
+  <body>
+    <header/>
+    <div class="refentry" id="imageLoad">
+      <div class="titlepage"/>
+      <div class="refnamediv">
+        <h2>Name</h2>
+        <p>imageLoad — load a single texel from an image</p>
+      </div>
+      <div class="refsynopsisdiv">
+        <h2>Declaration</h2>
+        <div class="funcsynopsis">
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">gvec4 <strong class="fsfunc">imageLoad</strong>(</code>
+              </td>
+              <td>gimage1D <var class="pdparam">image</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>int <var class="pdparam">P</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">gvec4 <strong class="fsfunc">imageLoad</strong>(</code>
+              </td>
+              <td>gimage2D <var class="pdparam">image</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>ivec2 <var class="pdparam">P</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">gvec4 <strong class="fsfunc">imageLoad</strong>(</code>
+              </td>
+              <td>gimage3D <var class="pdparam">image</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>ivec3 <var class="pdparam">P</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">gvec4 <strong class="fsfunc">imageLoad</strong>(</code>
+              </td>
+              <td>gimage2DRect <var class="pdparam">image</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>ivec2 <var class="pdparam">P</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">gvec4 <strong class="fsfunc">imageLoad</strong>(</code>
+              </td>
+              <td>gimageCube <var class="pdparam">image</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>ivec3 <var class="pdparam">P</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">gvec4 <strong class="fsfunc">imageLoad</strong>(</code>
+              </td>
+              <td>gimageBuffer <var class="pdparam">image</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>int <var class="pdparam">P</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">gvec4 <strong class="fsfunc">imageLoad</strong>(</code>
+              </td>
+              <td>gimage1DArray <var class="pdparam">image</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>ivec2 <var class="pdparam">P</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">gvec4 <strong class="fsfunc">imageLoad</strong>(</code>
+              </td>
+              <td>gimage2DArray <var class="pdparam">image</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>ivec3 <var class="pdparam">P</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">gvec4 <strong class="fsfunc">imageLoad</strong>(</code>
+              </td>
+              <td>gimageCubeArray <var class="pdparam">image</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>ivec3 <var class="pdparam">P</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">gvec4 <strong class="fsfunc">imageLoad</strong>(</code>
+              </td>
+              <td>gimage2DMS <var class="pdparam">image</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>ivec2 <var class="pdparam">P</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>int <var class="pdparam">sample</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">gvec4 <strong class="fsfunc">imageLoad</strong>(</code>
+              </td>
+              <td>gimage2DMSArray <var class="pdparam">image</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>ivec3 <var class="pdparam">P</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>int <var class="pdparam">sample</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+        </div>
+      </div>
+      <div class="refsect1" id="parameters">
+        <h2>Parameters</h2>
+        <div class="variablelist">
+          <dl class="variablelist">
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>image</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>
+                    Specify the image unit from which to load a texel.
+                </p>
+            </dd>
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>P</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>
+                    Specify the coordinate from which to load the texel.
+                </p>
+            </dd>
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>sample</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>
+                    When present, specifies the sample within the image to load
+                </p>
+            </dd>
+          </dl>
+        </div>
+      </div>
+      <div class="refsect1" id="description">
+        <h2>Description</h2>
+        <p>
+            <code class="function">imageLoad</code> loads the texel at the coordinate <em class="parameter"><code>P</code></em> from the image
+            unit <em class="parameter"><code>image</code></em>.  For multi-sample loads, the sample number is given by <em class="parameter"><code>sample</code></em>.  When
+            <em class="parameter"><code>image</code></em>, <em class="parameter"><code>P</code></em>, <em class="parameter"><code>sample</code></em> identify a valid texel, the bits used
+            to represent the selected texel in memory are converted to a vec4, ivec4, or uvec4 in the manner described in the OpenGL
+            Specification and returned.
+        </p>
+      </div>
+      
+      <div class="refsect1" id="seealso">
+        <h2>See Also</h2>
+        <p>
+            <a class="citerefentry" href="imageStore.xhtml"><span class="citerefentry"><span class="refentrytitle">imageStore</span></span></a>,
+            <a class="citerefentry" href="imageAtomicAdd.xhtml"><span class="citerefentry"><span class="refentrytitle">imageAtomicAdd</span></span></a>,
+            <a class="citerefentry" href="imageAtomicMin.xhtml"><span class="citerefentry"><span class="refentrytitle">imageAtomicMin</span></span></a>,
+            <a class="citerefentry" href="imageAtomicMax.xhtml"><span class="citerefentry"><span class="refentrytitle">imageAtomicMax</span></span></a>,
+            <a class="citerefentry" href="imageAtomicAnd.xhtml"><span class="citerefentry"><span class="refentrytitle">imageAtomicAnd</span></span></a>,
+            <a class="citerefentry" href="imageAtomicOr.xhtml"><span class="citerefentry"><span class="refentrytitle">imageAtomicOr</span></span></a>,
+            <a class="citerefentry" href="imageAtomicXor.xhtml"><span class="citerefentry"><span class="refentrytitle">imageAtomicXor</span></span></a>,
+            <a class="citerefentry" href="imageAtomicExchange.xhtml"><span class="citerefentry"><span class="refentrytitle">imageAtomicExchange</span></span></a>,
+            <a class="citerefentry" href="imageAtomicCompSwap.xhtml"><span class="citerefentry"><span class="refentrytitle">imageAtomicCompSwap</span></span></a>
+        </p>
+      </div>
+      
+    </div>
+    <footer><p><small>Khronos reference, offline edition by GLSL Support, 2026-11-22. <a href="sources.txt">Source and edition notes</a>.</small></p></footer>
+  </body>
+</html>

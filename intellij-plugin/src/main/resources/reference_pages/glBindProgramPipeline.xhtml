@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml">
+  <head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' file: 'unsafe-inline' 'unsafe-eval'; style-src 'self' file: 'unsafe-inline'; font-src 'self' file: data:; img-src 'self' file: data:; connect-src 'self' file:; base-uri 'none'; object-src 'none'"/>
+    <title>glBindProgramPipeline - OpenGL 4 Reference Pages</title>
+    <link rel="stylesheet" type="text/css" href="opengl-man.css"/>
+    <meta name="generator" content="DocBook XSL Stylesheets V1.79.2"/>
+    <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({
+                showMathMenu: false,
+                MathML: {
+                    extensions: ["content-mathml.js"]
+                },
+                tex2jax: {
+                    skipTags: ["script","noscript","style","textarea","pre","annotation","annotation-xml"],
+                    inlineMath: [['$','$'], ['\\(','\\)']]
+                }
+            });
+        </script>
+    <script type="text/javascript" src="mathjax/MathJax.js?config=TeX-AMS-MML_SVG"/>
+  <meta name="dcterms.source" content="https://registry.khronos.org/OpenGL-Refpages/gl4/html/glBindProgramPipeline.xhtml"/></head>
+  <body>
+    <header/>
+    <div class="refentry" id="glBindProgramPipeline">
+      <div class="titlepage"/>
+      <div class="refnamediv">
+        <h2>Name</h2>
+        <p>glBindProgramPipeline — bind a program pipeline to the current context</p>
+      </div>
+      <div class="refsynopsisdiv">
+        <h2>C Specification</h2>
+        <div class="funcsynopsis">
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">void <strong class="fsfunc">glBindProgramPipeline</strong>(</code>
+              </td>
+              <td>GLuint <var class="pdparam">pipeline</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+        </div>
+      </div>
+      <div class="refsect1" id="parameters">
+        <h2>Parameters</h2>
+        <div class="variablelist">
+          <dl class="variablelist">
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>pipeline</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>
+                Specifies the name of the pipeline object to bind to the context.
+            </p>
+            </dd>
+          </dl>
+        </div>
+      </div>
+      <div class="refsect1" id="description">
+        <h2>Description</h2>
+        <p>
+            <code class="function">glBindProgramPipeline</code> binds a program pipeline object to the current
+            context. <em class="parameter"><code>pipeline</code></em> must be a name previously returned from a call
+            to <a class="citerefentry" href="glGenProgramPipelines.xhtml"><span class="citerefentry"><span class="refentrytitle">glGenProgramPipelines</span></span></a>. If
+            no program pipeline exists with name <em class="parameter"><code>pipeline</code></em> then a new pipeline object
+            is created with that name and initialized to the default state vector.
+        </p>
+        <p>
+            When a program pipeline object is bound using <code class="function">glBindProgramPipeline</code>, any previous
+            binding is broken and is replaced with a binding to the specified pipeline object. If <em class="parameter"><code>pipeline</code></em>
+            is zero, the previous binding is broken and is not replaced, leaving no pipeline object bound.
+            If no current program object has been established by <a class="citerefentry" href="glUseProgram.xhtml"><span class="citerefentry"><span class="refentrytitle">glUseProgram</span></span></a>,
+            the program objects used for each stage and for uniform updates are taken from the bound program
+            pipeline object, if any. If there is a current program object established by <a class="citerefentry" href="glUseProgram.xhtml"><span class="citerefentry"><span class="refentrytitle">glUseProgram</span></span></a>,
+            the bound program pipeline object has no effect on rendering or uniform updates. When a bound program
+            pipeline object is used for rendering, individual shader executables are taken from its program objects.
+        </p>
+      </div>
+      <div class="refsect1" id="errors">
+        <h2>Errors</h2>
+        <p>
+            <code class="constant">GL_INVALID_OPERATION</code> is generated if <em class="parameter"><code>pipeline</code></em> is not zero or
+            a name previously returned from a call to <a class="citerefentry" href="glGenProgramPipelines.xhtml"><span class="citerefentry"><span class="refentrytitle">glGenProgramPipelines</span></span></a>
+            or if such a name has been deleted by a call to
+            <a class="citerefentry" href="glDeleteProgramPipelines.xhtml"><span class="citerefentry"><span class="refentrytitle">glDeleteProgramPipelines</span></span></a>.
+        </p>
+      </div>
+      
+      <div class="refsect1" id="seealso">
+        <h2>See Also</h2>
+        <p>
+            <a class="citerefentry" href="glCreateShader.xhtml"><span class="citerefentry"><span class="refentrytitle">glCreateShader</span></span></a>,
+            <a class="citerefentry" href="glCreateProgram.xhtml"><span class="citerefentry"><span class="refentrytitle">glCreateProgram</span></span></a>,
+            <a class="citerefentry" href="glCompileShader.xhtml"><span class="citerefentry"><span class="refentrytitle">glCompileShader</span></span></a>,
+            <a class="citerefentry" href="glLinkProgram.xhtml"><span class="citerefentry"><span class="refentrytitle">glLinkProgram</span></span></a>,
+            <a class="citerefentry" href="glGenProgramPipelines.xhtml"><span class="citerefentry"><span class="refentrytitle">glGenProgramPipelines</span></span></a>,
+            <a class="citerefentry" href="glDeleteProgramPipelines.xhtml"><span class="citerefentry"><span class="refentrytitle">glDeleteProgramPipelines</span></span></a>,
+            <a class="citerefentry" href="glIsProgramPipeline.xhtml"><span class="citerefentry"><span class="refentrytitle">glIsProgramPipeline</span></span></a>
+        </p>
+      </div>
+      
+    </div>
+    <footer><p><small>Khronos reference, offline edition by GLSL Support, 2026-11-22. <a href="sources.txt">Source and edition notes</a>.</small></p></footer>
+  </body>
+</html>

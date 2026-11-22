@@ -1,0 +1,15 @@
+* text=auto
+gradlew text eol=lf
+intellij-plugin/src/main/resources/reference_pages/** -text
+intellij-plugin/src/main/resources/reference_pages/mathjax/** -whitespace
+intellij-plugin/src/main/resources/reference_pages/*.xhtml whitespace=-blank-at-eol
+language-core/src/main/resources/glsl/catalog.tsv whitespace=-blank-at-eol
+test-data/editor/** -text whitespace=cr-at-eol,-blank-at-eof
+licenses/*.txt -text whitespace=cr-at-eol
+licenses/spirv-headers.txt whitespace=cr-at-eol,-blank-at-eof
+*.jar binary
+*.zip binary
+*.pdf binary
+*.otf binary
+*.woff binary
+*.eot binary

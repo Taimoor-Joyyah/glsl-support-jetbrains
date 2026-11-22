@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml">
+  <head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' file: 'unsafe-inline' 'unsafe-eval'; style-src 'self' file: 'unsafe-inline'; font-src 'self' file: data:; img-src 'self' file: data:; connect-src 'self' file:; base-uri 'none'; object-src 'none'"/>
+    <title>gl_HelperInvocation - OpenGL 4 Reference Pages</title>
+    <link rel="stylesheet" type="text/css" href="opengl-man.css"/>
+    <meta name="generator" content="DocBook XSL Stylesheets V1.79.2"/>
+    <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({
+                showMathMenu: false,
+                MathML: {
+                    extensions: ["content-mathml.js"]
+                },
+                tex2jax: {
+                    skipTags: ["script","noscript","style","textarea","pre","annotation","annotation-xml"],
+                    inlineMath: [['$','$'], ['\\(','\\)']]
+                }
+            });
+        </script>
+    <script type="text/javascript" src="mathjax/MathJax.js?config=TeX-AMS-MML_SVG"/>
+  <meta name="dcterms.source" content="https://registry.khronos.org/OpenGL-Refpages/gl4/html/gl_HelperInvocation.xhtml"/></head>
+  <body>
+    <header/>
+    <div class="refentry" id="gl_HelperInvocation">
+      <div class="titlepage"/>
+      <div class="refnamediv">
+        <h2>Name</h2>
+        <p>gl_HelperInvocation — indicates whether a fragment shader invocation is a helper invocation</p>
+      </div>
+      <div class="refsynopsisdiv">
+        <h2>Declaration</h2>
+        <code class="fieldsynopsis"><span class="modifier">in </span><span class="type">bool </span><span class="varname">gl_HelperInvocation </span>;</code>
+      </div>
+      <div class="refsect1" id="description">
+        <h2>Description</h2>
+        <p>
+            The value <code class="varname">gl_HelperInvocation</code> is true if the
+            fragment shader invocation is considered a helper invocation and
+            is false otherwise. A helper invocation is a fragment-shader
+            invocation that is created solely for the purposes of evaluating
+            derivatives for use in non-helper fragment-shader invocations.
+            Such derivatives are computed implicitly in the built-in
+            function
+            <a class="citerefentry" href="texture.xhtml"><span class="citerefentry"><span class="refentrytitle">texture</span></span></a>(),
+            and explicitly in the derivative functions
+            <a class="citerefentry" href="dFdx.xhtml"><span class="citerefentry"><span class="refentrytitle">dFdx</span></span></a>()
+            and <code class="function">dFdy</code>.
+        </p>
+        <p>
+            Fragment shader helper invocations execute the same shader code
+            as non-helper invocations, but will not have side effects that
+            modify the framebuffer or other shader-accessible memory. In
+            particular:
+
+            </p>
+        <div class="itemizedlist">
+          <ul class="itemizedlist" style="list-style-type: disc; ">
+            <li class="listitem">
+              <p>
+                        Fragments corresponding to helper invocations are
+                        discarded when shader execution is complete, without
+                        updating the framebuffer.
+                    </p>
+            </li>
+            <li class="listitem">
+              <p>
+                        Stores to image and buffer variables performed by
+                        helper invocations have no effect on the underlying
+                        image or buffer memory.
+                    </p>
+            </li>
+            <li class="listitem">
+              <p>
+                        Atomic operations to image, buffer, or atomic
+                        counter variables performed by helper invocations
+                        have no effect on the underlying image or buffer
+                        memory. The values returned by such atomic
+                        operations are undefined.
+                    </p>
+            </li>
+          </ul>
+        </div>
+        <p>
+        </p>
+        <p>
+            Helper invocations may be generated for pixels not covered by a
+            primitive being rendered. While fragment shader inputs qualified
+            with centroid are normally required to be sampled in the
+            intersection of the pixel and the primitive, the requirement is
+            ignored for such pixels since there is no intersection between
+            the pixel and primitive.
+        </p>
+        <p>
+            Helper invocations may also be generated for fragments that are
+            covered by a primitive being rendered when the fragment is
+            killed by early fragment tests (using the early_fragment_tests
+            qualifier) or where the implementation is able to determine that
+            executing the fragment shader would have no effect other than
+            assisting in computing derivatives for other fragment shader
+            invocations.
+        </p>
+        <p>
+            The set of helper invocations generated when processing any set
+            of primitives is implementation dependent.
+        </p>
+      </div>
+      
+      <div class="refsect1" id="seealso">
+        <h2>See Also</h2>
+        <p>
+            <a class="citerefentry" href="dFdx.xhtml"><span class="citerefentry"><span class="refentrytitle">dFdx</span></span></a>,
+            <a class="citerefentry" href="texture.xhtml"><span class="citerefentry"><span class="refentrytitle">texture</span></span></a>
+        </p>
+      </div>
+      
+    </div>
+    <footer><p><small>Khronos reference, offline edition by GLSL Support, 2026-11-22. <a href="sources.txt">Source and edition notes</a>.</small></p></footer>
+  </body>
+</html>

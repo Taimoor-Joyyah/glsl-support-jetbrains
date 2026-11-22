@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml">
+  <head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' file: 'unsafe-inline' 'unsafe-eval'; style-src 'self' file: 'unsafe-inline'; font-src 'self' file: data:; img-src 'self' file: data:; connect-src 'self' file:; base-uri 'none'; object-src 'none'"/>
+    <title>dFdx, dFdy - OpenGL 4 Reference Pages</title>
+    <link rel="stylesheet" type="text/css" href="opengl-man.css"/>
+    <meta name="generator" content="DocBook XSL Stylesheets V1.79.2"/>
+    <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({
+                showMathMenu: false,
+                MathML: {
+                    extensions: ["content-mathml.js"]
+                },
+                tex2jax: {
+                    skipTags: ["script","noscript","style","textarea","pre","annotation","annotation-xml"],
+                    inlineMath: [['$','$'], ['\\(','\\)']]
+                }
+            });
+        </script>
+    <script type="text/javascript" src="mathjax/MathJax.js?config=TeX-AMS-MML_SVG"/>
+  <meta name="dcterms.source" content="https://registry.khronos.org/OpenGL-Refpages/gl4/html/dFdx.xhtml"/></head>
+  <body>
+    <header/>
+    <div class="refentry" id="dFdx">
+      <div class="titlepage"/>
+      <div class="refnamediv">
+        <h2>Name</h2>
+        <p>dFdx, dFdy — return the partial derivative of an argument with respect to x or y</p>
+      </div>
+      <div class="refsynopsisdiv">
+        <h2>Declaration</h2>
+        <div class="funcsynopsis">
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">genType <strong class="fsfunc">dFdx</strong>(</code>
+              </td>
+              <td>genType <var class="pdparam">p</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">genType <strong class="fsfunc">dFdy</strong>(</code>
+              </td>
+              <td>genType <var class="pdparam">p</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">genType <strong class="fsfunc">dFdxCoarse</strong>(</code>
+              </td>
+              <td>genType <var class="pdparam">p</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">genType <strong class="fsfunc">dFdyCoarse</strong>(</code>
+              </td>
+              <td>genType <var class="pdparam">p</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">genType <strong class="fsfunc">dFdxFine</strong>(</code>
+              </td>
+              <td>genType <var class="pdparam">p</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">genType <strong class="fsfunc">dFdyFine</strong>(</code>
+              </td>
+              <td>genType <var class="pdparam">p</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+        </div>
+      </div>
+      <div class="refsect1" id="parameters">
+        <h2>Parameters</h2>
+        <div class="variablelist">
+          <dl class="variablelist">
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>p</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>
+                    Specifies the expression of which to take the partial
+                    derivative.
+                </p>
+            </dd>
+          </dl>
+        </div>
+      </div>
+      <div class="refsect1" id="description">
+        <h2>Description</h2>
+        <p>
+            <span class="emphasis"><em>Available only in the fragment shader</em></span>,
+            these functions return the partial derivative of expression
+            <em class="parameter"><code>p</code></em> with respect to the window $x$
+            coordinate (for <code class="function">dFdx*</code>) and $y$ coordinate
+            (for <code class="function">dFdy*</code>).
+        </p>
+        <p>
+            <code class="function">dFdxFine</code> and <code class="function">dFdyFine</code>
+            calculate derivatives using local differencing based on the
+            value of <em class="parameter"><code>p</code></em> for the current fragment and
+            its immediate neighbor(s).
+        </p>
+        <p>
+            <code class="function">dFdxCoarse</code> and
+            <code class="function">dFdyCoarse</code> calculate derivatives using
+            local differencing based on the value of
+            <em class="parameter"><code>p</code></em> for the current fragment's neighbors,
+            and will possibly, but not necessarily, include the value for
+            the current fragment. That is, over a given area, the
+            implementation can compute derivatives in fewer unique locations
+            than would be allowed for the corresponding
+            <code class="function">dFdxFine</code> and <code class="function">dFdyFine</code>
+            functions.
+        </p>
+        <p>
+            <code class="function">dFdx</code> returns either
+            <code class="function">dFdxCoarse</code> or
+            <code class="function">dFdxFine</code>. <code class="function">dFdy</code> returns
+            either <code class="function">dFdyCoarse</code> or
+            <code class="function">dFdyFine</code>. The implementation may choose
+            which calculation to perform based upon factors such as
+            performance or the value of the API
+            <code class="constant">GL_FRAGMENT_SHADER_DERIVATIVE_HINT</code> hint.
+        </p>
+        <p>
+            Expressions that imply higher order
+            derivatives such as <code class="code">dFdx(dFdx(n))</code> have undefined
+            results, as do mixed-order derivatives such as
+            <code class="code">dFdx(dFdy(n))</code>. It is assumed that the expression
+            <em class="parameter"><code>p</code></em> is continuous and therefore,
+            expressions evaluated via non-uniform control flow may be
+            undefined.
+        </p>
+      </div>
+      
+      <div class="refsect1" id="seealso">
+        <h2>See Also</h2>
+        <p>
+            <a class="citerefentry" href="fwidth.xhtml"><span class="citerefentry"><span class="refentrytitle">fwidth</span></span></a>,
+            <a class="citerefentry" href="glHint.xhtml"><span class="citerefentry"><span class="refentrytitle">glHint</span></span></a>
+        </p>
+      </div>
+      
+    </div>
+    <footer><p><small>Khronos reference, offline edition by GLSL Support, 2026-11-22. <a href="sources.txt">Source and edition notes</a>.</small></p></footer>
+  </body>
+</html>

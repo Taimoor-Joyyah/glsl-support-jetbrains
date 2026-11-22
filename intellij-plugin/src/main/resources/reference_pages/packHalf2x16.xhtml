@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml">
+  <head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' file: 'unsafe-inline' 'unsafe-eval'; style-src 'self' file: 'unsafe-inline'; font-src 'self' file: data:; img-src 'self' file: data:; connect-src 'self' file:; base-uri 'none'; object-src 'none'"/>
+    <title>packHalf2x16 - OpenGL 4 Reference Pages</title>
+    <link rel="stylesheet" type="text/css" href="opengl-man.css"/>
+    <meta name="generator" content="DocBook XSL Stylesheets V1.79.2"/>
+    <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({
+                showMathMenu: false,
+                MathML: {
+                    extensions: ["content-mathml.js"]
+                },
+                tex2jax: {
+                    skipTags: ["script","noscript","style","textarea","pre","annotation","annotation-xml"],
+                    inlineMath: [['$','$'], ['\\(','\\)']]
+                }
+            });
+        </script>
+    <script type="text/javascript" src="mathjax/MathJax.js?config=TeX-AMS-MML_SVG"/>
+  <meta name="dcterms.source" content="https://registry.khronos.org/OpenGL-Refpages/gl4/html/packHalf2x16.xhtml"/></head>
+  <body>
+    <header/>
+    <div class="refentry" id="packHalf2x16">
+      <div class="titlepage"/>
+      <div class="refnamediv">
+        <h2>Name</h2>
+        <p>packHalf2x16 — convert two 32-bit floating-point quantities to 16-bit quantities and pack them into a single 32-bit integer</p>
+      </div>
+      <div class="refsynopsisdiv">
+        <h2>Declaration</h2>
+        <div class="funcsynopsis">
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">uint <strong class="fsfunc">packHalf2x16</strong>(</code>
+              </td>
+              <td>vec2 <var class="pdparam">v</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+        </div>
+      </div>
+      <div class="refsect1" id="parameters">
+        <h2>Parameters</h2>
+        <div class="variablelist">
+          <dl class="variablelist">
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>v</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>
+                    Specify a vector of two 32-bit floating point values that are to be converted to 16-bit representation and packed into the result.
+                </p>
+            </dd>
+          </dl>
+        </div>
+      </div>
+      <div class="refsect1" id="description">
+        <h2>Description</h2>
+        <p>
+            <code class="function">packHalf2x16</code> returns an unsigned integer obtained by converting the
+            components of a two-component floating-point vector to
+            the 16-bit floating-point representation found in the
+            OpenGL Specification, and then packing these two 16-bit integers into a 32-bit unsigned integer.
+            The first vector component specifies the 16 least-significant bits of the result; the second component
+            specifies the 16 most-significant bits.
+        </p>
+      </div>
+      
+      <div class="refsect1" id="seealso">
+        <h2>See Also</h2>
+        <p>
+            <a class="citerefentry" href="packDouble2x32.xhtml"><span class="citerefentry"><span class="refentrytitle">packDouble2x32</span></span></a>,
+            <a class="citerefentry" href="unpackDouble2x32.xhtml"><span class="citerefentry"><span class="refentrytitle">unpackDouble2x32</span></span></a>,
+            <a class="citerefentry" href="unpackHalf2x16.xhtml"><span class="citerefentry"><span class="refentrytitle">unpackHalf2x16</span></span></a>
+        </p>
+      </div>
+      
+    </div>
+    <footer><p><small>Khronos reference, offline edition by GLSL Support, 2026-11-22. <a href="sources.txt">Source and edition notes</a>.</small></p></footer>
+  </body>
+</html>

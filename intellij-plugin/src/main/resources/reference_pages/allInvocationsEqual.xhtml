@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' file: 'unsafe-inline' 'unsafe-eval'; style-src 'self' file: 'unsafe-inline'; font-src 'self' file: data:; img-src 'self' file: data:; connect-src 'self' file:; base-uri 'none'; object-src 'none'"/><title>allInvocationsEqual | GLSL Support</title><link rel="stylesheet" type="text/css" href="opengl-man.css"/></head>
+<body><h1>allInvocationsEqual</h1>
+<p>GLSL 4.60 invocation vote</p>
+<pre>bool allInvocationsEqual(bool value);</pre>
+<p>Returns true when the test has the same Boolean result in every active invocation. The participating set is implementation-dependent and may cover only part of a compute workgroup.</p>
+<pre>bool groupResult = allInvocationsEqual(condition);</pre>
+<p><a href="OpenGL46.xhtml">OpenGL46</a></p>
+<p>GLSL Support supplement based on the <a href="specs/GLSLangSpec.4.60.pdf">Khronos GLSL 4.60 specification</a></p>
+</body></html>

@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml">
+  <head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' file: 'unsafe-inline' 'unsafe-eval'; style-src 'self' file: 'unsafe-inline'; font-src 'self' file: data:; img-src 'self' file: data:; connect-src 'self' file:; base-uri 'none'; object-src 'none'"/>
+    <title>umulExtended - OpenGL 4 Reference Pages</title>
+    <link rel="stylesheet" type="text/css" href="opengl-man.css"/>
+    <meta name="generator" content="DocBook XSL Stylesheets V1.79.2"/>
+    <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({
+                showMathMenu: false,
+                MathML: {
+                    extensions: ["content-mathml.js"]
+                },
+                tex2jax: {
+                    skipTags: ["script","noscript","style","textarea","pre","annotation","annotation-xml"],
+                    inlineMath: [['$','$'], ['\\(','\\)']]
+                }
+            });
+        </script>
+    <script type="text/javascript" src="mathjax/MathJax.js?config=TeX-AMS-MML_SVG"/>
+  <meta name="dcterms.source" content="https://registry.khronos.org/OpenGL-Refpages/gl4/html/umulExtended.xhtml"/></head>
+  <body>
+    <header/>
+    <div class="refentry" id="umulExtended">
+      <div class="titlepage"/>
+      <div class="refnamediv">
+        <h2>Name</h2>
+        <p>umulExtended — perform a 32- by 32-bit multiply to produce a 64-bit result</p>
+      </div>
+      <div class="refsynopsisdiv">
+        <h2>Declaration</h2>
+        <div class="funcsynopsis">
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">void <strong class="fsfunc">umulExtended</strong>(</code>
+              </td>
+              <td>genUType <var class="pdparam">x</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>genUType <var class="pdparam">y</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>out genUType <var class="pdparam">msb</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>out genUType <var class="pdparam">lsb</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">void <strong class="fsfunc">imulExtended</strong>(</code>
+              </td>
+              <td>genIType <var class="pdparam">x</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>genIType <var class="pdparam">y</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>out genIType <var class="pdparam">msb</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>out genIType <var class="pdparam">lsb</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+        </div>
+      </div>
+      <div class="refsect1" id="parameters">
+        <h2>Parameters</h2>
+        <div class="variablelist">
+          <dl class="variablelist">
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>x</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>
+                    Specifies the first multiplicand.
+                </p>
+            </dd>
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>y</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>
+                    Specifies the second multiplicand.
+                </p>
+            </dd>
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>msb</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>
+                    Specifies the variable to receive the most significant word of the product.
+                </p>
+            </dd>
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>lsb</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>
+                    Specifies the variable to receive the least significant word of the product.
+                </p>
+            </dd>
+          </dl>
+        </div>
+      </div>
+      <div class="refsect1" id="description">
+        <h2>Description</h2>
+        <p>
+            <code class="function">umulExtended</code> and <code class="function">imulExtended</code> perform multiplication of the two 32-bit integer
+            quantities <em class="parameter"><code>x</code></em> and <em class="parameter"><code>y</code></em>, producing a 64-bit integer result. The 32 least
+            significant bits of this product are returned in <em class="parameter"><code>lsb</code></em> and the 32 most significant bits are returned
+            in <em class="parameter"><code>msb</code></em>. <code class="function">umulExtended</code> and <code class="function">imulExtended</code> perform
+            unsigned and signed multiplication, respectively.
+        </p>
+      </div>
+      
+      <div class="refsect1" id="seealso">
+        <h2>See Also</h2>
+        <p>
+            <a class="citerefentry" href="uaddCarry.xhtml"><span class="citerefentry"><span class="refentrytitle">uaddCarry</span></span></a>
+        </p>
+      </div>
+      
+    </div>
+    <footer><p><small>Khronos reference, offline edition by GLSL Support, 2026-11-22. <a href="sources.txt">Source and edition notes</a>.</small></p></footer>
+  </body>
+</html>

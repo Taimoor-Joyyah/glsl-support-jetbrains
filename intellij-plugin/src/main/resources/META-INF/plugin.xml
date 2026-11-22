@@ -1,0 +1,82 @@
+<idea-plugin require-restart="true">
+    <id>com.glslsupport.language</id>
+    <name>GLSL Support</name>
+    <version>1.0.0</version>
+    <vendor>GLSL Support</vendor>
+    <description>OpenGL and Vulkan GLSL editing, compiler diagnostics, block layout, and SPIR-V inspection.</description>
+    <idea-version since-build="261"/>
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.lang</depends>
+    <incompatible-with>com.glsl_analyzer.intellij</incompatible-with>
+    <extensions defaultExtensionNs="com.intellij">
+        <fileType name="GLSL" language="GLSL" implementationClass="com.glslsupport.ide.GlslLanguage$Type" fieldName="INSTANCE" extensions="glsl;glslh;vert;vs;tesc;tese;geom;frag;fs;comp;mesh;task;rgen;rint;rahit;rchit;rmiss;rcall"/>
+        <lang.parserDefinition language="GLSL" implementationClass="com.glslsupport.ide.GlslLanguage$Parser"/>
+        <stubElementTypeHolder class="com.glslsupport.ide.GlslLanguage$Elements"/>
+        <stubIndex implementation="com.glslsupport.ide.GlslLanguage$SymbolIndex"/>
+        <lang.findUsagesProvider language="GLSL" implementationClass="com.glslsupport.ide.Navigation$Usages"/>
+        <gotoSymbolContributor implementation="com.glslsupport.ide.Navigation$Symbols"/>
+        <renamePsiElementProcessor implementation="com.glslsupport.ide.ShaderRename"/>
+        <projectService serviceImplementation="com.glslsupport.ide.Settings"/>
+        <lang.syntaxHighlighterFactory language="GLSL" implementationClass="com.glslsupport.ide.Appearance$Factory"/>
+        <colorSettingsPage implementation="com.glslsupport.ide.Appearance$Colors"/>
+        <annotator language="GLSL" implementationClass="com.glslsupport.ide.Appearance$Semantic"/>
+        <externalAnnotator language="GLSL" implementationClass="com.glslsupport.ide.Diagnostics"/>
+        <completion.contributor language="GLSL" implementationClass="com.glslsupport.ide.EditorFeatures$Complete"/>
+        <lang.documentationProvider language="GLSL" implementationClass="com.glslsupport.ide.EditorFeatures$Docs"/>
+        <lang.foldingBuilder language="GLSL" implementationClass="com.glslsupport.ide.EditorFeatures$Folds"/>
+        <extendWordSelectionHandler implementation="com.glslsupport.ide.EditorFeatures$Select"/>
+        <lang.psiStructureViewFactory language="GLSL" implementationClass="com.glslsupport.ide.EditorFeatures$Structure"/>
+        <formattingService implementation="com.glslsupport.ide.EditorFeatures$Format" order="first"/>
+        <typedHandler implementation="com.glslsupport.ide.EditorFeatures$OnType"/>
+        <langCodeStyleSettingsProvider implementation="com.glslsupport.ide.EditorFeatures$Style"/>
+        <lang.commenter language="GLSL" implementationClass="com.glslsupport.ide.EditorFeatures$Comments"/>
+        <defaultLiveTemplates file="liveTemplates/GLSL.xml"/>
+        <internalFileTemplate name="GLSL Any Hit"/>
+        <internalFileTemplate name="GLSL Callable"/>
+        <internalFileTemplate name="GLSL Closest Hit"/>
+        <internalFileTemplate name="GLSL Compute Shader"/>
+        <internalFileTemplate name="GLSL Empty Shader"/>
+        <internalFileTemplate name="GLSL Fragment Shader"/>
+        <internalFileTemplate name="GLSL Geometry Shader"/>
+        <internalFileTemplate name="GLSL Header"/>
+        <internalFileTemplate name="GLSL Intersection"/>
+        <internalFileTemplate name="GLSL Mesh Shader"/>
+        <internalFileTemplate name="GLSL Miss"/>
+        <internalFileTemplate name="GLSL Ray Generation"/>
+        <internalFileTemplate name="GLSL Task Shader"/>
+        <internalFileTemplate name="GLSL Tess Control Shader"/>
+        <internalFileTemplate name="GLSL Tess Evaluation Shader"/>
+        <internalFileTemplate name="GLSL Vertex Shader"/>
+        <liveTemplateContext contextId="GLSL" implementation="com.glslsupport.ide.EditorFeatures$Templates"/>
+        <codeInsight.parameterInfo language="GLSL" implementationClass="com.glslsupport.ide.Calls$Parameters"/>
+        <codeInsight.parameterNameHints language="GLSL" implementationClass="com.glslsupport.ide.Calls$Hints"/>
+        <colorProvider implementation="com.glslsupport.ide.Calls$Colors"/>
+        <typeDeclarationProvider implementation="com.glslsupport.ide.SymbolNavigation$Types"/>
+        <definitionsScopedSearch implementation="com.glslsupport.ide.SymbolNavigation$Implementations"/>
+        <callHierarchyProvider language="GLSL" implementationClass="com.glslsupport.ide.SymbolNavigation$Hierarchy"/>
+        <localInspection language="GLSL" shortName="GlslSupportAnalysis" displayName="Unused, shadowed and unreachable GLSL code" groupName="GLSL" enabledByDefault="true" level="WEAK WARNING" implementationClass="com.glslsupport.ide.Inspections"/>
+        <projectService serviceImplementation="com.glslsupport.ide.CompilerSupport"/>
+        <projectConfigurable id="glslsupport.settings" parentId="language" displayName="GLSL Support" instance="com.glslsupport.ide.SettingsUI"/>
+        <toolWindow id="Shader Variants" anchor="right" factoryClass="com.glslsupport.ide.Variants"/>
+        <toolWindow id="GLSL Inspector" anchor="right" canCloseContents="true" factoryClass="com.glslsupport.ide.ShaderViews"/>
+        <toolWindow id="OpenGL Docs" anchor="right" factoryClass="com.glslsupport.ide.ReferenceDocs"/>
+        <intentionAction><className>com.glslsupport.ide.Intentions$Version</className><category>GLSL</category></intentionAction>
+        <intentionAction><className>com.glslsupport.ide.Intentions$Extension</className><category>GLSL</category></intentionAction>
+        <intentionAction><className>com.glslsupport.ide.Intentions$Include</className><category>GLSL</category></intentionAction>
+        <intentionAction><className>com.glslsupport.ide.Intentions$Main</className><category>GLSL</category></intentionAction>
+        <intentionAction><className>com.glslsupport.ide.Intentions$Ifdef</className><category>GLSL</category></intentionAction>
+        <intentionAction><className>com.glslsupport.ide.Intentions$Ifndef</className><category>GLSL</category></intentionAction>
+        <intentionAction><className>com.glslsupport.ide.Intentions$Define</className><category>GLSL</category></intentionAction>
+    </extensions>
+    <applicationListeners>
+        <listener class="com.glslsupport.ide.Diagnostics$Saved" topic="com.intellij.openapi.fileEditor.FileDocumentManagerListener"/>
+    </applicationListeners>
+    <actions>
+        <action id="GlslSupport.New" class="com.glslsupport.ide.Templates" text="GLSL Shader or Header"><add-to-group group-id="NewGroup" anchor="last"/></action>
+        <action id="GlslSupport.Spirv" class="com.glslsupport.ide.ShaderViews$Spirv" text="Show SPIR-V"><add-to-group group-id="EditorPopupMenu" anchor="last"/></action>
+        <action id="GlslSupport.Layout" class="com.glslsupport.ide.ShaderViews$Layout" text="Show GLSL Block Layout"><add-to-group group-id="EditorPopupMenu" anchor="last"/></action>
+        <action id="GlslSupport.Inline" class="com.glslsupport.ide.Actions$Inline" text="Inline GLSL Local Variable"><add-to-group group-id="RefactoringMenu" anchor="last"/></action>
+        <action id="GlslSupport.Extract" class="com.glslsupport.ide.Actions$Extract" text="Extract GLSL Function"><add-to-group group-id="RefactoringMenu" anchor="last"/></action>
+        <action id="GlslSupport.Pipeline" class="com.glslsupport.ide.Actions$Pipeline" text="Validate GLSL Pipeline"><add-to-group group-id="ToolsMenu" anchor="last"/></action>
+    </actions>
+</idea-plugin>

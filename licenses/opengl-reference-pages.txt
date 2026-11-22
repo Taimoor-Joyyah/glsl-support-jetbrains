@@ -1,0 +1,98 @@
+Khronos OpenGL 4.x Reference Pages
+https://registry.khronos.org/OpenGL-Refpages/gl4/html/
+The offline edition omits the Version Support and Copyright sections from the document bodies.
+Offline edition prepared by GLSL Support on 2026-11-22. Links and math rendering were adapted for offline use.
+The notices below identify the source pages to which each upstream notice applies.
+License texts accompany this notice in LicenseRef-FreeB.txt and OPUBL-1.0.txt.
+
+Copyright © 1991-2006 Silicon Graphics, Inc. Copyright © 2010-2014 Khronos Group. This document is licensed under the SGI Free Software B License. For details, see https://khronos.org/registry/OpenGL-Refpages/LICENSES/LicenseRef-FreeB.txt.
+https://khronos.org/registry/OpenGL-Refpages/LICENSES/LicenseRef-FreeB.txt
+Pages: glActiveTexture.xhtml, glBindTexture.xhtml, glBlendColor.xhtml, glBlendEquation.xhtml, glBlendFunc.xhtml, glClear.xhtml, glClearColor.xhtml, glClearDepth.xhtml, glClearStencil.xhtml, glColorMask.xhtml, glCompressedTexSubImage1D.xhtml, glCompressedTexSubImage2D.xhtml, glCompressedTexSubImage3D.xhtml, glCullFace.xhtml, glDeleteTextures.xhtml, glDepthFunc.xhtml, glDepthRange.xhtml, glDrawArrays.xhtml, glDrawBuffer.xhtml, glDrawElements.xhtml, glDrawRangeElements.xhtml, glFinish.xhtml, glFlush.xhtml, glFrontFace.xhtml, glGenTextures.xhtml, glGet.xhtml, glGetString.xhtml, glGetTexImage.xhtml, glGetTexLevelParameter.xhtml, glGetTexParameter.xhtml, glHint.xhtml, glIsEnabled.xhtml, glIsTexture.xhtml, glLineWidth.xhtml, glLogicOp.xhtml, glMultiDrawArrays.xhtml, glMultiDrawElements.xhtml, glPixelStore.xhtml, glPointParameter.xhtml, glPointSize.xhtml, glPolygonMode.xhtml, glPolygonOffset.xhtml, glPolygonOffsetClamp.xhtml, glReadPixels.xhtml, glSampleCoverage.xhtml, glScissor.xhtml, glStencilFunc.xhtml, glStencilMask.xhtml, glStencilOp.xhtml, glTexSubImage1D.xhtml, glTexSubImage2D.xhtml, glTexSubImage3D.xhtml, glViewport.xhtml
+
+Copyright © 1991-2006 Silicon Graphics, Inc. Copyright © 2010-2014 Khronos Group. This document is licensed under the SGI Free Software B License. For details, see https://opencontent.org/openpub/.
+https://opencontent.org/openpub/
+Pages: glGetCompressedTexImage.xhtml
+
+Copyright © 1991-2006 Silicon Graphics, Inc. Copyright © 2010-2014 Khronos Group. This document is licensed under the SGI This document is licensed under the SGI Free Software B License. For details, see https://khronos.org/registry/OpenGL-Refpages/LICENSES/LicenseRef-FreeB.txt.
+https://khronos.org/registry/OpenGL-Refpages/LICENSES/LicenseRef-FreeB.txt
+Pages: glDepthMask.xhtml, glGetError.xhtml
+
+Copyright © 1991-2006 Silicon Graphics, Inc. Copyright © 2010-2014 Khronos Group. This material may be distributed subject to the terms and conditions set forth in the Open Publication License, v 1.0, 8 June 1999. https://opencontent.org/openpub/.
+https://opencontent.org/openpub/
+Pages: glBlendEquationSeparate.xhtml
+
+Copyright © 1991-2006 Silicon Graphics, Inc. Copyright © 2010-2018 Khronos Group. This document is licensed under the SGI Free Software B License. For details, see https://khronos.org/registry/OpenGL-Refpages/LICENSES/LicenseRef-FreeB.txt.
+https://khronos.org/registry/OpenGL-Refpages/LICENSES/LicenseRef-FreeB.txt
+Pages: glBlendFuncSeparate.xhtml
+
+Copyright © 1991-2006 Silicon Graphics, Inc. Copyright © 2011-2014 Khronos Group. This document is licensed under the SGI Free Software B License. For details, see https://khronos.org/registry/OpenGL-Refpages/LICENSES/LicenseRef-FreeB.txt.
+https://khronos.org/registry/OpenGL-Refpages/LICENSES/LicenseRef-FreeB.txt
+Pages: glCompressedTexImage1D.xhtml, glCompressedTexImage2D.xhtml, glCompressedTexImage3D.xhtml, glEnable.xhtml, glReadBuffer.xhtml, glTexImage1D.xhtml, glTexImage2D.xhtml, glTexImage3D.xhtml
+
+Copyright © 1991-2006 Silicon Graphics, Inc. Copyright © 2012-2014 Khronos Group. This document is licensed under the SGI Free Software B License. For details, see https://khronos.org/registry/OpenGL-Refpages/LICENSES/LicenseRef-FreeB.txt.
+https://khronos.org/registry/OpenGL-Refpages/LICENSES/LicenseRef-FreeB.txt
+Pages: glCopyTexImage1D.xhtml, glCopyTexImage2D.xhtml, glCopyTexSubImage1D.xhtml, glCopyTexSubImage2D.xhtml, glCopyTexSubImage3D.xhtml, glTexParameter.xhtml
+
+Copyright © 2003-2005 3Dlabs Inc. Ltd. Copyright © 2010-2014 Khronos Group This material may be distributed subject to the terms and conditions set forth in the Open Publication License, v 1.0, 8 June 1999. https://opencontent.org/openpub/.
+https://opencontent.org/openpub/
+Pages: glGetActiveUniform.xhtml
+
+Copyright © 2003-2005 3Dlabs Inc. Ltd. Copyright © 2010-2014 Khronos Group. This material may be distributed subject to the terms and conditions set forth in the Open Publication License, v 1.0, 8 June 1999. https://opencontent.org/openpub/.
+https://opencontent.org/openpub/
+Pages: glAttachShader.xhtml, glBindAttribLocation.xhtml, glCompileShader.xhtml, glCreateProgram.xhtml, glCreateShader.xhtml, glDeleteProgram.xhtml, glDeleteShader.xhtml, glDetachShader.xhtml, glDrawBuffers.xhtml, glEnableVertexAttribArray.xhtml, glGetActiveAttrib.xhtml, glGetAttachedShaders.xhtml, glGetAttribLocation.xhtml, glGetProgram.xhtml, glGetProgramInfoLog.xhtml, glGetShader.xhtml, glGetShaderInfoLog.xhtml, glGetShaderSource.xhtml, glGetUniform.xhtml, glGetUniformLocation.xhtml, glGetVertexAttrib.xhtml, glGetVertexAttribPointerv.xhtml, glIsProgram.xhtml, glIsShader.xhtml, glLinkProgram.xhtml, glProgramUniform.xhtml, glShaderSource.xhtml, glUniform.xhtml, glUseProgram.xhtml, glValidateProgram.xhtml, glVertexAttrib.xhtml, glVertexAttribPointer.xhtml
+
+Copyright © 2005 Addison-Wesley. Copyright © 2010-2014 Khronos Group. This material may be distributed subject to the terms and conditions set forth in the Open Publication License, v 1.0, 8 June 1999. https://opencontent.org/openpub/.
+https://opencontent.org/openpub/
+Pages: glBeginQuery.xhtml, glBindBuffer.xhtml, glBufferData.xhtml, glBufferSubData.xhtml, glDeleteBuffers.xhtml, glDeleteQueries.xhtml, glGenBuffers.xhtml, glGenQueries.xhtml, glGetBufferParameter.xhtml, glGetQueryObject.xhtml, glGetQueryiv.xhtml, glIsBuffer.xhtml, glIsQuery.xhtml, glMapBuffer.xhtml, glUnmapBuffer.xhtml
+
+Copyright © 2005 Addison-Wesley. Copyright © 2011-2014 Khronos Group. This material may be distributed subject to the terms and conditions set forth in the Open Publication License, v 1.0, 8 June 1999. https://opencontent.org/openpub/.
+https://opencontent.org/openpub/
+Pages: glGetBufferPointerv.xhtml, glGetBufferSubData.xhtml
+
+Copyright © 2006 Khronos Group. This material may be distributed subject to the terms and conditions set forth in the Open Publication License, v 1.0, 8 June 1999. https://opencontent.org/openpub/.
+https://opencontent.org/openpub/
+Pages: glStencilFuncSeparate.xhtml, glStencilMaskSeparate.xhtml, glStencilOpSeparate.xhtml
+
+Copyright © 2010 Khronos Group. This material may be distributed subject to the terms and conditions set forth in the Open Publication License, v 1.0, 8 June 1999. https://opencontent.org/openpub/.
+https://opencontent.org/openpub/
+Pages: glMultiDrawElementsBaseVertex.xhtml
+
+Copyright © 2010-2014 Khronos Group. This material may be distributed subject to the terms and conditions set forth in the Open Publication License, v 1.0, 8 June 1999. https://opencontent.org/openpub/.
+https://opencontent.org/openpub/
+Pages: glActiveShaderProgram.xhtml, glBeginConditionalRender.xhtml, glBeginQueryIndexed.xhtml, glBeginTransformFeedback.xhtml, glBindBufferBase.xhtml, glBindBufferRange.xhtml, glBindFragDataLocation.xhtml, glBindFragDataLocationIndexed.xhtml, glBindFramebuffer.xhtml, glBindProgramPipeline.xhtml, glBindRenderbuffer.xhtml, glBindSampler.xhtml, glBindTransformFeedback.xhtml, glBindVertexArray.xhtml, glBlitFramebuffer.xhtml, glCheckFramebufferStatus.xhtml, glClampColor.xhtml, glClearBuffer.xhtml, glClientWaitSync.xhtml, glCopyBufferSubData.xhtml, glCreateShaderProgram.xhtml, glDeleteFramebuffers.xhtml, glDeleteProgramPipelines.xhtml, glDeleteRenderbuffers.xhtml, glDeleteSamplers.xhtml, glDeleteSync.xhtml, glDeleteTransformFeedbacks.xhtml, glDeleteVertexArrays.xhtml, glDepthRangeArray.xhtml, glDepthRangeIndexed.xhtml, glDrawArraysIndirect.xhtml, glDrawArraysInstanced.xhtml, glDrawElementsBaseVertex.xhtml, glDrawElementsIndirect.xhtml, glDrawElementsInstanced.xhtml, glDrawElementsInstancedBaseVertex.xhtml, glDrawRangeElementsBaseVertex.xhtml, glDrawTransformFeedback.xhtml, glDrawTransformFeedbackInstanced.xhtml, glDrawTransformFeedbackStream.xhtml, glDrawTransformFeedbackStreamInstanced.xhtml, glFenceSync.xhtml, glFlushMappedBufferRange.xhtml, glFramebufferRenderbuffer.xhtml, glFramebufferTexture.xhtml, glFramebufferTextureLayer.xhtml, glGenFramebuffers.xhtml, glGenProgramPipelines.xhtml, glGenRenderbuffers.xhtml, glGenSamplers.xhtml, glGenTransformFeedbacks.xhtml, glGenVertexArrays.xhtml, glGenerateMipmap.xhtml, glGetActiveSubroutineName.xhtml, glGetActiveSubroutineUniform.xhtml, glGetActiveSubroutineUniformName.xhtml, glGetActiveUniformBlock.xhtml, glGetActiveUniformBlockName.xhtml, glGetActiveUniformName.xhtml, glGetFragDataIndex.xhtml, glGetFragDataLocation.xhtml, glGetFramebufferAttachmentParameter.xhtml, glGetMultisample.xhtml, glGetProgramBinary.xhtml, glGetProgramPipeline.xhtml, glGetProgramPipelineInfoLog.xhtml, glGetProgramStage.xhtml, glGetQueryIndexed.xhtml, glGetRenderbufferParameter.xhtml, glGetSamplerParameter.xhtml, glGetShaderPrecisionFormat.xhtml, glGetSubroutineIndex.xhtml, glGetSubroutineUniformLocation.xhtml, glGetSync.xhtml, glGetTransformFeedbackVarying.xhtml, glGetUniformBlockIndex.xhtml, glGetUniformIndices.xhtml, glGetUniformSubroutine.xhtml, glIsFramebuffer.xhtml, glIsProgramPipeline.xhtml, glIsRenderbuffer.xhtml, glIsSampler.xhtml, glIsSync.xhtml, glIsTransformFeedback.xhtml, glIsVertexArray.xhtml, glMapBufferRange.xhtml, glMultiDrawElementsIndirect.xhtml, glMultiDrawElementsIndirectCount.xhtml, glPatchParameter.xhtml, glPauseTransformFeedback.xhtml, glPrimitiveRestartIndex.xhtml, glProgramBinary.xhtml, glProgramParameter.xhtml, glProvokingVertex.xhtml, glQueryCounter.xhtml, glReleaseShaderCompiler.xhtml, glRenderbufferStorage.xhtml, glRenderbufferStorageMultisample.xhtml, glResumeTransformFeedback.xhtml, glSampleMaski.xhtml, glSamplerParameter.xhtml, glScissorArray.xhtml, glScissorIndexed.xhtml, glShaderBinary.xhtml, glTexBuffer.xhtml, glTexImage2DMultisample.xhtml, glTexImage3DMultisample.xhtml, glTransformFeedbackVaryings.xhtml, glUniformBlockBinding.xhtml, glUniformSubroutines.xhtml, glUseProgramStages.xhtml, glValidateProgramPipeline.xhtml, glVertexAttribDivisor.xhtml, glViewportArray.xhtml, glViewportIndexed.xhtml, glWaitSync.xhtml
+
+Copyright © 2011-2014 Khronos Group This material may be distributed subject to the terms and conditions set forth in the Open Publication License, v 1.0, 8 June 1999. https://opencontent.org/openpub/.
+https://opencontent.org/openpub/
+Pages: glGetActiveUniformsiv.xhtml
+
+Copyright © 2011-2014 Khronos Group. This material may be distributed subject to the terms and conditions set forth in the Open Publication License, v 1.0, 8 June 1999. https://opencontent.org/openpub/.
+https://opencontent.org/openpub/
+Pages: EmitStreamVertex.xhtml, EmitVertex.xhtml, EndPrimitive.xhtml, EndStreamPrimitive.xhtml, abs.xhtml, acos.xhtml, acosh.xhtml, all.xhtml, any.xhtml, asin.xhtml, asinh.xhtml, atan.xhtml, atanh.xhtml, atomicAdd.xhtml, atomicAnd.xhtml, atomicCompSwap.xhtml, atomicCounter.xhtml, atomicCounterDecrement.xhtml, atomicCounterIncrement.xhtml, atomicExchange.xhtml, atomicMax.xhtml, atomicMin.xhtml, atomicOr.xhtml, atomicXor.xhtml, barrier.xhtml, bitCount.xhtml, bitfieldExtract.xhtml, bitfieldInsert.xhtml, bitfieldReverse.xhtml, ceil.xhtml, clamp.xhtml, cos.xhtml, cosh.xhtml, dFdx.xhtml, degrees.xhtml, determinant.xhtml, distance.xhtml, dot.xhtml, equal.xhtml, exp.xhtml, exp2.xhtml, faceforward.xhtml, findLSB.xhtml, findMSB.xhtml, floatBitsToInt.xhtml, floor.xhtml, fma.xhtml, fract.xhtml, frexp.xhtml, fwidth.xhtml, glBindImageTexture.xhtml, glClearBufferData.xhtml, glDrawArraysInstancedBaseInstance.xhtml, glDrawElementsInstancedBaseInstance.xhtml, glDrawElementsInstancedBaseVertexBaseInstance.xhtml, glGetActiveAtomicCounterBufferiv.xhtml, glMemoryBarrier.xhtml, glMinSampleShading.xhtml, glTexStorage1D.xhtml, glTexStorage2D.xhtml, glTexStorage3D.xhtml, gl_ClipDistance.xhtml, gl_FragCoord.xhtml, gl_FragDepth.xhtml, gl_FrontFacing.xhtml, gl_GlobalInvocationID.xhtml, gl_InstanceID.xhtml, gl_InvocationID.xhtml, gl_Layer.xhtml, gl_LocalInvocationID.xhtml, gl_LocalInvocationIndex.xhtml, gl_NumSamples.xhtml, gl_NumWorkGroups.xhtml, gl_PatchVerticesIn.xhtml, gl_PointCoord.xhtml, gl_PointSize.xhtml, gl_Position.xhtml, gl_PrimitiveID.xhtml, gl_PrimitiveIDIn.xhtml, gl_SampleID.xhtml, gl_SampleMask.xhtml, gl_SampleMaskIn.xhtml, gl_SamplePosition.xhtml, gl_TessCoord.xhtml, gl_TessLevelInner.xhtml, gl_TessLevelOuter.xhtml, gl_VertexID.xhtml, gl_ViewportIndex.xhtml, gl_WorkGroupID.xhtml, gl_WorkGroupSize.xhtml, greaterThan.xhtml, greaterThanEqual.xhtml, groupMemoryBarrier.xhtml, imageAtomicAdd.xhtml, imageAtomicAnd.xhtml, imageAtomicCompSwap.xhtml, imageAtomicExchange.xhtml, imageAtomicMin.xhtml, imageAtomicOr.xhtml, imageAtomicXor.xhtml, imageLoad.xhtml, imageSize.xhtml, imageStore.xhtml, intBitsToFloat.xhtml, interpolateAtCentroid.xhtml, interpolateAtOffset.xhtml, interpolateAtSample.xhtml, inverse.xhtml, inversesqrt.xhtml, isinf.xhtml, isnan.xhtml, ldexp.xhtml, length.xhtml, lessThan.xhtml, lessThanEqual.xhtml, log.xhtml, log2.xhtml, matrixCompMult.xhtml, max.xhtml, memoryBarrier.xhtml, memoryBarrierAtomicCounter.xhtml, memoryBarrierBuffer.xhtml, memoryBarrierImage.xhtml, memoryBarrierShared.xhtml, min.xhtml, mix.xhtml, mod.xhtml, modf.xhtml, noise.xhtml, not.xhtml, notEqual.xhtml, outerProduct.xhtml, packDouble2x32.xhtml, packHalf2x16.xhtml, packUnorm.xhtml, pow.xhtml, radians.xhtml, reflect.xhtml, refract.xhtml, round.xhtml, roundEven.xhtml, sign.xhtml, sin.xhtml, sinh.xhtml, smoothstep.xhtml, sqrt.xhtml, step.xhtml, tan.xhtml, tanh.xhtml, texelFetch.xhtml, texelFetchOffset.xhtml, texture.xhtml, textureGather.xhtml, textureGatherOffset.xhtml, textureGatherOffsets.xhtml, textureGrad.xhtml, textureGradOffset.xhtml, textureLod.xhtml, textureLodOffset.xhtml, textureOffset.xhtml, textureProj.xhtml, textureProjGrad.xhtml, textureProjGradOffset.xhtml, textureProjLod.xhtml, textureProjLodOffset.xhtml, textureProjOffset.xhtml, textureQueryLod.xhtml, textureSize.xhtml, transpose.xhtml, trunc.xhtml, uaddCarry.xhtml, umulExtended.xhtml, unpackDouble2x32.xhtml, unpackHalf2x16.xhtml, unpackUnorm.xhtml, usubBorrow.xhtml
+
+Copyright © 2011-2016 Khronos Group. This material may be distributed subject to the terms and conditions set forth in the Open Publication License, v 1.0, 8 June 1999. https://opencontent.org/openpub/.
+https://opencontent.org/openpub/
+Pages: cross.xhtml
+
+Copyright © 2011-2017 Khronos Group. This material may be distributed subject to the terms and conditions set forth in the Open Publication License, v 1.0, 8 June 1999. https://opencontent.org/openpub/.
+https://opencontent.org/openpub/
+Pages: normalize.xhtml
+
+Copyright © 2011-2018 Khronos Group. This material may be distributed subject to the terms and conditions set forth in the Open Publication License, v 1.0, 8 June 1999. https://opencontent.org/openpub/.
+https://opencontent.org/openpub/
+Pages: glGetInternalformat.xhtml
+
+Copyright © 2011-2022 Khronos Group. This material may be distributed subject to the terms and conditions set forth in the Open Publication License, v 1.0, 8 June 1999. https://opencontent.org/openpub/.
+https://opencontent.org/openpub/
+Pages: imageAtomicMax.xhtml
+
+Copyright © 2012-2014 Khronos Group. This material may be distributed subject to the terms and conditions set forth in the Open Publication License, v 1.0, 8 June 1999. https://opencontent.org/openpub/.
+https://opencontent.org/openpub/
+Pages: glMultiDrawArraysIndirect.xhtml, glMultiDrawArraysIndirectCount.xhtml, glTexBufferRange.xhtml, textureQueryLevels.xhtml
+
+Copyright © 2013-2014 Khronos Group. This material may be distributed subject to the terms and conditions set forth in the Open Publication License, v 1.0, 8 June 1999. https://opencontent.org/openpub/.
+https://opencontent.org/openpub/
+Pages: glBindBuffersBase.xhtml, glBindBuffersRange.xhtml, glBindImageTextures.xhtml, glBindSamplers.xhtml, glBindTextures.xhtml, glClearTexImage.xhtml, glClearTexSubImage.xhtml, glCopyImageSubData.xhtml, glDebugMessageCallback.xhtml, glDebugMessageControl.xhtml, glDebugMessageInsert.xhtml, glDispatchCompute.xhtml, glDispatchComputeIndirect.xhtml, glFramebufferParameteri.xhtml, glGetDebugMessageLog.xhtml, glGetObjectLabel.xhtml, glGetObjectPtrLabel.xhtml, glGetProgramInterface.xhtml, glGetProgramResource.xhtml, glGetProgramResourceIndex.xhtml, glGetProgramResourceLocation.xhtml, glGetProgramResourceLocationIndex.xhtml, glGetProgramResourceName.xhtml, glInvalidateBufferData.xhtml, glInvalidateBufferSubData.xhtml, glInvalidateTexImage.xhtml, glInvalidateTexSubImage.xhtml, glObjectLabel.xhtml, glObjectPtrLabel.xhtml, glPopDebugGroup.xhtml, glPushDebugGroup.xhtml, glTexStorage2DMultisample.xhtml, glTexStorage3DMultisample.xhtml, glTextureView.xhtml, glVertexAttribBinding.xhtml, glVertexAttribFormat.xhtml, glVertexBindingDivisor.xhtml, removedTypes.xhtml
+
+Copyright © 2014 Khronos Group. This material may be distributed subject to the terms and conditions set forth in the Open Publication License, v 1.0, 8 June 1999. https://opencontent.org/openpub/.
+https://opencontent.org/openpub/
+Pages: glBindTextureUnit.xhtml, glBindVertexBuffer.xhtml, glBindVertexBuffers.xhtml, glBufferStorage.xhtml, glClearBufferSubData.xhtml, glClipControl.xhtml, glCreateBuffers.xhtml, glCreateFramebuffers.xhtml, glCreateProgramPipelines.xhtml, glCreateQueries.xhtml, glCreateRenderbuffers.xhtml, glCreateSamplers.xhtml, glCreateTextures.xhtml, glCreateTransformFeedbacks.xhtml, glCreateVertexArrays.xhtml, glGetCompressedTextureSubImage.xhtml, glGetFramebufferParameter.xhtml, glGetGraphicsResetStatus.xhtml, glGetPointerv.xhtml, glGetTextureSubImage.xhtml, glGetTransformFeedback.xhtml, glGetVertexArrayIndexed.xhtml, glGetVertexArrayiv.xhtml, glInvalidateFramebuffer.xhtml, glInvalidateSubFramebuffer.xhtml, glShaderStorageBlockBinding.xhtml, glTextureBarrier.xhtml, glTransformFeedbackBufferBase.xhtml, glTransformFeedbackBufferRange.xhtml, glVertexArrayElementBuffer.xhtml, gl_CullDistance.xhtml, gl_HelperInvocation.xhtml, imageSamples.xhtml, textureSamples.xhtml

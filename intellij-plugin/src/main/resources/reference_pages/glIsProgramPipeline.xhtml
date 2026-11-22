@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml">
+  <head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' file: 'unsafe-inline' 'unsafe-eval'; style-src 'self' file: 'unsafe-inline'; font-src 'self' file: data:; img-src 'self' file: data:; connect-src 'self' file:; base-uri 'none'; object-src 'none'"/>
+    <title>glIsProgramPipeline - OpenGL 4 Reference Pages</title>
+    <link rel="stylesheet" type="text/css" href="opengl-man.css"/>
+    <meta name="generator" content="DocBook XSL Stylesheets V1.79.2"/>
+    <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({
+                showMathMenu: false,
+                MathML: {
+                    extensions: ["content-mathml.js"]
+                },
+                tex2jax: {
+                    skipTags: ["script","noscript","style","textarea","pre","annotation","annotation-xml"],
+                    inlineMath: [['$','$'], ['\\(','\\)']]
+                }
+            });
+        </script>
+    <script type="text/javascript" src="mathjax/MathJax.js?config=TeX-AMS-MML_SVG"/>
+  <meta name="dcterms.source" content="https://registry.khronos.org/OpenGL-Refpages/gl4/html/glIsProgramPipeline.xhtml"/></head>
+  <body>
+    <header/>
+    <div class="refentry" id="glIsProgramPipeline">
+      <div class="titlepage"/>
+      <div class="refnamediv">
+        <h2>Name</h2>
+        <p>glIsProgramPipeline — determine if a name corresponds to a program pipeline object</p>
+      </div>
+      <div class="refsynopsisdiv">
+        <h2>C Specification</h2>
+        <div class="funcsynopsis">
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">GLboolean <strong class="fsfunc">glIsProgramPipeline</strong>(</code>
+              </td>
+              <td>GLuint <var class="pdparam">pipeline</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+        </div>
+      </div>
+      <div class="refsect1" id="parameters">
+        <h2>Parameters</h2>
+        <div class="variablelist">
+          <dl class="variablelist">
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>pipeline</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>
+                    Specifies a value that may be the name of a program pipeline object.
+                </p>
+            </dd>
+          </dl>
+        </div>
+      </div>
+      <div class="refsect1" id="description">
+        <h2>Description</h2>
+        <p>
+            <code class="function">glIsProgramPipeline</code> returns <code class="constant">GL_TRUE</code> if
+            <em class="parameter"><code>pipeline</code></em> is currently the name of a program pipeline object.
+            If <em class="parameter"><code>pipeline</code></em> is zero, or if <code class="constant">pipeline</code> is not the
+            name of a program pipeline object, or if an error occurs, <code class="function">glIsProgramPipeline</code>
+            returns <code class="constant">GL_FALSE</code>. If <em class="parameter"><code>pipeline</code></em> is a name returned by
+            <a class="citerefentry" href="glGenProgramPipelines.xhtml"><span class="citerefentry"><span class="refentrytitle">glGenProgramPipelines</span></span></a>, but that
+            has not yet been bound through a call to <a class="citerefentry" href="glBindProgramPipeline.xhtml"><span class="citerefentry"><span class="refentrytitle">glBindProgramPipeline</span></span></a>,
+            then the name is not a program pipeline object and <code class="function">glIsProgramPipeline</code>
+            returns <code class="constant">GL_FALSE</code>.
+        </p>
+      </div>
+      
+      <div class="refsect1" id="seealso">
+        <h2>See Also</h2>
+        <p>
+            <a class="citerefentry" href="glGenProgramPipelines.xhtml"><span class="citerefentry"><span class="refentrytitle">glGenProgramPipelines</span></span></a>,
+            <a class="citerefentry" href="glBindProgramPipeline.xhtml"><span class="citerefentry"><span class="refentrytitle">glBindProgramPipeline</span></span></a>,
+            <a class="citerefentry" href="glDeleteProgramPipelines.xhtml"><span class="citerefentry"><span class="refentrytitle">glDeleteProgramPipelines</span></span></a>
+        </p>
+      </div>
+      
+    </div>
+    <footer><p><small>Khronos reference, offline edition by GLSL Support, 2026-11-22. <a href="sources.txt">Source and edition notes</a>.</small></p></footer>
+  </body>
+</html>

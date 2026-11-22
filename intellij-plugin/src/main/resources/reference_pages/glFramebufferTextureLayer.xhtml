@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml">
+  <head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' file: 'unsafe-inline' 'unsafe-eval'; style-src 'self' file: 'unsafe-inline'; font-src 'self' file: data:; img-src 'self' file: data:; connect-src 'self' file:; base-uri 'none'; object-src 'none'"/>
+    <title>glFramebufferTextureLayer - OpenGL 4 Reference Pages</title>
+    <link rel="stylesheet" type="text/css" href="opengl-man.css"/>
+    <meta name="generator" content="DocBook XSL Stylesheets V1.79.2"/>
+    <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({
+                showMathMenu: false,
+                MathML: {
+                    extensions: ["content-mathml.js"]
+                },
+                tex2jax: {
+                    skipTags: ["script","noscript","style","textarea","pre","annotation","annotation-xml"],
+                    inlineMath: [['$','$'], ['\\(','\\)']]
+                }
+            });
+        </script>
+    <script type="text/javascript" src="mathjax/MathJax.js?config=TeX-AMS-MML_SVG"/>
+  <meta name="dcterms.source" content="https://registry.khronos.org/OpenGL-Refpages/gl4/html/glFramebufferTextureLayer.xhtml"/></head>
+  <body>
+    <header/>
+    <div class="refentry" id="glFramebufferTextureLayer">
+      <div class="titlepage"/>
+      <div class="refnamediv">
+        <h2>Name</h2>
+        <p>glFramebufferTextureLayer, glNamedFramebufferTextureLayer — attach a single layer of a texture object as a logical buffer of a framebuffer object</p>
+      </div>
+      <div class="refsynopsisdiv">
+        <h2>C Specification</h2>
+        <div class="funcsynopsis">
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">void <strong class="fsfunc">glFramebufferTextureLayer</strong>(</code>
+              </td>
+              <td>GLenum <var class="pdparam">target</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>GLenum <var class="pdparam">attachment</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>GLuint <var class="pdparam">texture</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>GLint <var class="pdparam">level</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>GLint <var class="pdparam">layer</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">void <strong class="fsfunc">glNamedFramebufferTextureLayer</strong>(</code>
+              </td>
+              <td>GLuint <var class="pdparam">framebuffer</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>GLenum <var class="pdparam">attachment</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>GLuint <var class="pdparam">texture</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>GLint <var class="pdparam">level</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>GLint <var class="pdparam">layer</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+        </div>
+      </div>
+      <div class="refsect1" id="parameters">
+        <h2>Parameters</h2>
+        <div class="variablelist">
+          <dl class="variablelist">
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>target</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>
+                    Specifies the target to which the framebuffer is bound
+                    for <code class="function">glFramebufferTextureLayer</code>.
+                </p>
+            </dd>
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>framebuffer</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>
+                    Specifies the name of the framebuffer object for
+                    <code class="function">glNamedFramebufferTextureLayer</code>.
+                </p>
+            </dd>
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>attachment</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>
+                    Specifies the attachment point of the framebuffer.
+                </p>
+            </dd>
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>texture</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>
+                    Specifies the name of an existing texture object to
+                    attach.
+                </p>
+            </dd>
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>level</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>
+                    Specifies the mipmap level of the texture object to
+                    attach.
+                </p>
+            </dd>
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>layer</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>
+                    Specifies the layer of the texture object to
+                    attach.
+                </p>
+            </dd>
+          </dl>
+        </div>
+      </div>
+      <div class="refsect1" id="description">
+        <h2>Description</h2>
+        <p>
+            <code class="function">glFramebufferTextureLayer</code> and
+            <code class="function">glNamedFramebufferTextureLayer</code> attach a
+            single layer of a three-dimensional or array texture object as
+            one of the logical buffers of the specified framebuffer object.
+            Textures cannot be attached to the default draw and read
+            framebuffer, so they are not valid targets of these commands.
+        </p>
+        <p>
+            For
+            <code class="function">glFramebufferTextureLayer</code>, the framebuffer
+            object is that bound to <em class="parameter"><code>target</code></em>, which
+            must be <code class="constant">GL_DRAW_FRAMEBUFFER</code>,
+            <code class="constant">GL_READ_FRAMEBUFFER</code>, or
+            <code class="constant">GL_FRAMEBUFFER</code>.
+            <code class="constant">GL_FRAMEBUFFER</code> is equivalent to
+            <code class="constant">GL_DRAW_FRAMEBUFFER</code>.
+        </p>
+        <p>
+            For <code class="function">glNamedFramebufferTextureLayer</code>,
+            <em class="parameter"><code>framebuffer</code></em> is the name of the
+            framebuffer object.
+        </p>
+        <p>
+            <em class="parameter"><code>attachment</code></em> specifies the logical
+            attachment of the framebuffer and must be
+            <code class="constant">GL_COLOR_ATTACHMENT</code><span class="emphasis"><em>i</em></span>,
+            <code class="constant">GL_DEPTH_ATTACHMENT</code>,
+            <code class="constant">GL_STENCIL_ATTACHMENT</code> or
+            <code class="constant">GL_DEPTH_STENCIL_ATTACHMENT</code>.
+            <span class="emphasis"><em>i</em></span> in
+            <code class="constant">GL_COLOR_ATTACHMENT</code><span class="emphasis"><em>i</em></span>
+            may range from zero to the value of
+            <code class="constant">GL_MAX_COLOR_ATTACHMENTS</code> minus one.
+            Attaching a level of a texture to
+            <code class="constant">GL_DEPTH_STENCIL_ATTACHMENT</code> is equivalent
+            to attaching that level to both the
+            <code class="constant">GL_DEPTH_ATTACHMENT</code>
+            <span class="emphasis"><em>and</em></span> the
+            <code class="constant">GL_STENCIL_ATTACHMENT</code> attachment points
+            simultaneously.
+        </p>
+        <p>
+            If <em class="parameter"><code>texture</code></em> is not zero, it must be the
+            name of a three-dimensional, two-dimensional multisample array,
+            one- or two-dimensional array, or cube map array texture.
+        </p>
+        <p>
+            If <em class="parameter"><code>texture</code></em> is a three-dimensional
+            texture, then <em class="parameter"><code>level</code></em> must be greater than
+            or equal to zero and less than or equal to $log_2$ of the value
+            of <code class="constant">GL_MAX_3D_TEXTURE_SIZE</code>.
+        </p>
+        <p>
+            If <em class="parameter"><code>texture</code></em> is a two-dimensional array
+            texture, then <em class="parameter"><code>level</code></em> must be greater than
+            or equal to zero and less than or equal to $log_2$ of the value
+            of <code class="constant">GL_MAX_TEXTURE_SIZE</code>.
+        </p>
+        <p>
+            For cube map textures, <em class="parameter"><code>layer</code></em> is
+            translated into a cube map face according to
+                $$ face = k \bmod 6. $$
+            For cube map array textures, <em class="parameter"><code>layer</code></em> is
+            translated into an array layer and face according to
+                $$ layer = \left\lfloor { layer \over 6 } \right\rfloor$$
+            and
+                $$ face = k \bmod 6. $$
+        </p>
+      </div>
+      <div class="refsect1" id="errors">
+        <h2>Errors</h2>
+        <p>
+            <code class="constant">GL_INVALID_ENUM</code> is generated by
+            <code class="function">glFramebufferTexture</code> if
+            <em class="parameter"><code>target</code></em> is not one of the accepted
+            framebuffer targets.
+        </p>
+        <p>
+            <code class="constant">GL_INVALID_OPERATION</code> is generated
+            by <code class="function">glFramebufferTexture</code> if
+            zero is bound to <em class="parameter"><code>target</code></em>.
+        </p>
+        <p>
+            <code class="constant">GL_INVALID_OPERATION</code> is generated by
+            <code class="function">glNamedFramebufferTexture</code> if
+            <em class="parameter"><code>framebuffer</code></em> is not the name of an
+            existing framebuffer object.
+        </p>
+        <p>
+            <code class="constant">GL_INVALID_ENUM</code> is generated if
+            <em class="parameter"><code>attachment</code></em> is not one of the accepted
+            attachment points.
+        </p>
+        <p>
+            <code class="constant">GL_INVALID_OPERATION</code> is generated if
+            <em class="parameter"><code>texture</code></em> is not zero and is not the name
+            of an existing three-dimensional, two-dimensional multisample
+            array, one- or two-dimensional array, cube map, or cube map
+            array texture.
+        </p>
+        <p>
+            <code class="constant">GL_INVALID_VALUE</code> is generated if
+            <em class="parameter"><code>texture</code></em> is not zero and
+            <em class="parameter"><code>level</code></em> is not a supported texture level
+            for <em class="parameter"><code>texture</code></em>, as described above.
+        </p>
+        <p>
+            <code class="constant">GL_INVALID_VALUE</code> is generated if
+            <em class="parameter"><code>texture</code></em> is not zero and
+            <em class="parameter"><code>layer</code></em> is larger than the value of
+            <code class="constant">GL_MAX_3D_TEXTURE_SIZE</code> minus one (for
+            three-dimensional texture objects), or larger than the value of
+            <code class="constant">GL_MAX_ARRAY_TEXTURE_LAYERS</code> minus one (for
+            array texture objects).
+        </p>
+        <p>
+            <code class="constant">GL_INVALID_VALUE</code> is generated if
+            <em class="parameter"><code>texture</code></em> is not zero and
+            <em class="parameter"><code>layer</code></em> is negative.
+        </p>
+        <p>
+            <code class="constant">GL_INVALID_OPERATION</code> is generated by
+            if <em class="parameter"><code>texture</code></em> is a buffer texture.
+        </p>
+      </div>
+      
+      <div class="refsect1" id="seealso">
+        <h2>See Also</h2>
+        <p>
+            <a class="citerefentry" href="glGenFramebuffers.xhtml"><span class="citerefentry"><span class="refentrytitle">glGenFramebuffers</span></span></a>,
+            <a class="citerefentry" href="glBindFramebuffer.xhtml"><span class="citerefentry"><span class="refentrytitle">glBindFramebuffer</span></span></a>,
+            <a class="citerefentry" href="glGenRenderbuffers.xhtml"><span class="citerefentry"><span class="refentrytitle">glGenRenderbuffers</span></span></a>,
+            <a class="citerefentry" href="glFramebufferTexture.xhtml"><span class="citerefentry"><span class="refentrytitle">glFramebufferTexture</span></span></a>,
+        </p>
+      </div>
+      
+    </div>
+    <footer><p><small>Khronos reference, offline edition by GLSL Support, 2026-11-22. <a href="sources.txt">Source and edition notes</a>.</small></p></footer>
+  </body>
+</html>

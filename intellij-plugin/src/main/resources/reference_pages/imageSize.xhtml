@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml">
+  <head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' file: 'unsafe-inline' 'unsafe-eval'; style-src 'self' file: 'unsafe-inline'; font-src 'self' file: data:; img-src 'self' file: data:; connect-src 'self' file:; base-uri 'none'; object-src 'none'"/>
+    <title>imageSize - OpenGL 4 Reference Pages</title>
+    <link rel="stylesheet" type="text/css" href="opengl-man.css"/>
+    <meta name="generator" content="DocBook XSL Stylesheets V1.79.2"/>
+    <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({
+                showMathMenu: false,
+                MathML: {
+                    extensions: ["content-mathml.js"]
+                },
+                tex2jax: {
+                    skipTags: ["script","noscript","style","textarea","pre","annotation","annotation-xml"],
+                    inlineMath: [['$','$'], ['\\(','\\)']]
+                }
+            });
+        </script>
+    <script type="text/javascript" src="mathjax/MathJax.js?config=TeX-AMS-MML_SVG"/>
+  <meta name="dcterms.source" content="https://registry.khronos.org/OpenGL-Refpages/gl4/html/imageSize.xhtml"/></head>
+  <body>
+    <header/>
+    <div class="refentry" id="imageSize">
+      <div class="titlepage"/>
+      <div class="refnamediv">
+        <h2>Name</h2>
+        <p>imageSize — retrieve the dimensions of an image</p>
+      </div>
+      <div class="refsynopsisdiv">
+        <h2>Declaration</h2>
+        <div class="funcsynopsis">
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">int <strong class="fsfunc">imageSize</strong>(</code>
+              </td>
+              <td>gimage1D <var class="pdparam">image</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">ivec2 <strong class="fsfunc">imageSize</strong>(</code>
+              </td>
+              <td>gimage2D <var class="pdparam">image</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">ivec3 <strong class="fsfunc">imageSize</strong>(</code>
+              </td>
+              <td>gimage3D <var class="pdparam">image</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">ivec2 <strong class="fsfunc">imageSize</strong>(</code>
+              </td>
+              <td>gimageCube <var class="pdparam">image</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">ivec3 <strong class="fsfunc">imageSize</strong>(</code>
+              </td>
+              <td>gimageCubeArray <var class="pdparam">image</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">ivec2 <strong class="fsfunc">imageSize</strong>(</code>
+              </td>
+              <td>gimageRect <var class="pdparam">image</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">ivec2 <strong class="fsfunc">imageSize</strong>(</code>
+              </td>
+              <td>gimage1DArray <var class="pdparam">image</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">ivec3 <strong class="fsfunc">imageSize</strong>(</code>
+              </td>
+              <td>gimage2DArray <var class="pdparam">image</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">int <strong class="fsfunc">imageSize</strong>(</code>
+              </td>
+              <td>gimageBuffer <var class="pdparam">image</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">ivec2 <strong class="fsfunc">imageSize</strong>(</code>
+              </td>
+              <td>gimage2DMS <var class="pdparam">image</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">ivec3 <strong class="fsfunc">imageSize</strong>(</code>
+              </td>
+              <td>gimage2DMSArray <var class="pdparam">image</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+        </div>
+      </div>
+      <div class="refsect1" id="parameters">
+        <h2>Parameters</h2>
+        <div class="variablelist">
+          <dl class="variablelist">
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>image</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>
+                    Specifies the image to which the texture whose dimensions to retrieve is bound.
+                </p>
+            </dd>
+          </dl>
+        </div>
+      </div>
+      <div class="refsect1" id="description">
+        <h2>Description</h2>
+        <p>
+            <code class="function">imageSize</code> returns the dimensions of the image bound to <em class="parameter"><code>image</code></em>.
+            The components in the return value are filled in,
+            in order, with the width, height and depth of the image. For the array forms, the last component of the
+            return value is the number of layers in the texture array.
+        </p>
+      </div>
+      
+      <div class="refsect1" id="seealso">
+        <h2>See Also</h2>
+        <p>
+            <a class="citerefentry" href="textureSize.xhtml"><span class="citerefentry"><span class="refentrytitle">textureSize</span></span></a>,
+            <a class="citerefentry" href="imageLoad.xhtml"><span class="citerefentry"><span class="refentrytitle">imageLoad</span></span></a>,
+            <a class="citerefentry" href="imageStore.xhtml"><span class="citerefentry"><span class="refentrytitle">imageStore</span></span></a>
+        </p>
+      </div>
+      
+    </div>
+    <footer><p><small>Khronos reference, offline edition by GLSL Support, 2026-11-22. <a href="sources.txt">Source and edition notes</a>.</small></p></footer>
+  </body>
+</html>

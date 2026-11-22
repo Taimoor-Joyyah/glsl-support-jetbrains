@@ -1,0 +1,5 @@
+#set($hash = "#")
+${hash}ifndef ${GLSL_GUARD}
+${hash}define ${GLSL_GUARD}
+
+${hash}endif // ${GLSL_GUARD}

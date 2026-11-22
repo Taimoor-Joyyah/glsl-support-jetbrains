@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml">
+  <head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' file: 'unsafe-inline' 'unsafe-eval'; style-src 'self' file: 'unsafe-inline'; font-src 'self' file: data:; img-src 'self' file: data:; connect-src 'self' file:; base-uri 'none'; object-src 'none'"/>
+    <title>glCreateSamplers - OpenGL 4 Reference Pages</title>
+    <link rel="stylesheet" type="text/css" href="opengl-man.css"/>
+    <meta name="generator" content="DocBook XSL Stylesheets V1.79.2"/>
+    <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({
+                showMathMenu: false,
+                MathML: {
+                    extensions: ["content-mathml.js"]
+                },
+                tex2jax: {
+                    skipTags: ["script","noscript","style","textarea","pre","annotation","annotation-xml"],
+                    inlineMath: [['$','$'], ['\\(','\\)']]
+                }
+            });
+        </script>
+    <script type="text/javascript" src="mathjax/MathJax.js?config=TeX-AMS-MML_SVG"/>
+  <meta name="dcterms.source" content="https://registry.khronos.org/OpenGL-Refpages/gl4/html/glCreateSamplers.xhtml"/></head>
+  <body>
+    <header/>
+    <div class="refentry" id="glCreateSamplers">
+      <div class="titlepage"/>
+      <div class="refnamediv">
+        <h2>Name</h2>
+        <p>glCreateSamplers — create sampler objects</p>
+      </div>
+      <div class="refsynopsisdiv">
+        <h2>C Specification</h2>
+        <div class="funcsynopsis">
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">void <strong class="fsfunc">glCreateSamplers</strong>(</code>
+              </td>
+              <td>GLsizei <var class="pdparam">n</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>GLuint *<var class="pdparam">samplers</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+        </div>
+      </div>
+      <div class="refsect1" id="parameters">
+        <h2>Parameters</h2>
+        <div class="variablelist">
+          <dl class="variablelist">
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>n</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>
+                        Number of sampler objects to create.
+                    </p>
+            </dd>
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>samplers</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>
+                        Specifies an array in which names of the new sampler
+                        objects are stored.
+                    </p>
+            </dd>
+          </dl>
+        </div>
+      </div>
+      <div class="refsect1" id="description">
+        <h2>Description</h2>
+        <p>
+            <code class="function">glCreateSamplers</code>
+            returns <em class="parameter"><code>n</code></em> previously unused sampler names
+            in <em class="parameter"><code>samplers</code></em>, each representing a new
+            sampler object initialized to the default state.
+        </p>
+      </div>
+      <div class="refsect1" id="errors">
+        <h2>Errors</h2>
+        <p>
+            <code class="constant">GL_INVALID_VALUE</code> is generated if
+            <em class="parameter"><code>n</code></em> is negative.
+        </p>
+      </div>
+      
+      <div class="refsect1" id="seealso">
+        <h2>See Also</h2>
+        <p>
+            <a class="citerefentry" href="glBindSampler.xhtml"><span class="citerefentry"><span class="refentrytitle">glBindSampler</span></span></a>,
+            <a class="citerefentry" href="glBindTexture.xhtml"><span class="citerefentry"><span class="refentrytitle">glBindTexture</span></span></a>,
+            <a class="citerefentry" href="glDeleteSamplers.xhtml"><span class="citerefentry"><span class="refentrytitle">glDeleteSamplers</span></span></a>,
+            <a class="citerefentry" href="glDeleteTextures.xhtml"><span class="citerefentry"><span class="refentrytitle">glDeleteTextures</span></span></a>,
+            <a class="citerefentry" href="glGenSamplers.xhtml"><span class="citerefentry"><span class="refentrytitle">glGenSamplers</span></span></a>,
+            <a class="citerefentry" href="glGenTextures.xhtml"><span class="citerefentry"><span class="refentrytitle">glGenTextures</span></span></a>,
+            <a class="citerefentry" href="glGet.xhtml"><span class="citerefentry"><span class="refentrytitle">glGet</span></span></a>,
+            <a class="citerefentry" href="glGetSamplerParameter.xhtml"><span class="citerefentry"><span class="refentrytitle">glGetSamplerParameter</span></span></a>,
+            <a class="citerefentry" href="glSamplerParameter.xhtml"><span class="citerefentry"><span class="refentrytitle">glSamplerParameter</span></span></a>
+        </p>
+      </div>
+      
+    </div>
+    <footer><p><small>Khronos reference, offline edition by GLSL Support, 2026-11-22. <a href="sources.txt">Source and edition notes</a>.</small></p></footer>
+  </body>
+</html>

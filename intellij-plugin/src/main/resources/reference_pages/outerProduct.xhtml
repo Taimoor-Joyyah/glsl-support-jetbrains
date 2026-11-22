@@ -1,0 +1,320 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml">
+  <head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' file: 'unsafe-inline' 'unsafe-eval'; style-src 'self' file: 'unsafe-inline'; font-src 'self' file: data:; img-src 'self' file: data:; connect-src 'self' file:; base-uri 'none'; object-src 'none'"/>
+    <title>outerProduct - OpenGL 4 Reference Pages</title>
+    <link rel="stylesheet" type="text/css" href="opengl-man.css"/>
+    <meta name="generator" content="DocBook XSL Stylesheets V1.79.2"/>
+    <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({
+                showMathMenu: false,
+                MathML: {
+                    extensions: ["content-mathml.js"]
+                },
+                tex2jax: {
+                    skipTags: ["script","noscript","style","textarea","pre","annotation","annotation-xml"],
+                    inlineMath: [['$','$'], ['\\(','\\)']]
+                }
+            });
+        </script>
+    <script type="text/javascript" src="mathjax/MathJax.js?config=TeX-AMS-MML_SVG"/>
+  <meta name="dcterms.source" content="https://registry.khronos.org/OpenGL-Refpages/gl4/html/outerProduct.xhtml"/></head>
+  <body>
+    <header/>
+    <div class="refentry" id="outerProduct">
+      <div class="titlepage"/>
+      <div class="refnamediv">
+        <h2>Name</h2>
+        <p>outerProduct — calculate the outer product of a pair of vectors</p>
+      </div>
+      <div class="refsynopsisdiv">
+        <h2>Declaration</h2>
+        <div class="funcsynopsis">
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">mat2 <strong class="fsfunc">outerProduct</strong>(</code>
+              </td>
+              <td>vec2 <var class="pdparam">c</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>vec2 <var class="pdparam">r</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">mat3 <strong class="fsfunc">outerProduct</strong>(</code>
+              </td>
+              <td>vec3 <var class="pdparam">c</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>vec3 <var class="pdparam">r</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">mat4 <strong class="fsfunc">outerProduct</strong>(</code>
+              </td>
+              <td>vec4 <var class="pdparam">c</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>vec4 <var class="pdparam">r</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">mat2x3 <strong class="fsfunc">outerProduct</strong>(</code>
+              </td>
+              <td>vec3 <var class="pdparam">c</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>vec2 <var class="pdparam">r</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">mat3x2 <strong class="fsfunc">outerProduct</strong>(</code>
+              </td>
+              <td>vec2 <var class="pdparam">c</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>vec3 <var class="pdparam">r</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">mat2x4 <strong class="fsfunc">outerProduct</strong>(</code>
+              </td>
+              <td>vec4 <var class="pdparam">c</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>vec2 <var class="pdparam">r</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">mat4x2 <strong class="fsfunc">outerProduct</strong>(</code>
+              </td>
+              <td>vec2 <var class="pdparam">c</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>vec4 <var class="pdparam">r</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">mat3x4 <strong class="fsfunc">outerProduct</strong>(</code>
+              </td>
+              <td>vec4 <var class="pdparam">c</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>vec3 <var class="pdparam">r</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">mat4x3 <strong class="fsfunc">outerProduct</strong>(</code>
+              </td>
+              <td>vec3 <var class="pdparam">c</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>vec4 <var class="pdparam">r</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">dmat2 <strong class="fsfunc">outerProduct</strong>(</code>
+              </td>
+              <td>dvec2 <var class="pdparam">c</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>dvec2 <var class="pdparam">r</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">dmat3 <strong class="fsfunc">outerProduct</strong>(</code>
+              </td>
+              <td>dvec3 <var class="pdparam">c</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>dvec3 <var class="pdparam">r</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">dmat4 <strong class="fsfunc">outerProduct</strong>(</code>
+              </td>
+              <td>dvec4 <var class="pdparam">c</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>dvec4 <var class="pdparam">r</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">dmat2x3 <strong class="fsfunc">outerProduct</strong>(</code>
+              </td>
+              <td>dvec3 <var class="pdparam">c</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>dvec2 <var class="pdparam">r</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">dmat3x2 <strong class="fsfunc">outerProduct</strong>(</code>
+              </td>
+              <td>dvec2 <var class="pdparam">c</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>dvec3 <var class="pdparam">r</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">dmat2x4 <strong class="fsfunc">outerProduct</strong>(</code>
+              </td>
+              <td>dvec4 <var class="pdparam">c</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>dvec2 <var class="pdparam">r</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">dmat4x2 <strong class="fsfunc">outerProduct</strong>(</code>
+              </td>
+              <td>dvec2 <var class="pdparam">c</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>dvec4 <var class="pdparam">r</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">dmat3x4 <strong class="fsfunc">outerProduct</strong>(</code>
+              </td>
+              <td>dvec4 <var class="pdparam">c</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>dvec3 <var class="pdparam">r</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">dmat4x3 <strong class="fsfunc">outerProduct</strong>(</code>
+              </td>
+              <td>dvec3 <var class="pdparam">c</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>dvec4 <var class="pdparam">r</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+        </div>
+      </div>
+      <div class="refsect1" id="parameters">
+        <h2>Parameters</h2>
+        <div class="variablelist">
+          <dl class="variablelist">
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>c</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>
+                    Specifies the parameter to be treated as a column vector.
+                </p>
+            </dd>
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>r</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>
+                    Specifies the parameter to be treated as a row vector.
+                </p>
+            </dd>
+          </dl>
+        </div>
+      </div>
+      <div class="refsect1" id="description">
+        <h2>Description</h2>
+        <p>
+            <code class="function">outerProduct</code> treats the first parameter <em class="parameter"><code>c</code></em> as a column
+            vector (matrix with one column) and the second parameter <em class="parameter"><code>r</code></em> as a row vector
+            (matrix with one row) and does a linear algebraic matrix multiply <em class="parameter"><code>c</code></em> * <em class="parameter"><code>r</code></em>,
+            yielding a matrix whose number of rows is the number of components in <em class="parameter"><code>c</code></em> and
+            whose number of columns is the number of components in <em class="parameter"><code>r</code></em>.
+        </p>
+      </div>
+      
+      <div class="refsect1" id="seealso">
+        <h2>See Also</h2>
+        <p>
+            <a class="citerefentry" href="dot.xhtml"><span class="citerefentry"><span class="refentrytitle">dot</span></span></a>
+        </p>
+      </div>
+      
+    </div>
+    <footer><p><small>Khronos reference, offline edition by GLSL Support, 2026-11-22. <a href="sources.txt">Source and edition notes</a>.</small></p></footer>
+  </body>
+</html>

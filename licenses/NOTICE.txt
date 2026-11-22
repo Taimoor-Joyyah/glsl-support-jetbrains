@@ -1,0 +1,18 @@
+GLSL Support bundles glslang 16.6.0, SPIRV-Tools and SPIRV-Headers from the Khronos Group.
+Their license and contributor notices are in glslang.txt, spirv-tools.txt and spirv-headers.txt.
+Native source revisions and archive digests are recorded in native/CMakeLists.txt.
+
+The offline GLSL catalog and legacy editor regression shaders derive from the glsl_analyzer project.
+See glsl-analyzer-catalog.txt.
+
+The published OpenGL 4.x XHTML comes from https://registry.khronos.org/OpenGL-Refpages/gl4/html/.
+The original page notices are collected in opengl-reference-pages.txt. LicenseRef-FreeB.txt and
+OPUBL-1.0.txt contain the corresponding license texts. GLSL Support supplies additional OpenGL 4.6
+entries from the Khronos specifications. The bundled OpenGL and GLSL specifications and the
+ARB_clip_control extension retain their original notices.
+
+MathJax 2.7.9 renders the reference equations. Its Apache 2.0 license is in mathjax.txt.
+The font directories in reference_pages/mathjax/fonts retain their individual license files.
+
+The Gradle Wrapper is distributed under the Apache License, Version 2.0.
+https://www.apache.org/licenses/LICENSE-2.0

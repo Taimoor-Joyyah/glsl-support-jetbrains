@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml">
+  <head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' file: 'unsafe-inline' 'unsafe-eval'; style-src 'self' file: 'unsafe-inline'; font-src 'self' file: data:; img-src 'self' file: data:; connect-src 'self' file:; base-uri 'none'; object-src 'none'"/>
+    <title>barrier - OpenGL 4 Reference Pages</title>
+    <link rel="stylesheet" type="text/css" href="opengl-man.css"/>
+    <meta name="generator" content="DocBook XSL Stylesheets V1.79.2"/>
+    <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({
+                showMathMenu: false,
+                MathML: {
+                    extensions: ["content-mathml.js"]
+                },
+                tex2jax: {
+                    skipTags: ["script","noscript","style","textarea","pre","annotation","annotation-xml"],
+                    inlineMath: [['$','$'], ['\\(','\\)']]
+                }
+            });
+        </script>
+    <script type="text/javascript" src="mathjax/MathJax.js?config=TeX-AMS-MML_SVG"/>
+  <meta name="dcterms.source" content="https://registry.khronos.org/OpenGL-Refpages/gl4/html/barrier.xhtml"/></head>
+  <body>
+    <header/>
+    <div class="refentry" id="barrier">
+      <div class="titlepage"/>
+      <div class="refnamediv">
+        <h2>Name</h2>
+        <p>barrier — synchronize execution of multiple shader invocations</p>
+      </div>
+      <div class="refsynopsisdiv">
+        <h2>Declaration</h2>
+        <div class="funcsynopsis">
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">void <strong class="fsfunc">barrier</strong>(</code>
+              </td>
+              <td>void<code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+        </div>
+      </div>
+      <div class="refsect1" id="description">
+        <h2>Description</h2>
+        <p>
+            <span class="emphasis"><em>Available only in the Tessellation Control and Compute Shaders</em></span>, <code class="function">barrier</code> provides
+            a partially defined order of execution between shader invocations. For any given static instance of <code class="function">barrier</code>,
+            in a tessellation control shader, all invocations for a single input patch must enter it before any will be allowed
+            to continue beyond it. For any given static instance of <code class="function">barrier</code> in a compute shader, all invocations
+            within a single work group must enter it before any are allowed to continue beyond it.
+            This ensures that values written by one invocation prior to a given static instance
+            of <code class="function">barrier</code> can be safely read by other invocations after their call to the same static
+            instance of <code class="function">barrier</code>. Because invocations may execute in undefined order between these
+            <code class="function">barrier</code> calls, the values of a per-vertex or per-patch output variable, or any shared variable will be undefined
+            in a number of cases.
+        </p>
+        <p>
+            <code class="function">barrier</code> may only be placed inside the function <code class="code">main()</code> of the tessellation
+            control shader, but may be placed anywhere in a compute shader. Calls to <code class="function">barrier</code> may not
+            be placed within any control flow. Barriers are also disallowed after a return
+            statement in the function <code class="code">main()</code>.
+        </p>
+      </div>
+      
+      
+    </div>
+    <footer><p><small>Khronos reference, offline edition by GLSL Support, 2026-11-22. <a href="sources.txt">Source and edition notes</a>.</small></p></footer>
+  </body>
+</html>

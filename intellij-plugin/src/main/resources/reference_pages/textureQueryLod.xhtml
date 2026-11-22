@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml">
+  <head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' file: 'unsafe-inline' 'unsafe-eval'; style-src 'self' file: 'unsafe-inline'; font-src 'self' file: data:; img-src 'self' file: data:; connect-src 'self' file:; base-uri 'none'; object-src 'none'"/>
+    <title>textureQueryLod - OpenGL 4 Reference Pages</title>
+    <link rel="stylesheet" type="text/css" href="opengl-man.css"/>
+    <meta name="generator" content="DocBook XSL Stylesheets V1.79.2"/>
+    <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({
+                showMathMenu: false,
+                MathML: {
+                    extensions: ["content-mathml.js"]
+                },
+                tex2jax: {
+                    skipTags: ["script","noscript","style","textarea","pre","annotation","annotation-xml"],
+                    inlineMath: [['$','$'], ['\\(','\\)']]
+                }
+            });
+        </script>
+    <script type="text/javascript" src="mathjax/MathJax.js?config=TeX-AMS-MML_SVG"/>
+  <meta name="dcterms.source" content="https://registry.khronos.org/OpenGL-Refpages/gl4/html/textureQueryLod.xhtml"/></head>
+  <body>
+    <header/>
+    <div class="refentry" id="textureQueryLod">
+      <div class="titlepage"/>
+      <div class="refnamediv">
+        <h2>Name</h2>
+        <p>textureQueryLod — compute the level-of-detail that would be used to sample from a texture</p>
+      </div>
+      <div class="refsynopsisdiv">
+        <h2>Declaration</h2>
+        <div class="funcsynopsis">
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">vec2 <strong class="fsfunc">textureQueryLod</strong>(</code>
+              </td>
+              <td>gsampler1D <var class="pdparam">sampler</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>float <var class="pdparam">P</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">vec2 <strong class="fsfunc">textureQueryLod</strong>(</code>
+              </td>
+              <td>gsampler2D <var class="pdparam">sampler</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>vec2 <var class="pdparam">P</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">vec2 <strong class="fsfunc">textureQueryLod</strong>(</code>
+              </td>
+              <td>gsampler3D <var class="pdparam">sampler</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>vec3 <var class="pdparam">P</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">vec2 <strong class="fsfunc">textureQueryLod</strong>(</code>
+              </td>
+              <td>gsamplerCube <var class="pdparam">sampler</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>vec3 <var class="pdparam">P</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">vec2 <strong class="fsfunc">textureQueryLod</strong>(</code>
+              </td>
+              <td>gsampler1DArray <var class="pdparam">sampler</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>float <var class="pdparam">P</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">vec2 <strong class="fsfunc">textureQueryLod</strong>(</code>
+              </td>
+              <td>gsampler2DArray <var class="pdparam">sampler</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>vec2 <var class="pdparam">P</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">vec2 <strong class="fsfunc">textureQueryLod</strong>(</code>
+              </td>
+              <td>gsamplerCubeArray <var class="pdparam">sampler</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>vec3 <var class="pdparam">P</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">vec2 <strong class="fsfunc">textureQueryLod</strong>(</code>
+              </td>
+              <td>sampler1DShadow <var class="pdparam">sampler</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>float <var class="pdparam">P</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">vec2 <strong class="fsfunc">textureQueryLod</strong>(</code>
+              </td>
+              <td>sampler2DShadow <var class="pdparam">sampler</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>vec2 <var class="pdparam">P</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">vec2 <strong class="fsfunc">textureQueryLod</strong>(</code>
+              </td>
+              <td>samplerCubeShadow <var class="pdparam">sampler</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>vec3 <var class="pdparam">P</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">vec2 <strong class="fsfunc">textureQueryLod</strong>(</code>
+              </td>
+              <td>sampler1DArrayShadow <var class="pdparam">sampler</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>float <var class="pdparam">P</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">vec2 <strong class="fsfunc">textureQueryLod</strong>(</code>
+              </td>
+              <td>sampler2DArrayShadow <var class="pdparam">sampler</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>vec2 <var class="pdparam">P</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">vec2 <strong class="fsfunc">textureQueryLod</strong>(</code>
+              </td>
+              <td>samplerCubeArrayShadow <var class="pdparam">sampler</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>vec3 <var class="pdparam">P</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+        </div>
+      </div>
+      <div class="refsect1" id="parameters">
+        <h2>Parameters</h2>
+        <div class="variablelist">
+          <dl class="variablelist">
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>sampler</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>
+                    Specifies the sampler to which the texture whose level-of-detail will be queried is bound.
+                </p>
+            </dd>
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>P</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>
+                    Specifies the texture coordinates at which the level-of-detail will be queried.
+                </p>
+            </dd>
+          </dl>
+        </div>
+      </div>
+      <div class="refsect1" id="description">
+        <h2>Description</h2>
+        <p>
+            <span class="emphasis"><em>Available only in the fragment shader</em></span>,
+            <code class="function">textureQueryLod</code> computes the level-of-detail that would be used to sample from
+            a texture. The mipmap array(s) that would be accessed is returned in the <span class="emphasis"><em>x</em></span> component
+            of the return value. The computed level-of-detail relative to the base level is returned in the
+            <span class="emphasis"><em>y</em></span> component of the return value.
+        </p>
+        <p>
+            If called on an incomplete texture, the result of the operation is undefined.
+        </p>
+      </div>
+      
+      <div class="refsect1" id="seealso">
+        <h2>See Also</h2>
+        <p>
+            <a class="citerefentry" href="texelFetch.xhtml"><span class="citerefentry"><span class="refentrytitle">texelFetch</span></span></a>,
+            <a class="citerefentry" href="texelFetchOffset.xhtml"><span class="citerefentry"><span class="refentrytitle">texelFetchOffset</span></span></a>,
+            <a class="citerefentry" href="texture.xhtml"><span class="citerefentry"><span class="refentrytitle">texture</span></span></a>,
+            <a class="citerefentry" href="textureGather.xhtml"><span class="citerefentry"><span class="refentrytitle">textureGather</span></span></a>,
+            <a class="citerefentry" href="textureGatherOffset.xhtml"><span class="citerefentry"><span class="refentrytitle">textureGatherOffset</span></span></a>,
+            <a class="citerefentry" href="textureGatherOffsets.xhtml"><span class="citerefentry"><span class="refentrytitle">textureGatherOffsets</span></span></a>,
+            <a class="citerefentry" href="textureGrad.xhtml"><span class="citerefentry"><span class="refentrytitle">textureGrad</span></span></a>,
+            <a class="citerefentry" href="textureGradOffset.xhtml"><span class="citerefentry"><span class="refentrytitle">textureGradOffset</span></span></a>,
+            <a class="citerefentry" href="textureLod.xhtml"><span class="citerefentry"><span class="refentrytitle">textureLod</span></span></a>,
+            <a class="citerefentry" href="textureLodOffset.xhtml"><span class="citerefentry"><span class="refentrytitle">textureLodOffset</span></span></a>,
+            <a class="citerefentry" href="textureOffset.xhtml"><span class="citerefentry"><span class="refentrytitle">textureOffset</span></span></a>,
+            <a class="citerefentry" href="textureProj.xhtml"><span class="citerefentry"><span class="refentrytitle">textureProj</span></span></a>,
+            <a class="citerefentry" href="textureProjGrad.xhtml"><span class="citerefentry"><span class="refentrytitle">textureProjGrad</span></span></a>,
+            <a class="citerefentry" href="textureProjGradOffset.xhtml"><span class="citerefentry"><span class="refentrytitle">textureProjGradOffset</span></span></a>,
+            <a class="citerefentry" href="textureProjLod.xhtml"><span class="citerefentry"><span class="refentrytitle">textureProjLod</span></span></a>,
+            <a class="citerefentry" href="textureProjLodOffset.xhtml"><span class="citerefentry"><span class="refentrytitle">textureProjLodOffset</span></span></a>,
+            <a class="citerefentry" href="textureProjOffset.xhtml"><span class="citerefentry"><span class="refentrytitle">textureProjOffset</span></span></a>,
+            <a class="citerefentry" href="textureSize.xhtml"><span class="citerefentry"><span class="refentrytitle">textureSize</span></span></a>
+        </p>
+      </div>
+      
+    </div>
+    <footer><p><small>Khronos reference, offline edition by GLSL Support, 2026-11-22. <a href="sources.txt">Source and edition notes</a>.</small></p></footer>
+  </body>
+</html>

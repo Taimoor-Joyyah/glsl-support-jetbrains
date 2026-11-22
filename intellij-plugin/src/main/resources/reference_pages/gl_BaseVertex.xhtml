@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' file: 'unsafe-inline' 'unsafe-eval'; style-src 'self' file: 'unsafe-inline'; font-src 'self' file: data:; img-src 'self' file: data:; connect-src 'self' file:; base-uri 'none'; object-src 'none'"/><title>gl_BaseVertex | GLSL Support</title><link rel="stylesheet" type="text/css" href="opengl-man.css"/></head>
+<body><h1>gl_BaseVertex</h1>
+<p>GLSL 4.60 vertex input</p>
+<pre>in int gl_BaseVertex;</pre>
+<p>Base vertex supplied to an indexed draw. Draws without a base vertex receive zero. gl_VertexID already includes the base for indexed draws.</p>
+<pre>int localIndex = gl_VertexID - gl_BaseVertex;</pre>
+<p><a href="OpenGL46.xhtml">OpenGL46</a></p>
+<p>GLSL Support supplement based on the <a href="specs/GLSLangSpec.4.60.pdf">Khronos GLSL 4.60 specification</a></p>
+</body></html>

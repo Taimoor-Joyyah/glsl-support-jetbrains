@@ -1,0 +1,9 @@
+#version 460 core
+#extension GL_EXT_mesh_shader : require
+
+layout(local_size_x = 32) in;
+layout(triangles, max_vertices = 3, max_primitives = 1) out;
+
+void main() {
+    SetMeshOutputsEXT(0, 0);
+}

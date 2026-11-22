@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' file: 'unsafe-inline' 'unsafe-eval'; style-src 'self' file: 'unsafe-inline'; font-src 'self' file: data:; img-src 'self' file: data:; connect-src 'self' file:; base-uri 'none'; object-src 'none'"/><title>atomicCounterSubtract | GLSL Support</title><link rel="stylesheet" type="text/css" href="opengl-man.css"/></head>
+<body><h1>atomicCounterSubtract</h1>
+<p>GLSL 4.60 atomic counter function</p>
+<pre>uint atomicCounterSubtract(atomic_uint counter, uint data);</pre>
+<p>Atomically subtracts data and returns the previous 32-bit unsigned counter value.</p>
+<pre>layout(binding = 0, offset = 0) uniform atomic_uint counter;
+// Inside a shader function
+uint previous = atomicCounterSubtract(counter, 1u);</pre>
+<p>The counter is stored in an OpenGL atomic counter buffer.</p>
+<p><a href="atomicCounter.xhtml">atomicCounter</a></p>
+<p>GLSL Support supplement based on the <a href="specs/GLSLangSpec.4.60.pdf">Khronos GLSL 4.60 specification</a></p>
+</body></html>

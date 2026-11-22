@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml">
+  <head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' file: 'unsafe-inline' 'unsafe-eval'; style-src 'self' file: 'unsafe-inline'; font-src 'self' file: data:; img-src 'self' file: data:; connect-src 'self' file:; base-uri 'none'; object-src 'none'"/>
+    <title>gl_PrimitiveID - OpenGL 4 Reference Pages</title>
+    <link rel="stylesheet" type="text/css" href="opengl-man.css"/>
+    <meta name="generator" content="DocBook XSL Stylesheets V1.79.2"/>
+    <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({
+                showMathMenu: false,
+                MathML: {
+                    extensions: ["content-mathml.js"]
+                },
+                tex2jax: {
+                    skipTags: ["script","noscript","style","textarea","pre","annotation","annotation-xml"],
+                    inlineMath: [['$','$'], ['\\(','\\)']]
+                }
+            });
+        </script>
+    <script type="text/javascript" src="mathjax/MathJax.js?config=TeX-AMS-MML_SVG"/>
+  <meta name="dcterms.source" content="https://registry.khronos.org/OpenGL-Refpages/gl4/html/gl_PrimitiveID.xhtml"/></head>
+  <body>
+    <header/>
+    <div class="refentry" id="gl_PrimitiveID">
+      <div class="titlepage"/>
+      <div class="refnamediv">
+        <h2>Name</h2>
+        <p>gl_PrimitiveID — contains the index of the current primitive</p>
+      </div>
+      <div class="refsynopsisdiv">
+        <h2>Declaration</h2>
+        <p>
+            </p>
+        <pre class="programlisting">// In tessellation control, tessellation evaluation, and
+// fragment shaders</pre>
+        <p>
+            <code class="fieldsynopsis"><span class="modifier">in </span><span class="type">int </span><span class="varname">gl_PrimitiveID </span>;</code>
+        </p>
+        <p>
+            </p>
+        <pre class="programlisting">// In geometry shaders</pre>
+        <p>
+            <code class="fieldsynopsis"><span class="modifier">out </span><span class="type">int </span><span class="varname">gl_PrimitiveID </span>;</code>
+        </p>
+      </div>
+      <div class="refsect1" id="description">
+        <h2>Description</h2>
+        <p>
+            <code class="varname">gl_PrimitiveID</code> is a tessellation control, tessellation evaluation
+            and fragment language input variable. For the tessellation control and tessellation
+            evaluation languages, it holds the number of primitives processed by
+            the shader since the current set of rendering primitives was started. The first
+            primitive processed by the drawing command is numbered zero and the primitive ID counter is incremented after every individual point, line
+            or triangle primitive is processed. For triangles drawn in point or line mode, the
+            primitive ID counter is incremented only once, even through multiple points or lines
+            may actually be drawn. Restarting a primitive topology using the primitive restart
+            index has no effect on the primitive ID counter.
+        </p>
+        <p>
+            In the geometry language, <code class="varname">gl_PrimitiveID</code> is an output
+            variable that is passed to the corresponding <code class="varname">gl_PrimitiveID</code> input
+            variable in the fragment shader. If no geomery shader is present then <code class="varname">gl_PrimitiveID</code>
+            in the fragment language behaves identically as it would in the tessellation control and evaluation
+            languages. If a geometry shader is present but does not write to <code class="varname">gl_PrimitiveID</code>,
+            the value of <code class="varname">gl_PrimitiveID</code> in the fragment shader is undefined.
+        </p>
+      </div>
+      
+      <div class="refsect1" id="seealso">
+        <h2>See Also</h2>
+        <p>
+            <a class="citerefentry" href="gl_InstanceID.xhtml"><span class="citerefentry"><span class="refentrytitle">gl_InstanceID</span></span></a>,
+            <a class="citerefentry" href="gl_VertexID.xhtml"><span class="citerefentry"><span class="refentrytitle">gl_VertexID</span></span></a>,
+            <a class="citerefentry" href="gl_PrimitiveIDIn.xhtml"><span class="citerefentry"><span class="refentrytitle">gl_PrimitiveIDIn</span></span></a>
+        </p>
+      </div>
+      
+    </div>
+    <footer><p><small>Khronos reference, offline edition by GLSL Support, 2026-11-22. <a href="sources.txt">Source and edition notes</a>.</small></p></footer>
+  </body>
+</html>

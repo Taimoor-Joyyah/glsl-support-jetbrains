@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml">
+  <head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' file: 'unsafe-inline' 'unsafe-eval'; style-src 'self' file: 'unsafe-inline'; font-src 'self' file: data:; img-src 'self' file: data:; connect-src 'self' file:; base-uri 'none'; object-src 'none'"/>
+    <title>glGetProgramPipeline - OpenGL 4 Reference Pages</title>
+    <link rel="stylesheet" type="text/css" href="opengl-man.css"/>
+    <meta name="generator" content="DocBook XSL Stylesheets V1.79.2"/>
+    <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({
+                showMathMenu: false,
+                MathML: {
+                    extensions: ["content-mathml.js"]
+                },
+                tex2jax: {
+                    skipTags: ["script","noscript","style","textarea","pre","annotation","annotation-xml"],
+                    inlineMath: [['$','$'], ['\\(','\\)']]
+                }
+            });
+        </script>
+    <script type="text/javascript" src="mathjax/MathJax.js?config=TeX-AMS-MML_SVG"/>
+  <meta name="dcterms.source" content="https://registry.khronos.org/OpenGL-Refpages/gl4/html/glGetProgramPipeline.xhtml"/></head>
+  <body>
+    <header/>
+    <div class="refentry" id="glGetProgramPipeline">
+      <div class="titlepage"/>
+      <div class="refnamediv">
+        <h2>Name</h2>
+        <p>glGetProgramPipeline — retrieve properties of a program pipeline object</p>
+      </div>
+      <div class="refsynopsisdiv">
+        <h2>C Specification</h2>
+        <div class="funcsynopsis">
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">void <strong class="fsfunc">glGetProgramPipelineiv</strong>(</code>
+              </td>
+              <td>GLuint <var class="pdparam">pipeline</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>GLenum <var class="pdparam">pname</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>GLint *<var class="pdparam">params</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+        </div>
+      </div>
+      <div class="refsect1" id="parameters">
+        <h2>Parameters</h2>
+        <div class="variablelist">
+          <dl class="variablelist">
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>pipeline</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>
+                Specifies the name of a program pipeline object whose parameter retrieve.
+            </p>
+            </dd>
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>pname</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>
+                Specifies the name of the parameter to retrieve.
+            </p>
+            </dd>
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>params</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>
+                Specifies the address of a variable into which will be written the value or values
+                of <em class="parameter"><code>pname</code></em> for <em class="parameter"><code>pipeline</code></em>.
+            </p>
+            </dd>
+          </dl>
+        </div>
+      </div>
+      <div class="refsect1" id="description">
+        <h2>Description</h2>
+        <p>
+            <code class="function">glGetProgramPipelineiv</code> retrieves the value of a property of the program
+            pipeline object <em class="parameter"><code>pipeline</code></em>. <em class="parameter"><code>pname</code></em> specifies the
+            name of the parameter whose value to retrieve. The value of the parameter is written to
+            the variable whose address is given by <em class="parameter"><code>params</code></em>.
+        </p>
+        <p>
+            If <em class="parameter"><code>pname</code></em> is <code class="constant">GL_ACTIVE_PROGRAM</code>, the name of the
+            active program object of the program pipeline object is returned in <em class="parameter"><code>params</code></em>.
+        </p>
+        <p>
+            If <em class="parameter"><code>pname</code></em> is <code class="constant">GL_VERTEX_SHADER</code>, the name of the
+            current program object for the vertex shader type of the program pipeline object is
+            returned in <em class="parameter"><code>params</code></em>.
+        </p>
+        <p>
+            If <em class="parameter"><code>pname</code></em> is <code class="constant">GL_TESS_CONTROL_SHADER</code>, the name of the
+            current program object for the tessellation control shader type of the program pipeline object is
+            returned in <em class="parameter"><code>params</code></em>.
+        </p>
+        <p>
+            If <em class="parameter"><code>pname</code></em> is <code class="constant">GL_TESS_EVALUATION_SHADER</code>, the name of the
+            current program object for the tessellation evaluation shader type of the program pipeline object is
+            returned in <em class="parameter"><code>params</code></em>.
+        </p>
+        <p>
+            If <em class="parameter"><code>pname</code></em> is <code class="constant">GL_GEOMETRY_SHADER</code>, the name of the
+            current program object for the geometry shader type of the program pipeline object is
+            returned in <em class="parameter"><code>params</code></em>.
+        </p>
+        <p>
+            If <em class="parameter"><code>pname</code></em> is <code class="constant">GL_FRAGMENT_SHADER</code>, the name of the
+            current program object for the fragment shader type of the program pipeline object is
+            returned in <em class="parameter"><code>params</code></em>.
+        </p>
+        <p>
+            If <em class="parameter"><code>pname</code></em> is <code class="constant">GL_INFO_LOG_LENGTH</code>, the length of the
+            info log, including the null terminator, is returned in <em class="parameter"><code>params</code></em>. If there
+            is no info log, zero is returned.
+        </p>
+      </div>
+      <div class="refsect1" id="errors">
+        <h2>Errors</h2>
+        <p>
+            <code class="constant">GL_INVALID_OPERATION</code> is generated if <em class="parameter"><code>pipeline</code></em> is not zero or
+            a name previously returned from a call to <a class="citerefentry" href="glGenProgramPipelines.xhtml"><span class="citerefentry"><span class="refentrytitle">glGenProgramPipelines</span></span></a>
+            or if such a name has been deleted by a call to
+            <a class="citerefentry" href="glDeleteProgramPipelines.xhtml"><span class="citerefentry"><span class="refentrytitle">glDeleteProgramPipelines</span></span></a>.
+        </p>
+        <p>
+            <code class="constant">GL_INVALID_ENUM</code> is generated if <em class="parameter"><code>pname</code></em> is not one
+            of the accepted values.
+        </p>
+      </div>
+      
+      <div class="refsect1" id="seealso">
+        <h2>See Also</h2>
+        <p>
+            <a class="citerefentry" href="glGenProgramPipelines.xhtml"><span class="citerefentry"><span class="refentrytitle">glGenProgramPipelines</span></span></a>,
+            <a class="citerefentry" href="glBindProgramPipeline.xhtml"><span class="citerefentry"><span class="refentrytitle">glBindProgramPipeline</span></span></a>,
+            <a class="citerefentry" href="glDeleteProgramPipelines.xhtml"><span class="citerefentry"><span class="refentrytitle">glDeleteProgramPipelines</span></span></a>
+        </p>
+      </div>
+      
+    </div>
+    <footer><p><small>Khronos reference, offline edition by GLSL Support, 2026-11-22. <a href="sources.txt">Source and edition notes</a>.</small></p></footer>
+  </body>
+</html>

@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templateSet group="GLSL">
+  <template name="main" value="void main() {&#10;    $END$&#10;}" description="void main" toReformat="true" toShortenFQNames="true">
+    <context><option name="GLSL" value="true" /></context>
+  </template>
+  <template name="vertmain" value="void main() {&#10;    gl_Position = vec4($POSITION$, 1.0);&#10;    $END$&#10;}" description="vertex shader main" toReformat="true" toShortenFQNames="true">
+    <variable name="POSITION" expression="" defaultValue="&quot;position&quot;" alwaysStopAt="true" />
+    <context><option name="GLSL" value="true" /></context>
+  </template>
+  <template name="fragmain" value="layout(location = 0) out vec4 fragColor;&#10;&#10;void main() {&#10;    fragColor = vec4($COLOR$, 1.0);&#10;    $END$&#10;}" description="fragment shader main" toReformat="true" toShortenFQNames="true">
+    <variable name="COLOR" expression="" defaultValue="&quot;1.0&quot;" alwaysStopAt="true" />
+    <context><option name="GLSL" value="true" /></context>
+  </template>
+  <template name="compmain" value="layout(local_size_x = $X$, local_size_y = $Y$, local_size_z = $Z$) in;&#10;&#10;void main() {&#10;    $END$&#10;}" description="compute shader main" toReformat="true" toShortenFQNames="true">
+    <variable name="X" expression="" defaultValue="&quot;8&quot;" alwaysStopAt="true" />
+    <variable name="Y" expression="" defaultValue="&quot;8&quot;" alwaysStopAt="true" />
+    <variable name="Z" expression="" defaultValue="&quot;1&quot;" alwaysStopAt="true" />
+    <context><option name="GLSL" value="true" /></context>
+  </template>
+  <template name="if" value="if ($CONDITION$) {&#10;    $END$&#10;}" description="if block" toReformat="true" toShortenFQNames="true">
+    <variable name="CONDITION" expression="" defaultValue="&quot;condition&quot;" alwaysStopAt="true" />
+    <context><option name="GLSL" value="true" /></context>
+  </template>
+  <template name="ife" value="if ($CONDITION$) {&#10;    $END$&#10;} else {&#10;    &#10;}" description="if / else block" toReformat="true" toShortenFQNames="true">
+    <variable name="CONDITION" expression="" defaultValue="&quot;condition&quot;" alwaysStopAt="true" />
+    <context><option name="GLSL" value="true" /></context>
+  </template>
+  <template name="elif" value="else if ($CONDITION$) {&#10;    $END$&#10;}" description="else if block" toReformat="true" toShortenFQNames="true">
+    <variable name="CONDITION" expression="" defaultValue="&quot;condition&quot;" alwaysStopAt="true" />
+    <context><option name="GLSL" value="true" /></context>
+  </template>
+  <template name="else" value="else {&#10;    $END$&#10;}" description="else block" toReformat="true" toShortenFQNames="true">
+    <context><option name="GLSL" value="true" /></context>
+  </template>
+  <template name="for" value="for (int $INDEX$ = $START$; $INDEX$ &lt; $LIMIT$; ++$INDEX$) {&#10;    $END$&#10;}" description="for loop block" toReformat="true" toShortenFQNames="true">
+    <variable name="INDEX" expression="" defaultValue="&quot;i&quot;" alwaysStopAt="true" />
+    <variable name="START" expression="" defaultValue="&quot;0&quot;" alwaysStopAt="true" />
+    <variable name="LIMIT" expression="" defaultValue="&quot;count&quot;" alwaysStopAt="true" />
+    <context><option name="GLSL" value="true" /></context>
+  </template>
+  <template name="while" value="while ($CONDITION$) {&#10;    $END$&#10;}" description="while loop block" toReformat="true" toShortenFQNames="true">
+    <variable name="CONDITION" expression="" defaultValue="&quot;condition&quot;" alwaysStopAt="true" />
+    <context><option name="GLSL" value="true" /></context>
+  </template>
+  <template name="do" value="do {&#10;    $END$&#10;} while ($CONDITION$);" description="do / while block" toReformat="true" toShortenFQNames="true">
+    <variable name="CONDITION" expression="" defaultValue="&quot;condition&quot;" alwaysStopAt="true" />
+    <context><option name="GLSL" value="true" /></context>
+  </template>
+  <template name="switch" value="switch ($VALUE$) {&#10;case $CASE$:&#10;    $END$&#10;    break;&#10;default:&#10;    break;&#10;}" description="switch block" toReformat="true" toShortenFQNames="true">
+    <variable name="VALUE" expression="" defaultValue="&quot;value&quot;" alwaysStopAt="true" />
+    <variable name="CASE" expression="" defaultValue="&quot;0&quot;" alwaysStopAt="true" />
+    <context><option name="GLSL" value="true" /></context>
+  </template>
+  <template name="case" value="case $VALUE$:&#10;    $END$&#10;    break;" description="switch case block" toReformat="true" toShortenFQNames="true">
+    <variable name="VALUE" expression="" defaultValue="&quot;0&quot;" alwaysStopAt="true" />
+    <context><option name="GLSL" value="true" /></context>
+  </template>
+  <template name="default" value="default:&#10;    $END$&#10;    break;" description="switch default block" toReformat="true" toShortenFQNames="true">
+    <context><option name="GLSL" value="true" /></context>
+  </template>
+  <template name="brace" value="{&#10;    $END$&#10;}" description="brace block" toReformat="true" toShortenFQNames="true">
+    <context><option name="GLSL" value="true" /></context>
+  </template>
+  <template name="braces" value="{&#10;    $END$&#10;}" description="brace block" toReformat="true" toShortenFQNames="true">
+    <context><option name="GLSL" value="true" /></context>
+  </template>
+  <template name="block" value="{&#10;    $END$&#10;}" description="code block" toReformat="true" toShortenFQNames="true">
+    <context><option name="GLSL" value="true" /></context>
+  </template>
+  <template name="paren" value="($END$)" description="parentheses" toReformat="true" toShortenFQNames="true">
+    <context><option name="GLSL" value="true" /></context>
+  </template>
+  <template name="parens" value="($END$)" description="parentheses" toReformat="true" toShortenFQNames="true">
+    <context><option name="GLSL" value="true" /></context>
+  </template>
+  <template name="bracket" value="[$END$]" description="brackets" toReformat="true" toShortenFQNames="true">
+    <context><option name="GLSL" value="true" /></context>
+  </template>
+  <template name="brackets" value="[$END$]" description="brackets" toReformat="true" toShortenFQNames="true">
+    <context><option name="GLSL" value="true" /></context>
+  </template>
+  <template name="uniform" value="uniform $TYPE$ $NAME$;" description="uniform declaration" toReformat="true" toShortenFQNames="true">
+    <variable name="TYPE" expression="" defaultValue="&quot;mat4&quot;" alwaysStopAt="true" />
+    <variable name="NAME" expression="" defaultValue="&quot;uValue&quot;" alwaysStopAt="true" />
+    <context><option name="GLSL" value="true" /></context>
+  </template>
+  <template name="sampler2D" value="layout(binding = $BINDING$) uniform sampler2D $NAME$;" description="sampler2D uniform" toReformat="true" toShortenFQNames="true">
+    <variable name="BINDING" expression="" defaultValue="&quot;0&quot;" alwaysStopAt="true" />
+    <variable name="NAME" expression="" defaultValue="&quot;uTexture&quot;" alwaysStopAt="true" />
+    <context><option name="GLSL" value="true" /></context>
+  </template>
+  <template name="ubo" value="layout(std140, binding = $BINDING$) uniform $BLOCK$ {&#10;    $END$&#10;} $INSTANCE$;" description="uniform buffer object" toReformat="true" toShortenFQNames="true">
+    <variable name="BINDING" expression="" defaultValue="&quot;0&quot;" alwaysStopAt="true" />
+    <variable name="BLOCK" expression="" defaultValue="&quot;UniformBlock&quot;" alwaysStopAt="true" />
+    <variable name="INSTANCE" expression="" defaultValue="&quot;ubo&quot;" alwaysStopAt="true" />
+    <context><option name="GLSL" value="true" /></context>
+  </template>
+  <template name="ssbo" value="layout(std430, binding = $BINDING$) buffer $BLOCK$ {&#10;    $END$&#10;} $INSTANCE$;" description="shader storage buffer object" toReformat="true" toShortenFQNames="true">
+    <variable name="BINDING" expression="" defaultValue="&quot;0&quot;" alwaysStopAt="true" />
+    <variable name="BLOCK" expression="" defaultValue="&quot;StorageBlock&quot;" alwaysStopAt="true" />
+    <variable name="INSTANCE" expression="" defaultValue="&quot;ssbo&quot;" alwaysStopAt="true" />
+    <context><option name="GLSL" value="true" /></context>
+  </template>
+  <template name="layout" value="layout($QUALIFIER$ = $VALUE$) $END$" description="layout qualifier" toReformat="true" toShortenFQNames="true">
+    <variable name="QUALIFIER" expression="" defaultValue="&quot;location&quot;" alwaysStopAt="true" />
+    <variable name="VALUE" expression="" defaultValue="&quot;0&quot;" alwaysStopAt="true" />
+    <context><option name="GLSL" value="true" /></context>
+  </template>
+  <template name="in" value="layout(location = $LOCATION$) in $TYPE$ $NAME$;" description="shader input" toReformat="true" toShortenFQNames="true">
+    <variable name="LOCATION" expression="" defaultValue="&quot;0&quot;" alwaysStopAt="true" />
+    <variable name="TYPE" expression="" defaultValue="&quot;vec3&quot;" alwaysStopAt="true" />
+    <variable name="NAME" expression="" defaultValue="&quot;inputValue&quot;" alwaysStopAt="true" />
+    <context><option name="GLSL" value="true" /></context>
+  </template>
+  <template name="out" value="layout(location = $LOCATION$) out $TYPE$ $NAME$;" description="shader output" toReformat="true" toShortenFQNames="true">
+    <variable name="LOCATION" expression="" defaultValue="&quot;0&quot;" alwaysStopAt="true" />
+    <variable name="TYPE" expression="" defaultValue="&quot;vec4&quot;" alwaysStopAt="true" />
+    <variable name="NAME" expression="" defaultValue="&quot;outputValue&quot;" alwaysStopAt="true" />
+    <context><option name="GLSL" value="true" /></context>
+  </template>
+  <template name="inc" value="#include &quot;$PATH$&quot;" description="include directive" toReformat="true" toShortenFQNames="true">
+    <variable name="PATH" expression="" defaultValue="&quot;common.glsl&quot;" alwaysStopAt="true" />
+    <context><option name="GLSL" value="true" /></context>
+  </template>
+  <template name="def" value="#define $NAME$ $VALUE$" description="define macro" toReformat="true" toShortenFQNames="true">
+    <variable name="NAME" expression="" defaultValue="&quot;NAME&quot;" alwaysStopAt="true" />
+    <variable name="VALUE" expression="" defaultValue="&quot;1&quot;" alwaysStopAt="true" />
+    <context><option name="GLSL" value="true" /></context>
+  </template>
+  <template name="ifdef" value="#ifdef $SYMBOL$&#10;$END$&#10;#endif" description="ifdef block" toReformat="true" toShortenFQNames="true">
+    <variable name="SYMBOL" expression="" defaultValue="&quot;SYMBOL&quot;" alwaysStopAt="true" />
+    <context><option name="GLSL" value="true" /></context>
+  </template>
+  <template name="ifndef" value="#ifndef $SYMBOL$&#10;$END$&#10;#endif" description="ifndef block" toReformat="true" toShortenFQNames="true">
+    <variable name="SYMBOL" expression="" defaultValue="&quot;SYMBOL&quot;" alwaysStopAt="true" />
+    <context><option name="GLSL" value="true" /></context>
+  </template>
+  <template name="ext" value="#extension $EXTENSION$ : $BEHAVIOR$" description="extension directive" toReformat="true" toShortenFQNames="true">
+    <variable name="EXTENSION" expression="" defaultValue="&quot;GL_ARB_shader_draw_parameters&quot;" alwaysStopAt="true" />
+    <variable name="BEHAVIOR" expression="" defaultValue="&quot;require&quot;" alwaysStopAt="true" />
+    <context><option name="GLSL" value="true" /></context>
+  </template>
+  <template name="version" value="#version $VERSION$ $PROFILE$" description="version directive" toReformat="true" toShortenFQNames="true">
+    <variable name="VERSION" expression="" defaultValue="&quot;460&quot;" alwaysStopAt="true" />
+    <variable name="PROFILE" expression="" defaultValue="&quot;core&quot;" alwaysStopAt="true" />
+    <context><option name="GLSL" value="true" /></context>
+  </template>
+</templateSet>

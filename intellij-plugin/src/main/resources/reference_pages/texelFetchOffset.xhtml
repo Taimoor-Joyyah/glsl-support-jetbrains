@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml">
+  <head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' file: 'unsafe-inline' 'unsafe-eval'; style-src 'self' file: 'unsafe-inline'; font-src 'self' file: data:; img-src 'self' file: data:; connect-src 'self' file:; base-uri 'none'; object-src 'none'"/>
+    <title>texelFetchOffset - OpenGL 4 Reference Pages</title>
+    <link rel="stylesheet" type="text/css" href="opengl-man.css"/>
+    <meta name="generator" content="DocBook XSL Stylesheets V1.79.2"/>
+    <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({
+                showMathMenu: false,
+                MathML: {
+                    extensions: ["content-mathml.js"]
+                },
+                tex2jax: {
+                    skipTags: ["script","noscript","style","textarea","pre","annotation","annotation-xml"],
+                    inlineMath: [['$','$'], ['\\(','\\)']]
+                }
+            });
+        </script>
+    <script type="text/javascript" src="mathjax/MathJax.js?config=TeX-AMS-MML_SVG"/>
+  <meta name="dcterms.source" content="https://registry.khronos.org/OpenGL-Refpages/gl4/html/texelFetchOffset.xhtml"/></head>
+  <body>
+    <header/>
+    <div class="refentry" id="texelFetchOffset">
+      <div class="titlepage"/>
+      <div class="refnamediv">
+        <h2>Name</h2>
+        <p>texelFetchOffset — perform a lookup of a single texel within a texture with an offset</p>
+      </div>
+      <div class="refsynopsisdiv">
+        <h2>Declaration</h2>
+        <div class="funcsynopsis">
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">gvec4 <strong class="fsfunc">texelFetchOffset</strong>(</code>
+              </td>
+              <td>gsampler1D <var class="pdparam">sampler</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>int <var class="pdparam">P</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>int <var class="pdparam">lod</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>int <var class="pdparam">offset</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">gvec4 <strong class="fsfunc">texelFetchOffset</strong>(</code>
+              </td>
+              <td>gsampler2D <var class="pdparam">sampler</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>ivec2 <var class="pdparam">P</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>int <var class="pdparam">lod</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>ivec2 <var class="pdparam">offset</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">gvec4 <strong class="fsfunc">texelFetchOffset</strong>(</code>
+              </td>
+              <td>gsampler3D <var class="pdparam">sampler</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>ivec3 <var class="pdparam">P</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>int <var class="pdparam">lod</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>ivec3 <var class="pdparam">offset</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">gvec4 <strong class="fsfunc">texelFetchOffset</strong>(</code>
+              </td>
+              <td>gsampler2DRect <var class="pdparam">sampler</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>ivec2 <var class="pdparam">P</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>ivec2 <var class="pdparam">offset</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">gvec4 <strong class="fsfunc">texelFetchOffset</strong>(</code>
+              </td>
+              <td>gsampler1DArray <var class="pdparam">sampler</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>ivec2 <var class="pdparam">P</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>int <var class="pdparam">lod</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>ivec2 <var class="pdparam">offset</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">gvec4 <strong class="fsfunc">texelFetchOffset</strong>(</code>
+              </td>
+              <td>gsampler2DArray <var class="pdparam">sampler</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>ivec3 <var class="pdparam">P</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>int <var class="pdparam">lod</var>, </td>
+            </tr>
+            <tr>
+              <td> </td>
+              <td>ivec2 <var class="pdparam">offset</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+        </div>
+      </div>
+      <div class="refsect1" id="parameters">
+        <h2>Parameters</h2>
+        <div class="variablelist">
+          <dl class="variablelist">
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>sampler</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>
+                    Specifies the sampler to which the texture from which texels will be retrieved is bound.
+                </p>
+            </dd>
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>P</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>
+                    Specifies the texture coordinates at which texture will be sampled.
+                </p>
+            </dd>
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>lod</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>
+                    If present, specifies the level-of-detail within the texture from which the texel will be fetched.
+                </p>
+            </dd>
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>offset</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>
+                    Specifies offset, in texels that will be applied to <em class="parameter"><code>P</code></em> before looking up the texel.
+                </p>
+            </dd>
+          </dl>
+        </div>
+      </div>
+      <div class="refsect1" id="description">
+        <h2>Description</h2>
+        <p>
+            <code class="function">texelFetchOffset</code> performs a lookup of a single texel from texture coordinate <em class="parameter"><code>P</code></em>
+            in the texture bound to <em class="parameter"><code>sampler</code></em>. Before fetching the texel, the offset specified in <em class="parameter"><code>offset</code></em>
+            is added to <em class="parameter"><code>P</code></em>. <em class="parameter"><code>offset</code></em> must be a constant expression. The array layer is specified in the last component of
+            <em class="parameter"><code>P</code></em> for array forms. The <em class="parameter"><code>lod</code></em> parameter (if present) specifies the level-of-detail
+            from which the texel will be fetched.
+        </p>
+      </div>
+      
+      <div class="refsect1" id="seealso">
+        <h2>See Also</h2>
+        <p>
+            <a class="citerefentry" href="texelFetch.xhtml"><span class="citerefentry"><span class="refentrytitle">texelFetch</span></span></a>,
+            <a class="citerefentry" href="texture.xhtml"><span class="citerefentry"><span class="refentrytitle">texture</span></span></a>,
+            <a class="citerefentry" href="textureGather.xhtml"><span class="citerefentry"><span class="refentrytitle">textureGather</span></span></a>,
+            <a class="citerefentry" href="textureGatherOffset.xhtml"><span class="citerefentry"><span class="refentrytitle">textureGatherOffset</span></span></a>,
+            <a class="citerefentry" href="textureGatherOffsets.xhtml"><span class="citerefentry"><span class="refentrytitle">textureGatherOffsets</span></span></a>,
+            <a class="citerefentry" href="textureGrad.xhtml"><span class="citerefentry"><span class="refentrytitle">textureGrad</span></span></a>,
+            <a class="citerefentry" href="textureGradOffset.xhtml"><span class="citerefentry"><span class="refentrytitle">textureGradOffset</span></span></a>,
+            <a class="citerefentry" href="textureLod.xhtml"><span class="citerefentry"><span class="refentrytitle">textureLod</span></span></a>,
+            <a class="citerefentry" href="textureLodOffset.xhtml"><span class="citerefentry"><span class="refentrytitle">textureLodOffset</span></span></a>,
+            <a class="citerefentry" href="textureOffset.xhtml"><span class="citerefentry"><span class="refentrytitle">textureOffset</span></span></a>,
+            <a class="citerefentry" href="textureProj.xhtml"><span class="citerefentry"><span class="refentrytitle">textureProj</span></span></a>,
+            <a class="citerefentry" href="textureProjGrad.xhtml"><span class="citerefentry"><span class="refentrytitle">textureProjGrad</span></span></a>,
+            <a class="citerefentry" href="textureProjGradOffset.xhtml"><span class="citerefentry"><span class="refentrytitle">textureProjGradOffset</span></span></a>,
+            <a class="citerefentry" href="textureProjLod.xhtml"><span class="citerefentry"><span class="refentrytitle">textureProjLod</span></span></a>,
+            <a class="citerefentry" href="textureProjLodOffset.xhtml"><span class="citerefentry"><span class="refentrytitle">textureProjLodOffset</span></span></a>,
+            <a class="citerefentry" href="textureProjOffset.xhtml"><span class="citerefentry"><span class="refentrytitle">textureProjOffset</span></span></a>,
+            <a class="citerefentry" href="textureQueryLod.xhtml"><span class="citerefentry"><span class="refentrytitle">textureQueryLod</span></span></a>,
+            <a class="citerefentry" href="textureSize.xhtml"><span class="citerefentry"><span class="refentrytitle">textureSize</span></span></a>
+        </p>
+      </div>
+      
+    </div>
+    <footer><p><small>Khronos reference, offline edition by GLSL Support, 2026-11-22. <a href="sources.txt">Source and edition notes</a>.</small></p></footer>
+  </body>
+</html>

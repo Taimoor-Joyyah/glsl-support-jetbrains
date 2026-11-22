@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml">
+  <head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' file: 'unsafe-inline' 'unsafe-eval'; style-src 'self' file: 'unsafe-inline'; font-src 'self' file: data:; img-src 'self' file: data:; connect-src 'self' file:; base-uri 'none'; object-src 'none'"/>
+    <title>memoryBarrierImage - OpenGL 4 Reference Pages</title>
+    <link rel="stylesheet" type="text/css" href="opengl-man.css"/>
+    <meta name="generator" content="DocBook XSL Stylesheets V1.79.2"/>
+    <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({
+                showMathMenu: false,
+                MathML: {
+                    extensions: ["content-mathml.js"]
+                },
+                tex2jax: {
+                    skipTags: ["script","noscript","style","textarea","pre","annotation","annotation-xml"],
+                    inlineMath: [['$','$'], ['\\(','\\)']]
+                }
+            });
+        </script>
+    <script type="text/javascript" src="mathjax/MathJax.js?config=TeX-AMS-MML_SVG"/>
+  <meta name="dcterms.source" content="https://registry.khronos.org/OpenGL-Refpages/gl4/html/memoryBarrierImage.xhtml"/></head>
+  <body>
+    <header/>
+    <div class="refentry" id="memoryBarrierImage">
+      <div class="titlepage"/>
+      <div class="refnamediv">
+        <h2>Name</h2>
+        <p>memoryBarrierImage — controls the ordering of operations on image variables issued by a single shader invocation</p>
+      </div>
+      <div class="refsynopsisdiv">
+        <h2>Declaration</h2>
+        <div class="funcsynopsis">
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">void <strong class="fsfunc">memoryBarrierImage</strong>(</code>
+              </td>
+              <td>void<code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+        </div>
+      </div>
+      <div class="refsect1" id="description">
+        <h2>Description</h2>
+        <p>
+            <code class="function">memoryBarrierImage</code> waits on the completion of all memory accesses resulting
+            from the use of image variables and then returns with no other effect.  When this function returns, the
+            results of any modifications to the content of image variables will be visible
+            to any access to the same buffer from other shader invocations.  In particular,
+            any modifications made in one shader stage are guaranteed to be visible to accesses
+            performed by shader invocations in subsequent stages when those invocations were triggered by the
+            execution of the original shader invocation (e.g., fragment shader invocations for a primitive resulting
+            from a particular geometry shader invocation).
+        </p>
+      </div>
+      
+      <div class="refsect1" id="seealso">
+        <h2>See Also</h2>
+        <p>
+            <a class="citerefentry" href="memoryBarrier.xhtml"><span class="citerefentry"><span class="refentrytitle">memoryBarrier</span></span></a>,
+            <a class="citerefentry" href="memoryBarrierShared.xhtml"><span class="citerefentry"><span class="refentrytitle">memoryBarrierShared</span></span></a>,
+            <a class="citerefentry" href="memoryBarrierBuffer.xhtml"><span class="citerefentry"><span class="refentrytitle">memoryBarrierBuffer</span></span></a>,
+            <a class="citerefentry" href="groupMemoryBarrier.xhtml"><span class="citerefentry"><span class="refentrytitle">groupMemoryBarrier</span></span></a>
+        </p>
+      </div>
+      
+    </div>
+    <footer><p><small>Khronos reference, offline edition by GLSL Support, 2026-11-22. <a href="sources.txt">Source and edition notes</a>.</small></p></footer>
+  </body>
+</html>

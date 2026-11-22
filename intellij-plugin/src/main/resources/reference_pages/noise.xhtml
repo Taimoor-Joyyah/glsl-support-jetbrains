@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml">
+  <head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' file: 'unsafe-inline' 'unsafe-eval'; style-src 'self' file: 'unsafe-inline'; font-src 'self' file: data:; img-src 'self' file: data:; connect-src 'self' file:; base-uri 'none'; object-src 'none'"/>
+    <title>noise - OpenGL 4 Reference Pages</title>
+    <link rel="stylesheet" type="text/css" href="opengl-man.css"/>
+    <meta name="generator" content="DocBook XSL Stylesheets V1.79.2"/>
+    <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({
+                showMathMenu: false,
+                MathML: {
+                    extensions: ["content-mathml.js"]
+                },
+                tex2jax: {
+                    skipTags: ["script","noscript","style","textarea","pre","annotation","annotation-xml"],
+                    inlineMath: [['$','$'], ['\\(','\\)']]
+                }
+            });
+        </script>
+    <script type="text/javascript" src="mathjax/MathJax.js?config=TeX-AMS-MML_SVG"/>
+  <meta name="dcterms.source" content="https://registry.khronos.org/OpenGL-Refpages/gl4/html/noise.xhtml"/></head>
+  <body>
+    <header/>
+    <div class="refentry" id="noise">
+      <div class="titlepage"/>
+      <div class="refnamediv">
+        <h2>Name</h2>
+        <p>noise — generate values with a pseudo-random noise function</p>
+      </div>
+      <div class="refsynopsisdiv">
+        <h2>Declaration</h2>
+        <div class="funcsynopsis">
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">float <strong class="fsfunc">noise1</strong>(</code>
+              </td>
+              <td>genType <var class="pdparam">x</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">vec2 <strong class="fsfunc">noise2</strong>(</code>
+              </td>
+              <td>genType <var class="pdparam">x</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">vec3 <strong class="fsfunc">noise3</strong>(</code>
+              </td>
+              <td>genType <var class="pdparam">x</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+          <table style="border: 0; cellspacing: 0; cellpadding: 0;" class="funcprototype-table">
+            <tr>
+              <td>
+                <code class="funcdef">vec4 <strong class="fsfunc">noise4</strong>(</code>
+              </td>
+              <td>genType <var class="pdparam">x</var><code>)</code>;</td>
+            </tr>
+          </table>
+          <div class="funcprototype-spacer"> </div>
+        </div>
+      </div>
+      <div class="refsect1" id="parameters">
+        <h2>Parameters</h2>
+        <div class="variablelist">
+          <dl class="variablelist">
+            <dt>
+              <span class="term">
+                <em class="parameter">
+                  <code>x</code>
+                </em>
+              </span>
+            </dt>
+            <dd>
+              <p>
+                    Specifies the value to be used to seed the noise function.
+                </p>
+            </dd>
+          </dl>
+        </div>
+      </div>
+      <div class="refsect1" id="description">
+        <h2>Description</h2>
+        <p>
+            <code class="function">noise1</code>,  <code class="function">noise2</code>, <code class="function">noise3</code> and <code class="function">noise4</code> return
+            noise values (vector or scalar) based on the input value <em class="parameter"><code>x</code></em>. The noise function is a stochastic function
+            that can be used to increase visual complexity. Values returned by the noise functions give the appearance of randomness,
+            but are not truly random. They are defined to have the following characteristics:
+        </p>
+        <p>
+            </p>
+        <div class="itemizedlist">
+          <ul class="itemizedlist" style="list-style-type: disc; ">
+            <li class="listitem">
+              <p>The return value(s) are always in the range [-1.0,1.0], and cover at least the range [-0.6, 0.6], with a Gaussian-like distribution.</p>
+            </li>
+            <li class="listitem">
+              <p>The return value(s) have an overall average of 0.0.</p>
+            </li>
+            <li class="listitem">
+              <p>They are repeatable, in that a particular input value will always produce the same return value.</p>
+            </li>
+            <li class="listitem">
+              <p>They are statistically invariant under rotation (i.e., no matter how the domain is rotated, it has the same statistical character).</p>
+            </li>
+            <li class="listitem">
+              <p>They have a statistical invariance under translation (i.e., no matter how the domain is translated, it has the same statistical character).</p>
+            </li>
+            <li class="listitem">
+              <p>They typically give different results under translation.</p>
+            </li>
+            <li class="listitem">
+              <p>The spatial frequency is narrowly concentrated, centered somewhere between 0.5 to 1.0.</p>
+            </li>
+            <li class="listitem">
+              <p>They are C1 continuous everywhere (i.e., the first derivative is continuous).</p>
+            </li>
+          </ul>
+        </div>
+        <p>
+        </p>
+      </div>
+      
+      
+    </div>
+    <footer><p><small>Khronos reference, offline edition by GLSL Support, 2026-11-22. <a href="sources.txt">Source and edition notes</a>.</small></p></footer>
+  </body>
+</html>

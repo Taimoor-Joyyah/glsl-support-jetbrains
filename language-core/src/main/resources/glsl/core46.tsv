@@ -1,0 +1,20 @@
+variables	gl_DrawID	int			Zero-based draw index within a multi-draw command. A single draw receives zero. The value is dynamically uniform within a draw.
+variables	gl_BaseVertex	int			Base vertex supplied to an indexed draw. Draws without a base vertex receive zero. gl_VertexID already includes the base for indexed draws.
+variables	gl_BaseInstance	int			Base instance of the drawing command. gl_InstanceID starts at zero within each draw.
+functions	anyInvocation	bool	bool value		Returns true when at least one active invocation passes the test. The participating set is implementation-dependent and may cover only part of a compute workgroup.
+functions	allInvocations	bool	bool value		Returns true when every active invocation passes the test. The participating set is implementation-dependent and may cover only part of a compute workgroup.
+functions	allInvocationsEqual	bool	bool value		Returns true when the test has the same Boolean result in every active invocation. The participating set is implementation-dependent and may cover only part of a compute workgroup.
+functions	atomicCounterAdd	uint	atomic_uint counter, uint data		Atomically adds data and returns the previous 32-bit unsigned counter value.
+functions	atomicCounterSubtract	uint	atomic_uint counter, uint data		Atomically subtracts data and returns the previous 32-bit unsigned counter value.
+functions	atomicCounterMin	uint	atomic_uint counter, uint data		Atomically takes the smaller of the counter and data and returns the previous 32-bit unsigned counter value.
+functions	atomicCounterMax	uint	atomic_uint counter, uint data		Atomically takes the larger of the counter and data and returns the previous 32-bit unsigned counter value.
+functions	atomicCounterAnd	uint	atomic_uint counter, uint data		Atomically applies bitwise AND with data and returns the previous 32-bit unsigned counter value.
+functions	atomicCounterOr	uint	atomic_uint counter, uint data		Atomically applies bitwise OR with data and returns the previous 32-bit unsigned counter value.
+functions	atomicCounterXor	uint	atomic_uint counter, uint data		Atomically applies bitwise exclusive OR with data and returns the previous 32-bit unsigned counter value.
+functions	atomicCounterExchange	uint	atomic_uint counter, uint data		Atomically replaces the counter with data and returns the previous 32-bit unsigned counter value.
+functions	atomicCounterCompSwap	uint	atomic_uint counter, uint compare, uint data		Atomically stores data only when the previous value equals compare and returns the previous 32-bit unsigned counter value.
+qualifiers	constant_id				Assigns a SPIR-V specialization ID to a scalar constant. The initializer supplies the default value.
+qualifiers	local_size_x_id				Assigns a specialization ID to the x component of gl_WorkGroupSize in a compute shader.
+qualifiers	local_size_y_id				Assigns a specialization ID to the y component of gl_WorkGroupSize in a compute shader.
+qualifiers	local_size_z_id				Assigns a specialization ID to the z component of gl_WorkGroupSize in a compute shader.
+variables	GL_SPIRV	int			Preprocessor macro with value 100 when compiling for the OpenGL SPIR-V environment.

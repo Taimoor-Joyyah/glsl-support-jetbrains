@@ -1,0 +1,33 @@
+plugins { id 'base' }
+
+def windowsTask = { String name, String script, List arguments = [] ->
+    tasks.register(name, Exec) {
+        workingDir layout.projectDirectory
+        commandLine(['pwsh', '-NoProfile', '-File', "scripts/${script}"] + arguments)
+        group = 'verification'
+    }
+}
+tasks.register('checkNative', Exec) {
+    group = 'verification'
+    commandLine 'cmd.exe', '/d', '/c', 'scripts\\native.cmd'
+}
+windowsTask('checkLanguage', 'test-java.ps1', ['-Stage','core'])
+windowsTask('checkBridge', 'test-java.ps1', ['-Stage','bridge'])
+tasks.named('checkBridge') { dependsOn 'checkNative', 'checkLanguage' }
+windowsTask('buildPlugin', 'package.ps1', ['-WithSmoke'])
+tasks.named('buildPlugin') { dependsOn 'checkNative'; group='build' }
+windowsTask('checkIde', 'matrix.ps1')
+tasks.named('checkIde') { dependsOn 'buildPlugin'; mustRunAfter 'checkBridge' }
+windowsTask('checkOfflineReference', 'test-reference.ps1')
+tasks.named('checkOfflineReference') { dependsOn 'buildPlugin' }
+windowsTask('verifyPlugin', 'verify.ps1')
+tasks.named('verifyPlugin') { dependsOn 'buildPlugin'; mustRunAfter 'checkIde' }
+windowsTask('benchmarks','benchmarks.ps1')
+tasks.named('benchmarks'){ dependsOn 'checkBridge' }
+tasks.register('checkAll') {
+    group = 'verification'
+    description = 'Build and test the Windows DLL, Java, JNI, installed plugin and compatibility matrix.'
+    dependsOn 'checkNative','checkLanguage','checkBridge','checkIde','checkOfflineReference','verifyPlugin','benchmarks'
+}
+tasks.named('check') { dependsOn 'checkLanguage', 'checkBridge' }
+tasks.named('assemble') { dependsOn 'buildPlugin' }
