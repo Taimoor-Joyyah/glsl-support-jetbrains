@@ -90,19 +90,6 @@ final class ColorLexer extends LexerBase {
             }
             if (i < end)
                 list.add(new Part(base + i, base + end, role));
-        } else if (role == ShaderPalette.STRING_VALUE) {
-            int start = 0;
-            for (int i = 0; i + 1 < end; i++)
-                if (s.charAt(i) == '\\') {
-                    if (start < i)
-                        list.add(new Part(base + start, base + i, role));
-                    boolean valid = "'\"\\abfnrtv?01234567xXuU\n\r".indexOf(s.charAt(i + 1)) >= 0;
-                    list.add(
-                        new Part(base + i, base + i + 2, valid ? ShaderPalette.ESCAPE : ShaderPalette.BAD_ESCAPE));
-                    start = ++i + 1;
-                }
-            if (start < end)
-                list.add(new Part(base + start, base + end, role));
         } else
             list.add(new Part(base, token.end(), role));
         return list;

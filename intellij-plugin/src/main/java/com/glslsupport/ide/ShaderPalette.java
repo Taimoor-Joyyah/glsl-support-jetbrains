@@ -43,9 +43,8 @@ enum ShaderPalette {
     CASE_LABEL("Language//Case label", LABEL),
     NUMBER_INT("Literals//Integer", NUMBER),
     NUMBER_FLOAT("Literals//Floating point", NUMBER),
-    STRING_VALUE("Literals//String", STRING),
-    ESCAPE("Literals//Valid escape", VALID_STRING_ESCAPE),
-    BAD_ESCAPE("Literals//Invalid escape", INVALID_STRING_ESCAPE),
+    // Extensions such as GL_EXT_debug_printf use the IDE's shared string style.
+    EXTENSION_TEXT(null, STRING),
     BAD("Language//Invalid character", HighlighterColors.BAD_CHARACTER),
     LINE("Comments//Line", LINE_COMMENT),
     MULTILINE("Comments//Block", BLOCK_COMMENT),
@@ -78,7 +77,7 @@ enum ShaderPalette {
     final IElementType token;
     ShaderPalette(String label, TextAttributesKey base) {
         this.label = label;
-        key = TextAttributesKey.createTextAttributesKey("GLSLSUPPORT_" + switch (name()) {
+        key = label == null ? base : TextAttributesKey.createTextAttributesKey("GLSLSUPPORT_" + switch (name()) {
             case "RESERVED" -> "KEYWORD";
             case "BUILTIN_TYPE" -> "TYPE";
             case "FUNC" -> "FUNCTION";
@@ -160,7 +159,7 @@ enum ShaderPalette {
                     : NUMBER_INT;
             }
             case DIRECTIVE -> DIRECTIVE;
-            case STRING -> STRING_VALUE;
+            case STRING -> t.text().startsWith("'") ? BAD : EXTENSION_TEXT;
             case BAD -> BAD;
         };
     }

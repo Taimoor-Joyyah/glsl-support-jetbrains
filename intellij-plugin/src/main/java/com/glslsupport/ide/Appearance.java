@@ -45,6 +45,7 @@ public final class Appearance {
     }
     public static final class Colors implements ColorSettingsPage {
         static final AttributesDescriptor[] DESCRIPTORS = Arrays.stream(ShaderPalette.values())
+                                                              .filter(r -> r.label != null)
                                                               .map(r -> new AttributesDescriptor(r.label, r.key))
                                                               .toArray(AttributesDescriptor[] ::new);
         public Icon getIcon() {
@@ -76,7 +77,9 @@ public final class Appearance {
         }
         public Map<String, TextAttributesKey> getAdditionalHighlightingTagToDescriptorMap() {
             var tags = new HashMap<String, TextAttributesKey>();
-            for (var r : ShaderPalette.values()) tags.put(r.name().toLowerCase(Locale.ROOT), r.key);
+            for (var r : ShaderPalette.values())
+                if (r.label != null)
+                    tags.put(r.name().toLowerCase(Locale.ROOT), r.key);
             return tags;
         }
         public AttributesDescriptor @NotNull[] getAttributeDescriptors() {

@@ -149,6 +149,10 @@ try {
         const overview = pathToFileURL(path.join(library, "OpenGL46.xhtml")).href;
         await send("Page.navigate", {url: overview});
         await waitFor("location.href === " + JSON.stringify(overview) + " && !!document.querySelector('a')", "overview");
+        for (const [mode, background] of [["dark", "rgb(41, 43, 55)"], ["light", "rgb(255, 255, 255)"]]) {
+            await send("Emulation.setEmulatedMedia", {features: [{name:"prefers-color-scheme", value:mode}]});
+            assert.equal(await evaluate("getComputedStyle(document.body).backgroundColor"), background, mode + " edition theme");
+        }
         await evaluate("document.querySelector('a[href=\"glPolygonOffsetClamp.xhtml\"]').click()");
         await waitFor("location.pathname.endsWith('/glPolygonOffsetClamp.xhtml') && window.MathJax?.isReady", "offline cross-reference");
         await evaluate("new Promise(resolve => MathJax.Ajax.Require('[MathJax]/localization/fr/fr.js', resolve))");

@@ -20,6 +20,10 @@ windowsTask('checkIde', 'matrix.ps1')
 tasks.named('checkIde') { dependsOn 'buildPlugin'; mustRunAfter 'checkBridge' }
 windowsTask('checkOfflineReference', 'test-reference.ps1')
 tasks.named('checkOfflineReference') { dependsOn 'buildPlugin' }
+windowsTask('checkKhronosReference', 'test-khronos.ps1')
+tasks.named('checkKhronosReference') { dependsOn 'buildPlugin' }
+windowsTask('checkDistribution', 'check-distribution.ps1')
+tasks.named('checkDistribution') { dependsOn 'buildPlugin' }
 windowsTask('verifyPlugin', 'verify.ps1')
 tasks.named('verifyPlugin') { dependsOn 'buildPlugin'; mustRunAfter 'checkIde' }
 windowsTask('benchmarks','benchmarks.ps1')
@@ -27,7 +31,7 @@ tasks.named('benchmarks'){ dependsOn 'checkBridge' }
 tasks.register('checkAll') {
     group = 'verification'
     description = 'Build and test the Windows DLL, Java, JNI, installed plugin and compatibility matrix.'
-    dependsOn 'checkNative','checkLanguage','checkBridge','checkIde','checkOfflineReference','verifyPlugin','benchmarks'
+    dependsOn 'checkNative','checkLanguage','checkBridge','checkIde','checkOfflineReference','checkKhronosReference','checkDistribution','verifyPlugin','benchmarks'
 }
 tasks.named('check') { dependsOn 'checkLanguage', 'checkBridge' }
 tasks.named('assemble') { dependsOn 'buildPlugin' }

@@ -40,12 +40,14 @@ final class Features {
         var alias = ReferenceDocs.page("glGetIntegerv");
         check(alias != null && alias.equals(ReferenceDocs.page("glGet")), "Khronos grouped-page alias");
         try {
-            var page = Path.of(ReferenceDocs.page("glPolygonOffsetClamp").toURI());
-            var library = page.getParent();
-            check(Files.readString(page).contains("mathjax/MathJax.js?config=TeX-AMS-MML_SVG")
-                    && Files.isRegularFile(library.resolve("mathjax/extensions/MathML/content-mathml.js"))
-                    && Files.isRegularFile(library.resolve("specs/glspec46.core.pdf")),
-                "installed offline reference files");
+            var page = ReferenceDocs.page("glPolygonOffsetClamp").toURI();
+            check(page.getHost().equals("127.0.0.1"), "reference browser reads through the local cache");
+            try (var in = page.toURL().openStream()) {
+                check(new String(in.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8).contains("mathjax/MathJax.js?config=TeX-AMS-MML_SVG"), "installed page uses local math");
+            }
+            try (var in = page.resolve("mathjax/extensions/MathML/content-mathml.js").toURL().openStream()) {
+                check(in.read() >= 0, "deferred math available");
+            }
         } catch (Exception ex) {
             throw new AssertionError(ex);
         }
@@ -116,6 +118,19 @@ final class Features {
             WriteCommandAction.runWriteCommandAction(
                 p, () -> { com.intellij.psi.codeStyle.CodeStyleManager.getInstance(p).reformat(formatFile); });
             check(formatFile.getText().contains("x = 1."), "IDE reformat action: " + formatFile.getText());
+            var provider = com.intellij.psi.codeStyle.LanguageCodeStyleSettingsProvider.getSettingsPagesProviders()
+                .stream().filter(GlslCodeStyle.class::isInstance).findFirst().orElseThrow();
+            var style = com.intellij.application.options.CodeStyle.getSettings(formatFile).clone();
+            var configurable = provider.createConfigurable(style, style.clone());
+            try { check(configurable.createComponent() != null, "GLSL Code Style page renders"); }
+            finally { configurable.disposeUIResources(); }
+            var common = style.getCommonSettings(GlslLanguage.INSTANCE);
+            common.SPACE_AROUND_ASSIGNMENT_OPERATORS = false;
+            com.intellij.application.options.CodeStyle.doWithTemporarySettings(p, style, () ->
+                WriteCommandAction.runWriteCommandAction(p, () -> {
+                    com.intellij.psi.codeStyle.CodeStyleManager.getInstance(p).reformat(formatFile);
+                }));
+            check(formatFile.getText().contains("x=1."), "project GLSL assignment spacing");
         });
         for (String folder : List.of("first", "second")) {
             IdeSmoke.awaitProjectConfiguration(p);

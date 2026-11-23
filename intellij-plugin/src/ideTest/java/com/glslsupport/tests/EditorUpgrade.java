@@ -178,6 +178,13 @@ final class EditorUpgrade {
             + "struct Light{vec3 tint;};\nvoid main(){vec3 v=normalize(vec3(1));frag.rgb=v.xyz;\n#if 0\nvec4 "
             + "off=vec4(1);\n#endif\nreturn; frag=vec4(0);}";
         var colors = new Appearance.Colors();
+        var removed = Set.of("GLSLSUPPORT_STRING_VALUE", "GLSLSUPPORT_ESCAPE", "GLSLSUPPORT_BAD_ESCAPE");
+        check(Arrays.stream(colors.getAttributeDescriptors()).noneMatch(d -> removed.contains(d.getKey().getExternalName())),
+            "extension strings inherit Language Defaults without separate GLSL escape settings");
+        var ext = colors.getHighlighter();
+        var str = ext.getHighlightingLexer();
+        str.start("\"extension text\"");
+        check(ext.getTokenHighlights(str.getTokenType())[0] == DefaultLanguageHighlighterColors.STRING, "shared string style");
         check(
             colors.getAttributeDescriptors().length >= 50 && colors.getIcon() != null, "shader palette and icon");
         var highlighter = colors.getHighlighter();

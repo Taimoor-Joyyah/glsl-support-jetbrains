@@ -48,6 +48,13 @@ final class ReferenceWindow {
         await(() -> onEdt(() -> window.getContentManager().getContentCount() > 0), "tool window content");
         Controls ui = onEdt(() -> {
             var panel = window.getContentManager().getContent(0).getComponent();
+            var toggle = find(panel, JToggleButton.class, b -> "Index".equals(b.getText()));
+            var split = find(panel, JSplitPane.class, pane -> true);
+            check(toggle != null && split != null, "collapsible reference index");
+            if (!graphical) check(!toggle.isSelected() && split.getLeftComponent() == null, "index starts collapsed");
+            if (toggle.isSelected()) toggle.doClick(0);
+            toggle.doClick(0);
+            check(split.getLeftComponent() != null, "index expands");
             return new Controls(panel, find(panel, JTextField.class, x -> true),
                 find(panel, JButton.class, b -> "Search".equals(b.getText())),
                 find(panel, JCheckBox.class, b -> "Follow editor".equals(b.getText())),
@@ -60,6 +67,7 @@ final class ReferenceWindow {
             check("glGetFloatv".equals(ui.list.getSelectedValue()) && !ui.follow.isSelected(), "manual alias");
         });
         assertPage(ui, "glGet", "glGetFloatv", graphical);
+        verifyTheme(graphical, ui);
         app.invokeAndWait(() -> {
             ui.query.setText("bindtexture");
             ui.query.postActionEvent();
@@ -99,12 +107,36 @@ final class ReferenceWindow {
         }
     }
 
+    private static void verifyTheme(boolean graphical, Controls ui) throws Exception {
+        var manager = com.intellij.openapi.editor.colors.EditorColorsManager.getInstance();
+        var original = manager.getGlobalScheme();
+        var other = Arrays.stream(manager.getAllSchemes())
+            .filter(s -> !s.getDefaultBackground().equals(original.getDefaultBackground()))
+            .findFirst().orElseThrow();
+        try {
+            for (var scheme : List.of(other, original)) {
+                ApplicationManager.getApplication().invokeAndWait(() -> manager.setGlobalScheme(scheme));
+                var color = scheme.getDefaultBackground();
+                String target = "--gl-bg:#" + com.intellij.ui.ColorUtil.toHex(color);
+                var url = ReferenceDocs.page("glGet").toURI().resolve("opengl-man.css").toURL();
+                await(() -> {
+                    try (var stream = url.openStream()) {
+                        return new String(stream.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8).contains(target);
+                    } catch (java.io.IOException ex) { throw new java.io.UncheckedIOException(ex); }
+                }, "reference stylesheet to follow " + scheme.getName());
+                if (graphical) RenderedReference.assertBackground(ui.panel, color);
+                else await(() -> onEdt(() -> find(ui.panel, JEditorPane.class, p -> !p.isEditable()).getBackground().equals(color)),
+                    "Swing reference theme");
+            }
+        } finally { ApplicationManager.getApplication().invokeAndWait(() -> manager.setGlobalScheme(original)); }
+    }
+
     private static void assertPage(Controls ui, String file, String text, boolean graphical) throws Exception {
         if (graphical) {
             RenderedReference.assertPage(ui.panel, file, text);
             return;
         }
-        check(onEdt(() -> {
+        await(() -> onEdt(() -> {
             var html = find(ui.panel, JEditorPane.class, p -> !p.isEditable());
             var doc = (HTMLDocument) html.getDocument();
             return doc.getBase() != null && doc.getBase().getPath().endsWith("/" + file + ".xhtml")

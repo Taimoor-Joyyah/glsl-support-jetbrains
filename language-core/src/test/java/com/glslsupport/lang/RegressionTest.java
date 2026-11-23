@@ -8,6 +8,29 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.*;
 
 class RegressionTest {
+    @Test void projectStyleChangesIndentationSpacingAndPreservesTokenBoundaries() {
+        var style = new Formatting.Style(2, false, false, false, Set.of());
+        String input = "void main(){if (x){x = vec2(a + +b, c - -d);}}\r\n";
+        String result = Formatting.format(input, 0, input.length(), style).apply(input);
+        assertTrue(result.contains("\r\n  if(x) {"), result);
+        assertTrue(result.contains("\r\n    x=vec2(a + +b,c - -d);"), result);
+        assertEquals(result, Formatting.format(result, 0, result.length(), style).apply(result));
+        var significant = (java.util.function.Function<String,List<String>>) text ->
+            Lexer.tokens(text).stream().filter(t -> !t.trivia()).map(Lexer.Token::text).toList();
+        assertEquals(significant.apply(input), significant.apply(result));
+    }
+    @Test void rangeInsideMultilineForDoesNotSplitItsHeaderOrConsumeNextBlankLine() {
+        String input = "void main(){\nfor (\nint i=0; i<3; ++i\n) {}\n\n}\n";
+        int start = input.indexOf("int i"), end = input.indexOf("\n", start) + 1;
+        var edit = Formatting.format(input, start, end, new Formatting.Style(4, true, true, true, Set.of("for")));
+        assertEquals("\tint i = 0; i < 3; ++i\n", edit.replacement());
+        assertEquals(input.substring(end), edit.apply(input).substring(start + edit.replacement().length()));
+    }
+    @Test void deeplyNestedUnfinishedInputAndDamagedIndentSettingsStayBounded() {
+        String input = "void main(){" + "{".repeat(20000);
+        assertEquals(input, Formatting.format(input, 0, input.length(), 4, false).apply(input));
+        assertEquals(input, Formatting.format(input, -5, Integer.MAX_VALUE, Integer.MAX_VALUE, false).apply(input));
+    }
     @Test
     void editorUsesVirtualProfileAndTarget() {
         String source = "#version 450\n#if __VERSION__ == 310 && GL_ES && VULKAN\nfloat chosen;\n#endif";

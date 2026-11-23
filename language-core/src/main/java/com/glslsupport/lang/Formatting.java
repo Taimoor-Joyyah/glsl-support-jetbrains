@@ -4,39 +4,63 @@ import java.util.*;
 
 public final class Formatting {
     private Formatting() {}
+    private static final Set<String> ASSIGNMENTS =
+        Set.of("=", "+=", "-=", "*=", "/=", "%=", "<<=", ">>=", "&=", "|=", "^=");
+    public record Style(int indentSize, boolean tabs, boolean spaceAfterComma, boolean spaceAroundAssignment,
+                        Set<String> spacedControls) {
+        public Style {
+            spacedControls = Set.copyOf(spacedControls);
+        }
+        public static Style defaults(int size, boolean tabs) {
+            return new Style(size, tabs, true, true, Set.of("if", "for", "while", "switch"));
+        }
+    }
     public record Edit(int start, int end, String replacement) {
         public String apply(String text) {
             return text.substring(0, start) + replacement + text.substring(end);
         }
     }
     public static Edit format(String source, int from, int to, int size, boolean tabs) {
+        return format(source, from, to, Style.defaults(size, tabs));
+    }
+    public static Edit format(String source, int from, int to, Style style) {
+        from = Math.clamp(from, 0, source.length());
+        to = Math.clamp(to, from, source.length());
         int start = source.lastIndexOf('\n', Math.max(-1, from - 1)) + 1;
-        int end =
-            to > start && to <= source.length() && source.charAt(to - 1) == '\n' ? to : source.indexOf('\n', to);
-        if (end < 0)
-            end = source.length();
-        else if (end < source.length() && source.charAt(end) == '\n')
-            end++;
+        int end = to;
+        if (to <= start || source.charAt(to - 1) != '\n') {
+            int newline = source.indexOf('\n', to);
+            end = newline < 0 ? source.length() : newline + 1;
+        }
         int depth = 0, paren = 0;
         String prev = "", before = "";
         boolean line = true;
         var statementBraces = new ArrayDeque<Boolean>();
         boolean closedStatement = false;
         StringBuilder out = new StringBuilder();
-        String indent = tabs ? "\t" : " ".repeat(Math.clamp(size, 0, 16));
+        int indentWidth = style.tabs() ? 1 : Math.max(0, style.indentSize());
+        long outputBudget = Math.max(256 * 1024L, 32L * (end - start));
         for (var tok : Lexer.tokens(source)) {
             String s = tok.text();
             if (tok.start() >= end)
                 break;
             if (tok.end() <= start) {
-                if (s.equals("{"))
+                if (tok.trivia())
+                    continue;
+                if (s.equals("{")) {
                     depth++;
-                if (s.equals("}"))
+                    statementBraces.push(Set.of(")", "else", "do", "{", ";", "}").contains(prev));
+                }
+                if (s.equals("}")) {
                     depth = Math.max(0, depth - 1);
+                    closedStatement = !statementBraces.isEmpty() && statementBraces.pop();
+                }
                 if (s.equals("("))
                     paren++;
                 if (s.equals(")"))
                     paren = Math.max(0, paren - 1);
+                before = prev;
+                prev = s;
                 continue;
             }
             if (tok.start() < start || tok.end() > end) {
@@ -76,9 +100,14 @@ public final class Formatting {
                 out.append(s);
                 line = false;
             } else {
-                if (line)
-                    out.append(indent.repeat(Math.max(0, depth)));
-                else if (space(before, prev, s))
+                if (line) {
+                    long width = (long) indentWidth * depth;
+                    // Incomplete or generated buffers can otherwise expand quadratically with nesting.
+                    if (out.length() + width > outputBudget)
+                        return new Edit(start, end, source.substring(start, end));
+                    out.repeat(style.tabs() ? '\t' : ' ', (int) width);
+                }
+                else if (space(before, prev, s, style))
                     out.append(' ');
                 out.append(s);
                 line = false;
@@ -103,13 +132,24 @@ public final class Formatting {
             formatted = formatted.replace("\r\n", "\n").replace("\n", "\r\n");
         return new Edit(start, end, formatted);
     }
-    private static boolean space(String before, String prev, String s) {
-        if (prev.isEmpty() || Set.of(";", ",", ")", "]", ".", "++", "--").contains(s))
+    private static boolean space(String before, String prev, String s, Style style) {
+        // Removing this separator would create a new operator or a comment.
+        if ((prev.endsWith("+") && s.startsWith("+")) || (prev.endsWith("-") && s.startsWith("-"))
+            || (prev.equals("/") && (s.startsWith("/") || s.startsWith("*"))))
+            return true;
+        if (s.equals("++") || s.equals("--"))
+            return prev.equals(";") || prev.equals(",") && style.spaceAfterComma()
+                || ASSIGNMENTS.contains(prev) && style.spaceAroundAssignment();
+        if (prev.isEmpty() || Set.of(";", ",", ")", "]", ".").contains(s))
             return false;
         if (Set.of("(", "[", ".", "!", "~").contains(prev))
             return false;
+        if (prev.equals(","))
+            return style.spaceAfterComma();
+        if (ASSIGNMENTS.contains(prev) || ASSIGNMENTS.contains(s))
+            return style.spaceAroundAssignment();
         if (s.equals("("))
-            return Set.of("if", "for", "while", "switch", "return").contains(prev);
+            return prev.equals("return") || style.spacedControls().contains(prev);
         if (s.equals("["))
             return false;
         if (prev.equals("{") && s.equals("}"))

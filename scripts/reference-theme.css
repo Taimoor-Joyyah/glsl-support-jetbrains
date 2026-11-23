@@ -1,0 +1,26 @@
+/* The embedded viewer sets these properties from the active editor scheme. */
+:root {
+    color-scheme: light dark;
+    --gl-bg: #ffffff;
+    --gl-fg: #252629;
+    --gl-link: #135ba6;
+    --gl-active: #103f87;
+    --gl-panel: #f0f1f3;
+    --gl-border: #9b9da2;
+}
+@media (prefers-color-scheme: dark) {
+    :root {
+        --gl-bg: #292b37;
+        --gl-fg: #c8c8c8;
+        --gl-link: #80c0ff;
+        --gl-active: #8dbdff;
+        --gl-panel: #333541;
+        --gl-border: #989ba6;
+    }
+}
+html, body { background-color: var(--gl-bg); color: var(--gl-fg); }
+a:link, a:visited { color: var(--gl-link); }
+a:hover, a:focus { color: var(--gl-active); background-color: var(--gl-panel); text-decoration: underline; }
+div.funcsynopsis, div.funcsynopsis td, div.refsect1 table, div.refsect1 td,
+div.refsect2 table, div.refsect2 td, pre { background-color: var(--gl-panel); color: var(--gl-fg); }
+div.refsect1 table, div.refsect1 th, div.refsect1 td { border-color: var(--gl-border); }

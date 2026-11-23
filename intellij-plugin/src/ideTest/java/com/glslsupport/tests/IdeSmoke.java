@@ -59,6 +59,11 @@ public final class IdeSmoke implements ApplicationStarter {
     public void main(List<String> args) {
         Path result = Path.of(System.getProperty("glsl.test.result"));
         try {
+            Path fixtures = Path.of(System.getProperty("glsl.test.khronos"));
+            var cache = new com.glslsupport.reference.ReferenceLibrary(PathManager.getSystemDir().resolve("glsl-support/reference"),
+                (uri, limit) -> Files.readAllBytes(fixtures.resolve(Path.of(uri.getPath()).getFileName())));
+            for (var name : List.of("glGet", "glBindTexture", "glUniform", "glDrawArrays", "glPolygonOffsetClamp"))
+                cache.get(cache.filename(name));
             Path root = Path.of(System.getProperty("glsl.test.project"));
             Project p = Objects.requireNonNull(ProjectUtil.openOrImport(root));
             var fs = LocalFileSystem.getInstance();

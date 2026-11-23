@@ -23,15 +23,9 @@ import java.awt.*;
 import java.io.*;
 import java.net.URI;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -40,42 +34,19 @@ import javax.swing.text.html.HTMLDocument;
 import org.jetbrains.annotations.NotNull;
 
 public final class ReferenceDocs implements ToolWindowFactory, DumbAware {
-    private static final Path ROOT = Objects.requireNonNull(PathManager.getJarForClass(ReferenceDocs.class))
-                                         .getParent()
-                                         .resolveSibling("reference_pages");
-
-    private static List<String> readLines(String file) {
-        try {
-            return Files.readAllLines(ROOT.resolve(file));
-        } catch (IOException ex) {
-            throw new UncheckedIOException(ex);
-        }
-    }
-    private static final List<String> NAMES = readLines("index.txt");
-    private static final Set<String> INDEX = Set.copyOf(NAMES);
-    private static final Map<String, String> ALIASES =
-        readLines("aliases.tsv")
-            .stream()
-            .map(line -> line.split("\t", 2))
-            .collect(Collectors.toUnmodifiableMap(a -> a[0], a -> a[1]));
-    public static List<String> entries() {
-        return NAMES;
-    }
+    public static List<String> entries() { return ReferenceAccess.instance().library.names(); }
     public static URL page(String name) {
-        if (name == null || !INDEX.contains(name))
-            return null;
-        try {
-            return ROOT.resolve(ALIASES.getOrDefault(name, name) + ".xhtml").toUri().toURL();
-        } catch (java.net.MalformedURLException ex) {
-            throw new IllegalStateException(ex);
-        }
+        if (name == null || ReferenceAccess.instance().library.filename(name) == null) return null;
+        try { return ReferenceAccess.instance().server().page(name).toURL(); }
+        catch (java.net.MalformedURLException ex) { throw new IllegalStateException(ex); }
     }
     private static String documented(String candidate) {
         if (candidate == null)
             return null;
-        if (INDEX.contains(candidate))
+        var library = ReferenceAccess.instance().library;
+        if (library.filename(candidate) != null)
             return candidate;
-        if (candidate.startsWith("glad_") && INDEX.contains(candidate.substring(5)))
+        if (candidate.startsWith("glad_") && library.filename(candidate.substring(5)) != null)
             return candidate.substring(5);
         return null;
     }
@@ -222,6 +193,7 @@ public final class ReferenceDocs implements ToolWindowFactory, DumbAware {
             if (e.getProject() != null)
                 show(e.getProject(), true, browser -> {
                     browser.follow.setSelected(false);
+                    browser.showIndex(true);
                     browser.search.requestFocusInWindow();
                     browser.search.selectAll();
                 });
@@ -244,6 +216,7 @@ public final class ReferenceDocs implements ToolWindowFactory, DumbAware {
     interface WebViewer {
         JComponent component();
         void load(URL page);
+        void setTheme(ReferenceAccess.Theme theme);
         String address();
     }
     private static WebViewer webViewer(Disposable parent) {
@@ -263,39 +236,65 @@ public final class ReferenceDocs implements ToolWindowFactory, DumbAware {
         final JBList<String> list = new JBList<>(results);
         final JEditorPane html = new JEditorPane("text/html", "");
         final WebViewer web;
-        String current = "";
-        boolean updatingList;
+        final JPanel side = new JPanel(new BorderLayout());
+        final JToggleButton index = new JToggleButton("Index");
+        final JLabel status = new JBLabel();
+        final JSplitPane split;
+        final java.util.concurrent.ExecutorService loader;
+        final ReferenceAccess access = ReferenceAccess.instance();
+        final JButton offline = new JButton("Download all pages");
+        int dividerWidth = 185;
+        volatile long sequence;
+        String current = "", loaded = "";
+        boolean updatingList, loading;
+        volatile boolean disposed;
         Browser(Disposable parent) {
             super(new BorderLayout(4, 4));
+            loader = AppExecutorUtil.createBoundedApplicationPoolExecutor("OpenGL reference pages",
+                AppExecutorUtil.getAppExecutorService(), 2, parent);
             html.setEditable(false);
             search.getEmptyText().setText("Search OpenGL or GLSL symbols");
             search.getAccessibleContext().setAccessibleName("Search OpenGL Docs");
             var bar = new JPanel(new BorderLayout(4, 0));
+            bar.add(index, BorderLayout.WEST);
             bar.add(search, BorderLayout.CENTER);
             bar.add(submit, BorderLayout.EAST);
             add(bar, BorderLayout.NORTH);
             list.getEmptyText().setText("No matching reference pages");
-            var side = new JPanel(new BorderLayout(4, 4));
-            side.add(follow, BorderLayout.NORTH);
             side.add(new JBScrollPane(list));
             web = webViewer(parent);
-            JComponent viewer = web == null ? new JBScrollPane(html) : web.component();
+            split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+            split.setRightComponent(web == null ? new JBScrollPane(html) : web.component());
+            split.setResizeWeight(0);
+            add(split, BorderLayout.CENTER);
+            showIndex(false);
+            index.addActionListener(e -> showIndex(index.isSelected()));
+            index.setToolTipText("Show or hide the reference index");
             var standalone = new JButton("Open in Browser");
             standalone.addActionListener(e -> {
-                Path displayed = displayedFile();
-                if (displayed != null) {
-                    BrowserUtil.browse(displayed);
-                    return;
-                }
-                var url = page(current);
-                if (url != null)
-                    BrowserUtil.browse(url);
+                var address = displayed();
+                if (address != null) BrowserUtil.browse(address.toString());
             });
-            side.add(standalone, BorderLayout.SOUTH);
-            var split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, side, viewer);
-            split.setResizeWeight(.27);
-            split.setDividerLocation(185);
-            add(split);
+            var controls = new JPanel(new FlowLayout(FlowLayout.LEADING, 4, 0));
+            controls.add(follow);
+            controls.add(standalone);
+            controls.add(offline);
+            var footer = new JPanel(new BorderLayout());
+            footer.add(controls, BorderLayout.NORTH);
+            footer.add(status, BorderLayout.SOUTH);
+            add(footer, BorderLayout.SOUTH);
+            if (access.library.complete()) offline.setText("All pages saved");
+            offline.addActionListener(e -> download());
+            access.theme = ReferenceAccess.Theme.current();
+            applyTheme();
+            ApplicationManager.getApplication().getMessageBus().connect(parent).subscribe(
+                com.intellij.openapi.editor.colors.EditorColorsManager.TOPIC, scheme ->
+                    SwingUtilities.invokeLater(() -> {
+                        if (disposed) return;
+                        access.theme = ReferenceAccess.Theme.current();
+                        applyTheme();
+                    }));
+            com.intellij.openapi.util.Disposer.register(parent, () -> { disposed = true; sequence++; });
             list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             list.addListSelectionListener(e -> {
                 if (!updatingList && !e.getValueIsAdjusting() && list.getSelectedValue() != null) {
@@ -323,10 +322,8 @@ public final class ReferenceDocs implements ToolWindowFactory, DumbAware {
                 if (href == null)
                     return;
                 if (href.startsWith("specs/") || href.equals("sources.txt")) {
-                    var path = ROOT.resolve(href).normalize();
-                    if ((path.startsWith(ROOT.resolve("specs")) || path.equals(ROOT.resolve("sources.txt")))
-                        && Files.isRegularFile(path))
-                        BrowserUtil.browse(path);
+                    URL url = e.getURL();
+                    if (url != null && access.server().owns(URI.create(url.toExternalForm()))) BrowserUtil.browse(url);
                     return;
                 }
                 if (href.startsWith("#")) {
@@ -336,16 +333,17 @@ public final class ReferenceDocs implements ToolWindowFactory, DumbAware {
                 var path = href.split("#", 2);
                 String file = path[0].substring(path[0].lastIndexOf('/') + 1);
                 file = file.replaceFirst("\\.(xml|xhtml|html)$", "");
-                if (open(file) && path.length == 2)
-                    html.scrollToReference(path[1]);
+                open(file, path.length == 2 ? path[1] : null);
             });
             filter();
             open("OpenGL46");
         }
         void filter() {
             String query = search.getText().strip().toLowerCase(Locale.ROOT);
-            if (!query.isEmpty())
+            if (!query.isEmpty()) {
                 follow.setSelected(false);
+                showIndex(true);
+            }
             updatingList = true;
             try {
                 results.clear();
@@ -372,44 +370,110 @@ public final class ReferenceDocs implements ToolWindowFactory, DumbAware {
             open(match);
         }
 
-        private Path displayedFile() {
-            if (web == null)
-                return null;
-            String address = web.address();
-            if (address == null || !address.startsWith("file:"))
-                return null;
-            try {
-                var path = Path.of(URI.create(address.split("#", 2)[0])).normalize();
-                return path.startsWith(ROOT) ? path : null;
-            } catch (IllegalArgumentException ex) {
-                return null;
-            }
+        void showIndex(boolean visible) {
+            if (visible && split.getLeftComponent() == side) return;
+            if (split.getLeftComponent() == side && !visible) dividerWidth = Math.max(120, split.getDividerLocation());
+            index.setSelected(visible);
+            split.setLeftComponent(visible ? side : null);
+            split.setDividerSize(visible ? UIManager.getInt("SplitPane.dividerSize") : 0);
+            if (visible) split.setDividerLocation(dividerWidth);
         }
-
-        boolean open(String name) {
-            URL url = page(name);
-            if (url == null)
-                return false;
-            Path displayed = current.equals(name) ? displayedFile() : null;
-            if (current.equals(name)
-                && (displayed == null
-                    || ROOT.resolve(ALIASES.getOrDefault(name, name) + ".xhtml").equals(displayed)))
-                return true;
-            if (web != null) {
-                web.load(url);
-            } else {
-                try (var in = new InputStreamReader(url.openStream(), StandardCharsets.UTF_8)) {
-                    var doc = (HTMLDocument) html.getEditorKit().createDefaultDocument();
-                    doc.setBase(url);
-                    html.getEditorKit().read(in, doc, 0);
-                    html.setDocument(doc);
-                    html.setCaretPosition(0);
-                } catch (Exception ex) {
-                    html.setText("Could not open " + name);
-                    return false;
-                }
+        private URI displayed() {
+            if (web != null && web.address() != null) {
+                try {
+                    var address = URI.create(web.address());
+                    if (access.server().owns(address)) return address;
+                } catch (IllegalArgumentException ignored) {}
             }
+            return access.server().page(current);
+        }
+        private void download() {
+            offline.setEnabled(false);
+            var task = new com.intellij.openapi.progress.Task.Backgroundable(null, "Download OpenGL reference", true) {
+                public void run(com.intellij.openapi.progress.ProgressIndicator progress) {
+                    progress.setIndeterminate(false);
+                    try {
+                        access.library.downloadAll(percent -> {
+                            progress.checkCanceled();
+                            progress.setFraction(percent / 100.0);
+                        });
+                    } catch (IOException ex) { throw new UncheckedIOException(ex); }
+                }
+                public void onSuccess() {
+                    if (disposed) return;
+                    offline.setText("All pages saved");
+                    status.setText("The complete reference is available offline.");
+                }
+                public void onThrowable(@NotNull Throwable error) {
+                    if (!disposed) status.setText("Download interrupted. Reconnect and try again to finish saving the library.");
+                    Logger.getInstance(ReferenceDocs.class).info("OpenGL reference download interrupted", error);
+                }
+                public void onFinished() { if (!disposed) offline.setEnabled(true); }
+            };
+            com.intellij.openapi.progress.ProgressManager.getInstance().run(task);
+        }
+        private void applyTheme() {
+            var theme = access.theme;
+            if (web != null) {
+                web.setTheme(theme);
+                return;
+            }
+            html.setBackground(Color.decode(theme.background()));
+            html.setForeground(Color.decode(theme.foreground()));
+            var css = ((HTMLDocument) html.getDocument()).getStyleSheet();
+            css.addRule("body { background-color: " + theme.background() + "; color: " + theme.foreground() + "; }");
+            css.addRule("a { color: " + theme.link() + "; }");
+            for (String selector : List.of("pre","div.funcsynopsis","div.funcsynopsis td","div.refsect1 td","div.refsect2 table"))
+                css.addRule(selector + " { background-color: " + theme.panel() + "; color: " + theme.foreground() + "; }");
+            html.repaint();
+        }
+        boolean open(String name) { return open(name, null); }
+        boolean open(String name, String anchor) {
+            URL url = page(name);
+            if (url == null) return false;
+            if (current.equals(name) && anchor == null && (loading ||
+                name.equals(loaded) && url.toExternalForm().equals(String.valueOf(displayed())))) return true;
             current = name;
+            loaded = "";
+            loading = true;
+            long request = ++sequence;
+            status.setText("Loading " + name + "…");
+            loader.execute(() -> {
+                if (disposed || request != sequence) return;
+                try {
+                    var file = access.library.get(access.library.filename(name));
+                    HTMLDocument doc = null;
+                    if (web == null) {
+                        var kit = new javax.swing.text.html.HTMLEditorKit();
+                        doc = (HTMLDocument) kit.createDefaultDocument();
+                        doc.setBase(url);
+                        try (var reader = Files.newBufferedReader(file)) { kit.read(reader, doc, 0); }
+                    }
+                    var prepared = doc;
+                    SwingUtilities.invokeLater(() -> {
+                        if (disposed || request != sequence) return;
+                        loading = false;
+                        if (web != null) {
+                            try { web.load(anchor == null ? url : URI.create(url.toExternalForm() + "#" + anchor).toURL()); }
+                            catch (java.net.MalformedURLException ex) { throw new IllegalStateException(ex); }
+                        } else {
+                            html.setDocument(prepared);
+                            html.setCaretPosition(0);
+                            applyTheme();
+                            if (anchor != null) html.scrollToReference(anchor);
+                        }
+                        loaded = name;
+                        status.setText("");
+                    });
+                } catch (Exception failure) {
+                    Logger.getInstance(ReferenceDocs.class).info("Could not load OpenGL reference " + name, failure);
+                    SwingUtilities.invokeLater(() -> {
+                        if (disposed || request != sequence) return;
+                        loading = false;
+                        status.setText(name + " is unavailable offline. Reconnect and press Search to retry.");
+                    });
+                }
+            });
             int index = results.indexOf(name);
             if (index >= 0 && list.getSelectedIndex() != index) {
                 updatingList = true;

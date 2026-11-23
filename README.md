@@ -1,74 +1,48 @@
-# GLSL Support
+# GLSL Support (OpenGL/Vulkan)
 
-GLSL Support adds OpenGL and Vulkan shader editing to JetBrains IDEs on Windows x64, starting with platform build 261 (2026.1). The compiler runs inside the bundled C++23 `glsl_support.dll`, which uses the Microsoft Visual C++ x64 runtime. The plugin works offline after installation.
+Edit OpenGL and Vulkan shaders in JetBrains IDEs on **Windows x64, 2026.1 or later**. The plugin runs glslang and SPIRV-Tools locally. Shader editing, compilation, navigation and refactoring work without an LSP server or LSP4IJ.
 
-## Install and use
+## Installation
 
-In **Settings → Plugins**, open the gear menu, choose **Install Plugin from Disk**, select `build/distributions/GLSL-Support-1.1.1.zip`, and restart the IDE. The plugin ID is `com.glslsupport.language`. The descriptor declares a conflict with the previous GLSL Analyzer plugin, and project settings import compatible options and variants on first use.
+Download the Windows x64 ZIP, then choose **Settings → Plugins → ⚙ → Install Plugin from Disk** and restart the IDE. The Windows compiler and its C++ runtime are included. Existing projects using GLSL Analyzer can import compatible settings and variants when first opened. [Download version 1.2.0](dist/GLSL-Support-OpenGL-Vulkan-1.2.0-windows-x86_64.zip?raw=true) · [SHA-256 checksum](dist/SHA256SUMS)
 
-- **Settings → Languages & Frameworks → GLSL Support** controls default and path-specific targets, include directories, stage macros, editor features, and named pipelines. OpenGL source validation supports desktop and ES shaders. Vulkan targets range from 1.0 to 1.4. The **Shader Variants** tool window configures stage, target, virtual version, and ordered definitions for the selected file. Typing schedules a glslang pass after six seconds of inactivity by default. Under **Editor**, select validation after each edit or a five- to ten-second delay. Saving checks every variant. An open shader supplies compilation context for its headers. Standalone headers without a version directive use GLSL 4.60 core. New variants default to the core profile. Select a variant to edit it and use **Set active** to switch the editor.
-- Use the standard IDE actions for completion, quick documentation, parameter info, navigation, call hierarchy, Find Usages, Rename, formatting, structure, folding, inspections, and selection expansion. Shader symbols are indexed across the project. On build 262 and newer, named variants and pipelines are also available in symbol search.
-- **New → GLSL Shader or Header** creates graphics, compute, mesh, task, and ray-tracing stage files. Header guards incorporate the project-relative path. GLSL snippets are available under **Editor → Live Templates**. Set GLSL colors under **Editor → Color Scheme → GLSL**. Swizzles inherit the member color, include paths have a separate entry, and inactive and unreachable tokens retain their hue at reduced contrast.
-- **Inline GLSL Local Variable** handles single constant-initialized locals. **Extract GLSL Function** handles typed values, constructors, and supported complete statements. Both show a diff before applying an undoable edit. Macro-dependent or ambiguous edits and selections with unsupported control flow report the reason.
-- **Show GLSL Block Layout** opens a byte diagram and member table. Select a struct to preview its layout or inspect a uniform, storage, or push-constant block. The table shows padding, offsets, array and matrix strides, matrix order, and runtime-array prefixes. OpenGL shared and packed layouts are identified as driver-dependent.
-- **Show SPIR-V** compiles the selected variant, validates the result, and opens the disassembly in **GLSL Inspector**. Source lines and instructions are linked wherever debug information supplies a location. The compiler reports which SPIR-V requirements a source shader fails.
-- Open **Tools → Search OpenGL Docs** to look up a name or part of a name offline. For example, type `BindTexture` and press **Enter**, click **Search**, or select a result. A manual search stays on the chosen page while you edit. Turn on **Follow editor** in the panel to track the selection or caret in any language. A documented symbol also has an **Open OpenGL Reference** editor action. The panel keeps its current page for an unknown symbol.
-- The reference library covers 901 names across 499 published Khronos pages and 45 GLSL Support pages. Khronos publishes pages for both indirect-count draw commands and polygon offset clamp. The supplements cover the other OpenGL 4.6 and GLSL 4.60 additions, including shader specialization. MathJax, its deferred scripts, glyphs, stylesheets, cross-references and linked specifications ship with the plugin. **Open in Browser** opens a local copy. [Khronos OpenGL 4.x reference pages](https://registry.khronos.org/OpenGL-Refpages/gl4/html/) · [GLSL 4.60 specification](https://registry.khronos.org/OpenGL/specs/gl/GLSLangSpec.4.60.html)
+## Working with shaders
 
-## Project settings and pipelines
-
-Use **View → Tool Windows → GLSL Pipelines**, or the **Pipelines** tab under GLSL Support settings. Add a named graphics, compute, mesh, ray-tracing, or custom pipeline. Assign shader files to its stages by browsing or typing a project path. Empty stage slots are optional. The variant column accepts a variant name or ID. The definitions table completes macro names from the assigned shaders, their headers, and their variants. Use **Save** in the tool window, **Apply** in Settings, or **Validate** to save and link the selected pipeline. On the Targets tab, choosing a shader suggests an API using the path settings, stage and source. Both OpenGL and Vulkan accept common extensions such as `.vert`. You can override the suggestion.
-
-The project file is `.idea/glslSupport.xml`. Copy the example into that location or merge its `GlslSupport` component into the existing file. Close the project before editing externally so a running IDE cannot overwrite unsaved settings. The example is exercised by the installed-plugin test. [Complete project XML example](test-data/editor/glslSupport.xml)
-
-| Setting | Accepted values and behavior |
+| Task | Where to find it |
 | --- | --- |
-| `target`, `targets` | `0` selects OpenGL. `10` through `14` select Vulkan 1.0 through 1.4. Path rules match files or directories. The longest matching path wins. |
-| `includes` | Ordered project-relative or absolute directory paths. Quoted includes first search beside the including file. Use forward slashes in shared configuration. |
-| `fallback`, `stageMacros` | Use the stage names below. A variant stage takes precedence over a stage macro, the shader filename extension, and the project fallback, in that order. |
-| `files` | Keys are project-relative shader paths. `active` is a variant ID. Variants accept `id`, `name`, `stage`, `target`, `version`, `profile`, and a `macros` map. Version zero preserves the source directive. Explicit versions accept `core`, `compatibility`, `es`, or an empty profile. |
-| `pipelineDefinitions` | Give each pipeline a unique name. Type is `Graphics`, `Compute`, `Mesh`, `Ray tracing`, or `Custom`. Target `-1` uses stage targets, which must agree when linked. A pipeline target overrides all stage targets. |
-| `stages`, `definitions` | Bind a file and optional variant to a stage. An omitted stage uses the file configuration. An omitted variant uses the active variant. Pipeline macros override the same names in stage variants for this link. |
-| `validationDelaySeconds` | Use `0` to validate after each edit, or `5` through `10` for a delay. The default is `6`. |
-| Editor switches | Boolean options `diagnostics`, `builtins`, `semantic`, `colors`, `inlays`, `signatures`, `format`, `range`, and `onType` default to true. Set `imported` to true for an explicitly authored configuration that has already accounted for legacy settings. |
+| Find a declaration, include, or usage | Use Go to Declaration, Find Usages, Call Hierarchy and Search Everywhere. Rename updates resolved project usages, including closed files. |
+| Edit and format | Complete GLSL built-ins, layout qualifiers and struct fields. Set indentation and spacing under **Editor → Code Style → GLSL** and token colors under **Editor → Color Scheme → GLSL**. |
+| Validate unsaved code | glslang reports errors and warnings for the selected stage and target, including invalid vector swizzles. The default delay is six seconds after the last edit. Choose immediate validation or a five- to ten-second delay in GLSL Support settings. |
+| Configure compilation | **Languages & Frameworks → GLSL Support** manages target overrides, includes and ordered macros. **Shader Variants** selects the active stage, profile and definitions. New variants default to the core profile. |
+| Link shader stages | **GLSL Pipelines** lets you assign files and variants to named pipelines, override definitions and validate stage interfaces. On IDE builds 262 and newer, named pipelines and variants are also searchable as symbols. |
+| Inspect the result | **Show GLSL Block Layout** displays member offsets, padding, array and matrix strides. **Show SPIR-V** opens validated disassembly with source navigation where debug information provides a location. |
+| Create and refactor | **New → GLSL Shader or Header** includes stage templates and guarded headers. GLSL Live Templates, folding and Structure help with editing. **Inline GLSL Local Variable** and **Extract GLSL Function** preview supported edits before applying them. |
 
-Stage names are `VERTEX`, `TESS_CONTROL`, `TESS_EVAL`, `GEOMETRY`, `FRAGMENT`, `COMPUTE`, `TASK`, `MESH`, `RAYGEN`, `INTERSECTION`, `ANY_HIT`, `CLOSEST_HIT`, `MISS`, and `CALLABLE`.
+The project settings guide includes a tested XML example for sharing targets, includes, variants and pipelines with your team. [Project configuration](docs/project-settings.md)
 
-## Build and test
+## OpenGL Docs
 
-Use Windows x64, PowerShell 7, a JDK 25 with `javac` and `jar` on PATH, a Visual Studio C++ toolset with Ninja, CMake 3.28 or later, and Python 3. Set `JAVA_HOME` to the JDK and `GLSL_IDE_HOME` to a 2026.1 IDE installation when it is outside the default user installation directory. The plugin targets Java 21 bytecode.
+Use **Tools → Search OpenGL Docs** and enter a symbol or part of its name, such as `BindTexture`. Press **Enter** or select a result. The **Index** button shows or hides the sidebar. With **Follow editor** enabled, a recognized identifier in a shader, C++ file, Python file or another editor opens its page. Manual search pins the result until you turn following back on.
+
+The searchable index covers **901 names**. The plugin includes 45 supplemental pages for OpenGL 4.6 and GLSL 4.60. For the 499 Khronos pages, it opens a saved copy if available. On first use it downloads the original XHTML directly from the official Khronos GitHub repository at a pinned revision. It verifies the source, removes the Version Support and Copyright sections, adapts the links and math, and verifies the formatted copy before saving it to disk. The original notices remain available in the edition notes. [Khronos source directory](https://github.com/KhronosGroup/OpenGL-Refpages/tree/main/gl4/html)
+
+Visited pages reopen without contacting a server. The stylesheet, MathJax renderer and deferred SVG glyphs are included with the plugin. **Download all pages** also saves unvisited pages and both specifications. Interrupted downloads retain verified files. **Open in Browser** uses the same cache while the IDE is running. The viewer follows your active editor color scheme.
+
+## Building and testing
+
+Use Windows x64, PowerShell 7, JDK 25, Python 3.11 or newer, CMake 3.28 or later, and a Visual Studio C++ installation with Ninja. Set `JAVA_HOME` to the JDK and `GLSL_IDE_HOME` to an IntelliJ Platform 2026.1 installation. The plugin targets Java 21 bytecode.
 
 ```powershell
 .\gradlew.bat buildPlugin
 .\gradlew.bat checkAll --continue
 ```
 
-The distribution ZIP includes the DLL, Java classes, language data, templates, documentation, and third-party notices. The build pins glslang, SPIRV-Tools, and SPIRV-Headers by revision and archive checksum. Release ZIPs exclude test plugins, native build intermediates, IDE profiles, and activation state.
+The installable ZIP is written to `build/distributions/`. The full suite exercises C++ compiler behavior, Java editing and JNI, installed IDE workflows, Khronos source and cache integrity, an offline Chromium render of every page and JetBrains Plugin Verifier. Node.js 22 or newer and Chrome or Edge are required for the browser checks. [Test and release instructions](docs/releasing.md)
 
-After `buildPlugin`, run `./scripts/ide-test.ps1 -IdeHome '<CLion installation>' -DocsWindow` for the graphical checks. They read the text displayed by the embedded browser after manual searches and editor selections, then check the error underline as an invalid swizzle is edited in an open shader.
+## License, development and support
 
-| Gradle task | What it exercises |
-| --- | --- |
-| `checkNative` | CTest against the C ABI, compiler, reflection, SPIR-V, linking, concurrency, and ownership |
-| `checkLanguage` | Standalone JUnit editing, former analyzer fixtures, macros, navigation, refactoring, formatting, and offline reference integrity |
-| `checkBridge` | JUnit with the real DLL, diagnostics, source mappings, compiler cache, and SPIR-V for all 14 stage templates |
-| `checkIde` | Extracts the ZIP into separate IDE profiles and runs indexed project workflows inside each product |
-| `checkOfflineReference` | Opens the extracted ZIP in Chromium with networking disabled and verifies the rendered equations, navigation and deferred scripts |
-| `verifyPlugin` | Runs JetBrains Plugin Verifier against the supported installed test hosts |
-| `benchmarks` | Measures warm member completion, source indexing, recompilation after a header edit, and process memory |
+The original plugin code is released under the MIT License. The compiler, SPIR-V tools, shader catalog, reference texts, fonts and MathJax retain their respective licenses. [MIT License](LICENSE) · [Third-party notices](licenses/NOTICE.txt)
 
-`GLSL_IDEA_263` can point to an existing IntelliJ IDEA 2026.3 installation. Otherwise the test harness downloads the official Windows distribution and checks its SHA-256. The matrix also discovers local CLion and PyCharm installations and accepts additional paths through `GLSL_TEST_IDES`. A paid product must have an active license available to its test profile. For CLion, run `scripts/open-clion-test-profile.ps1`, activate through JetBrains, and close the window before starting the matrix.
+**AI disclosure.** OpenAI Codex has been used during implementation, testing and documentation. The installed plugin analyzes shader source locally. Opening an uncached reference page contacts Khronos’s official GitHub repository. Specification downloads come from the Khronos Registry. Shader source and project configuration stay on your machine.
 
-Reports are written under `build/reports`, `build/verification`, and `build/ide-tests`. The benchmark uses 256 shaders and one header for source indexing, then checks 64 independent compilation requests after one header edit. Timings depend on the machine.
-
-The offline browser test uses Node.js 22 or newer and an installed Chrome or Edge. Set `GLSL_TEST_BROWSER` to select another Chromium executable. To update the reference library, run `python scripts/sync-reference-pages.py --refresh`. Use `--offline` to reproduce it from the previous download cache. The source and packaged page hashes are in `test-data/reference/khronos-snapshot.tsv`. The deferred assets and specifications are pinned in `test-data/reference/offline-assets.tsv`. Version Support and Copyright sections are omitted from the XHTML. Each published page links to the collected original notices in its edition notes.
-
-## Source
-
-| Directory | Responsibility |
-| --- | --- |
-| `native` | C ABI, JNI serialization, glslang compilation and layout reflection, SPIRV-Tools validation and disassembly |
-| `language-core` | Source-preserving editor syntax, conditional visibility, symbol resolution, edits, completion, and catalog |
-| `native-bridge` | Immutable compiler snapshots, diagnostic positions, instruction mappings, and bounded result caching |
-| `intellij-plugin` | PSI, indexes, editor integrations, settings, tool windows, bundled resources, and installed-plugin tests |
-| `test-data`, `benchmarks` | Reusable shader fixtures, registry acceptance data, and deterministic performance workloads |
+Report bugs and request features through GitHub Issues. For a reproducible shader problem, include the IDE build, plugin version, shader stage, target and a minimal example you can share. [Issue tracker](https://github.com/Taimoor-Joyyah/glsl-support-jetbrains/issues)

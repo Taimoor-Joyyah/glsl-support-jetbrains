@@ -15,6 +15,8 @@ import xml.etree.ElementTree as ET
 from xml.parsers import expat
 
 BASE = "https://registry.khronos.org/OpenGL-Refpages/gl4/html/"
+REVISION = "4bdf67a73d040f79bd7b087f5c1e588809e1f329"
+GITHUB = f"https://raw.githubusercontent.com/KhronosGroup/OpenGL-Refpages/{REVISION}/gl4/html/"
 ROOT = Path(__file__).resolve().parents[1]
 CACHE = ROOT / "build/downloads/khronos-gl4"
 PAGES = ROOT / "intellij-plugin/src/main/resources/reference_pages"
@@ -122,7 +124,7 @@ def fetch(name, refresh=False, optional=False, cache_only=False):
         raise FileNotFoundError(path)
     for attempt in range(4):
         try:
-            request = Request(BASE + ("" if name == "directory.html" else name),
+            request = Request(BASE if name == "directory.html" else GITHUB + name,
                               headers={"User-Agent": "GLSL-Support-reference-sync/1.0"})
             with urlopen(request, timeout=35) as response:
                 data = response.read()
@@ -218,7 +220,17 @@ def main():
     source = options.add_mutually_exclusive_group()
     source.add_argument("--refresh", action="store_true", help="replace cached upstream pages")
     source.add_argument("--offline", action="store_true", help="rebuild from the previous download cache")
+    source.add_argument("--verify-upstream", action="store_true", help="fetch and verify the pinned GitHub originals without editing the reference edition")
     args = options.parse_args()
+    if args.verify_upstream:
+        expected = [line.split("\t")[:2] for line in (ROOT / "test-data/reference/khronos-snapshot.tsv").read_text().splitlines()]
+        def verify(record):
+            name, digest = record
+            if sha256(fetch(name)).hexdigest() != digest and sha256(fetch(name, refresh=True)).hexdigest() != digest:
+                raise ValueError("Khronos source mismatch: " + name)
+        with ThreadPoolExecutor(max_workers=5) as workers:
+            list(workers.map(verify, expected))
+        return
     index = Index()
     index.feed(fetch("directory.html", args.refresh, cache_only=args.offline).decode("utf-8"))
     if "glPolygonOffsetClamp" not in index.names:
@@ -258,8 +270,11 @@ def main():
 
     for name in sorted(resources):
         raw = fetch(name, args.refresh, cache_only=args.offline)
-        pages[name] = raw
-        snapshot[name] = (sha256(raw).hexdigest(), sha256(raw).hexdigest())
+        content = raw
+        if name == "opengl-man.css":
+            content += b"\n" + (ROOT / "scripts/reference-theme.css").read_text(encoding="utf-8").encode()
+        pages[name] = content
+        snapshot[name] = (sha256(raw).hexdigest(), sha256(content).hexdigest())
     for name, content in pages.items():
         if name.endswith(".xhtml"):
             verify_local_links(name, content)

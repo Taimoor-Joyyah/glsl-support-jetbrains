@@ -1,6 +1,7 @@
 param([Parameter(Mandatory)][string]$IdeHome,[switch]$DocsWindow)
 $ErrorActionPreference='Stop'
 Set-Location (Split-Path $PSScriptRoot)
+. "$PSScriptRoot/distribution.ps1"
 $sdk=(Resolve-Path -LiteralPath $IdeHome).Path
 $info=Get-Content -LiteralPath "$sdk/product-info.json" -Raw | ConvertFrom-Json
 $launch=$info.launch | Where-Object { $_.os -eq 'Windows' -and $_.arch -in @('amd64','x86_64') } | Select-Object -First 1
@@ -9,7 +10,7 @@ $base=[IO.Path]::GetFullPath("build/ide-tests/$($info.productCode)-$($info.build
 $run=Join-Path $base ([Guid]::NewGuid().ToString('N'))
 $project="$run/project"
 New-Item -Type Directory -Force "$project/.idea","$project/first","$project/second","$base/config","$base/system","$base/plugins","$base/log" | Out-Null
-[IO.Compression.ZipFile]::ExtractToDirectory([IO.Path]::GetFullPath('build/distributions/GLSL-Support-1.1.1.zip'),"$base/plugins",$true)
+[IO.Compression.ZipFile]::ExtractToDirectory((Get-GlslDistribution),"$base/plugins",$true)
 Copy-Item -LiteralPath 'build/test-plugin/GLSLSupportTests' -Destination "$base/plugins" -Recurse -Force
 '<project version="4"><component name="ProjectModuleManager"><modules><module fileurl="file://$PROJECT_DIR$/shader.iml" filepath="$PROJECT_DIR$/shader.iml"/></modules></component></project>' | Set-Content -Encoding utf8NoBOM "$project/.idea/modules.xml"
 '<module type="EMPTY_MODULE" version="4"><component name="NewModuleRootManager"><content url="file://$MODULE_DIR$"/><orderEntry type="sourceFolder" forTests="false"/></component></module>' | Set-Content -Encoding utf8NoBOM "$project/shader.iml"
@@ -67,14 +68,16 @@ $priorLength=if(Test-Path -LiteralPath $ideaLog){(Get-Item -LiteralPath $ideaLog
 $asyncImport='-Dexternal.system.auto.import.headless.async=true'
 $headless="-Djava.awt.headless=$((!$DocsWindow).ToString().ToLowerInvariant())"
 $docs="-Dglsl.test.docsWindow=$(([bool]$DocsWindow).ToString().ToLowerInvariant())"
-$jvm+=@('-Xmx1300m',$headless,$docs,$asyncImport,'-Didea.trust.all.projects=true','-Didea.auto.reload.plugins=false',
+$fixtures=[IO.Path]::GetFullPath('test-data/reference/upstream')
+$testOptions=@($headless,$docs,$asyncImport,"-Dglsl.test.khronos=$fixtures",'-Didea.trust.all.projects=true','-Didea.auto.reload.plugins=false',
+    '-Didea.required.plugins.id=com.glslsupport.tests',"-Dglsl.test.result=$result","-Dglsl.test.project=$project")
+$jvm+=$testOptions
+$jvm+=@('-Xmx1300m',
     "-Didea.home.path=$sdk","-Didea.config.path=$base/config","-Didea.system.path=$base/system","-Didea.plugins.path=$base/plugins","-Didea.log.path=$base/log",
-    '-Didea.required.plugins.id=com.glslsupport.tests',"-Dglsl.test.result=$result","-Dglsl.test.project=$project",'--enable-native-access=ALL-UNNAMED','-cp',$classpath,$launch.mainClass,'glsl-support-test')
+    '--enable-native-access=ALL-UNNAMED','-cp',$classpath,$launch.mainClass,'glsl-support-test')
 if($info.productCode -eq 'CL'){
     . "$PSScriptRoot/clion-launch.ps1"
-    $settings=@($headless,$docs,$asyncImport,'-Didea.trust.all.projects=true','-Didea.auto.reload.plugins=false',
-        '-Didea.required.plugins.id=com.glslsupport.tests',"-Dglsl.test.result=$result","-Dglsl.test.project=$project")
-    $start=New-GlslClionLauncher $sdk $base (Join-Path $run 'test.vmoptions') $settings
+    $start=New-GlslClionLauncher $sdk $base (Join-Path $run 'test.vmoptions') $testOptions
     $start.ArgumentList.Add('glsl-support-test')
 }else{
     $start=[Diagnostics.ProcessStartInfo]::new((Join-Path $sdk $launch.javaExecutablePath))
@@ -106,7 +109,8 @@ if(Test-Path -LiteralPath $ideaLog){
         if($stream.Length -ge $priorLength){$null=$stream.Seek($priorLength,[IO.SeekOrigin]::Begin)}
         $reader=[IO.StreamReader]::new($stream)
         $log=$reader.ReadToEnd()
-        if($log -match '(?m)^.*SEVERE - .*?(Non-StubBasedPsiElement.*GLSL|Unknown bundled file template: GLSL|Plugin to blame: GLSL Support version:).*$'){
+        $display=[regex]::Escape((Get-GlslDescriptor).'idea-plugin'.name)
+        if($log -match "(?m)^.*SEVERE - .*?(Non-StubBasedPsiElement.*GLSL|Unknown bundled file template: GLSL|Plugin to blame: $display version:).*$"){
             $finding=$Matches[0]
             Add-Content -LiteralPath $result -Value "FAIL $finding"
             throw "The IDE logged a GLSL plugin error: $finding"

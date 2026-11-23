@@ -243,12 +243,12 @@ public final class EditorFeatures {
             if (!Settings.of(file.getProject()).getState().range
                 && ranges.stream().noneMatch(r -> r.getLength() == doc.getTextLength()))
                 return;
-            var opts = ctx.getCodeStyleSettings().getIndentOptionsByFile(file);
+            var style = GlslCodeStyle.forFile(ctx.getCodeStyleSettings(), file);
             var ordered = new ArrayList<>(ranges);
             ordered.sort(Comparator.comparingInt(TextRange::getStartOffset).reversed());
             for (var r : ordered) {
                 var edit = Formatting.format(doc.getText(), r.getStartOffset(),
-                    Math.min(r.getEndOffset(), doc.getTextLength()), opts.INDENT_SIZE, opts.USE_TAB_CHARACTER);
+                    Math.min(r.getEndOffset(), doc.getTextLength()), style);
                 if (!doc.getCharsSequence()
                         .subSequence(edit.start(), edit.end())
                         .toString()
@@ -263,9 +263,8 @@ public final class EditorFeatures {
             if ((c == ';' || c == '}') && file instanceof GlslLanguage.File && Settings.of(p).getState().onType) {
                 var doc = editor.getDocument();
                 int offset = editor.getCaretModel().getOffset();
-                var opts = CodeStyle.getIndentOptions(file);
-                var edit =
-                    Formatting.format(doc.getText(), offset - 1, offset, opts.INDENT_SIZE, opts.USE_TAB_CHARACTER);
+                var edit = Formatting.format(doc.getText(), offset - 1, offset,
+                    GlslCodeStyle.forFile(CodeStyle.getSettings(file), file));
                 if (!doc.getCharsSequence()
                         .subSequence(edit.start(), edit.end())
                         .toString()
@@ -273,14 +272,6 @@ public final class EditorFeatures {
                     doc.replaceString(edit.start(), edit.end(), edit.replacement());
             }
             return Result.CONTINUE;
-        }
-    }
-    public static final class Style extends LanguageCodeStyleSettingsProvider {
-        public @NotNull Language getLanguage() {
-            return GlslLanguage.INSTANCE;
-        }
-        public String getCodeSample(@NotNull SettingsType type) {
-            return "#version 450\nvoid main() {\n    gl_Position = vec4(1.0);\n}";
         }
     }
     public static final class Comments implements Commenter {

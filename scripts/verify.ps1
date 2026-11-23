@@ -1,19 +1,28 @@
 $ErrorActionPreference='Stop'
 Set-Location (Split-Path $PSScriptRoot)
+. "$PSScriptRoot/distribution.ps1"
 . "$PSScriptRoot/hosts.ps1"
 $tool=$env:GLSL_VERIFIER_JAR
 if(!$tool){
-    $cache=Join-Path ([Environment]::GetFolderPath('UserProfile')) '.gradle/caches/modules-2/files-2.1/org.jetbrains.intellij.plugins/verifier-cli/1.409'
+    $cache=Join-Path ([Environment]::GetFolderPath('UserProfile')) '.gradle/caches/modules-2/files-2.1/org.jetbrains.intellij.plugins/verifier-cli/1.411'
     $tool=Get-ChildItem -Recurse -Path $cache -Filter '*-all.jar' -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
 }
-if(!$tool){$tool='build/downloads/verifier-cli-1.409-all.jar';if(!(Test-Path $tool)){Invoke-WebRequest 'https://packages.jetbrains.team/maven/p/intellij-plugin-verifier/intellij-plugin-verifier/org/jetbrains/intellij/plugins/verifier-cli/1.409/verifier-cli-1.409-all.jar' -OutFile $tool}}
-if((Get-FileHash $tool).Hash -ne 'B97EF2DAE064507564162CD7065FA532AAA1CFB0E30751520D30706E143B24BB'){throw 'Verifier checksum mismatch'}
+if(!$tool){$tool='build/downloads/verifier-cli-1.411-all.jar';if(!(Test-Path $tool)){Invoke-WebRequest 'https://packages.jetbrains.team/maven/p/intellij-plugin-verifier/intellij-plugin-verifier/org/jetbrains/intellij/plugins/verifier-cli/1.411/verifier-cli-1.411-all.jar' -OutFile $tool}}
+if((Get-FileHash $tool).Hash -ne 'D6CC1C1F17761BB5EFFF187F98B63FB792C7EF2A2FB9202BB5DBEA05EBC02BFA'){throw 'Verifier checksum mismatch'}
 $hosts=@(Get-GlslTestHosts)
+foreach($hostPath in $hosts){
+    $product=Get-Content -Raw -LiteralPath "$hostPath/product-info.json" | ConvertFrom-Json
+    if(!($product.launch | Where-Object {$_.os -eq 'Windows' -and $_.arch -in 'amd64','x86_64'})){
+        throw "This release requires a Windows x64 test host: $hostPath"
+    }
+}
+# The offline verifier has no synthetic OS/CPU plugin descriptors. The host launch records,
+# native PE header, package constraints and actual installed IDEs establish these two constraints.
 $privateHome=[IO.Path]::GetFullPath('build/verifier-home')
 $reports=[IO.Path]::GetFullPath('build/verification')
 New-Item -Type Directory -Force $reports,$privateHome | Out-Null
 $verdicts=Join-Path $reports ([Guid]::NewGuid().ToString('N'))
-& java -Xmx2500m "-Duser.home=$privateHome" -jar $tool check-plugin build/distributions/GLSL-Support-1.1.1.zip @hosts -offline -verification-reports-dir $verdicts -team-city 2>&1 | Tee-Object -FilePath "$reports/verifier.log"
+& java -Xmx2500m "-Duser.home=$privateHome" -jar $tool check-plugin (Get-GlslDistribution) @hosts -offline -ignore-os-arch -verification-reports-dir $verdicts -team-city 2>&1 | Tee-Object -FilePath "$reports/verifier.log"
 if($LASTEXITCODE){exit $LASTEXITCODE}
 if(Select-String -Quiet -LiteralPath "$reports/verifier.log" -Pattern 'Plugin is invalid|Scheduled verifications \(0\)|##teamcity\[testFailed'){throw "Verifier reported a failure in $reports/verifier.log"}
 $problems=Get-ChildItem $verdicts -Recurse -File -Filter 'compatibility-problems.txt'|Where-Object Length -gt 0

@@ -1,12 +1,33 @@
-<idea-plugin require-restart="true">
+<idea-plugin require-restart="true" url="https://github.com/Taimoor-Joyyah/glsl-support-jetbrains">
     <id>com.glslsupport.language</id>
-    <name>GLSL Support</name>
-    <version>1.1.1</version>
-    <vendor>GLSL Support</vendor>
-    <description>OpenGL and Vulkan GLSL editing, compiler diagnostics, block layout, and SPIR-V inspection.</description>
+    <name>GLSL Support (OpenGL/Vulkan)</name>
+    <version>1.2.0</version>
+    <vendor email="mtaimoor0167@gmail.com" url="https://github.com/Taimoor-Joyyah">Taimoor Joyyah</vendor>
+    <description><![CDATA[
+        <p>Edit and validate OpenGL and Vulkan shaders on Windows x64 with the bundled glslang compiler.</p>
+        <ul>
+            <li>Navigate shader symbols and includes, find usages and rename across project files.</li>
+            <li>Set GLSL code style, complete layout qualifiers and configure shader targets, variants and pipelines.</li>
+            <li>Inspect block memory layouts, browse SPIR-V alongside the source and search the OpenGL reference. Visited pages are available offline.</li>
+        </ul>
+        <p>Requires a Windows x64 IDE on IntelliJ Platform 2026.1 or later. All shader analysis runs locally.
+        AI-assisted tools were used during development.</p>
+    ]]></description>
+    <change-notes><![CDATA[
+        <ul>
+            <li>Added a GLSL Code Style page with indentation and spacing options shared by document, selection and on-type formatting.</li>
+            <li>Simplified the GLSL color scheme and preserved independent highlighting for include paths.</li>
+            <li>Added Windows x64 compatibility metadata for the bundled compiler.</li>
+            <li>Reduced the install size. OpenGL Docs follows the editor color scheme, caches pages as you read and can download the complete reference for offline use.</li>
+        </ul>
+    ]]></change-notes>
     <idea-version since-build="261"/>
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.lang</depends>
+    <dependencies>
+        <plugin id="com.intellij.modules.os.windows"/>
+        <plugin id="com.intellij.modules.arch.x86_64"/>
+    </dependencies>
     <depends optional="true" config-file="glsl-support-jcef.xml">com.intellij.modules.jcef</depends>
     <incompatible-with>com.glsl_analyzer.intellij</incompatible-with>
     <extensions defaultExtensionNs="com.intellij">
@@ -29,7 +50,7 @@
         <lang.psiStructureViewFactory language="GLSL" implementationClass="com.glslsupport.ide.EditorFeatures$Structure"/>
         <formattingService implementation="com.glslsupport.ide.EditorFeatures$Format" order="first"/>
         <typedHandler implementation="com.glslsupport.ide.EditorFeatures$OnType"/>
-        <langCodeStyleSettingsProvider implementation="com.glslsupport.ide.EditorFeatures$Style"/>
+        <langCodeStyleSettingsProvider implementation="com.glslsupport.ide.GlslCodeStyle"/>
         <lang.commenter language="GLSL" implementationClass="com.glslsupport.ide.EditorFeatures$Comments"/>
         <defaultLiveTemplates file="liveTemplates/GLSL.xml"/>
         <internalFileTemplate name="GLSL Any Hit"/>

@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.28)
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<$<CONFIG:Debug,RelWithDebInfo>:Embedded>" CACHE STRING "Embed debug data in objects")
 project(glsl_support LANGUAGES C CXX)
 include(CTest)
