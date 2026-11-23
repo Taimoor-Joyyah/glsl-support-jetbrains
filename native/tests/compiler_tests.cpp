@@ -41,6 +41,26 @@ void run(const std::string &name) {
         auto r = x.run(false);
         require(std::string(glsl_log(r.get())).find("wrongName") != std::string::npos, glsl_log(r.get()));
         require(std::string(glsl_log(r.get())).find(":3:") != std::string::npos, glsl_log(r.get()));
+    } else if (name == "swizzles") {
+        for (int target : {0, 13}) {
+            x.request.vulkan = target;
+            for (const std::string field : {"xyl", "xly", "lxy", "l", "ll", "xy_", "xy2", "xy", "rg", "st"}) {
+                const std::string source =
+                    "#version 450\nlayout(location=0) out vec2 uv;\nvoid main(){vec4 currentClip=vec4(1);\n"
+                    "uv = currentClip." + field + " / currentClip.w;\ngl_Position=currentClip;}";
+                x.unit.source.text = source.c_str();
+                const bool valid = field == "xy" || field == "rg" || field == "st";
+                auto r = x.run(valid);
+                if (!valid) {
+                    const std::string log = glsl_log(r.get());
+                    require(log.find("'" + field + "' : unknown swizzle selection") != log.npos, log);
+                }
+            }
+            x.unit.source.text = "#version 450\nstruct Clip { vec2 xyl; float w; };\n"
+                                 "void main(){ Clip currentClip=Clip(vec2(1),1.);\n"
+                                 "gl_Position=vec4(currentClip.xyl / currentClip.w,0,1);}";
+            x.run(true);
+        }
     } else if (name == "includes") {
         x.unit.source.text = "#version 450\n#include \"lib/base.glslh\"\nvoid main(){gl_Position=f();}";
         glsl_source headers[] = {{"shaders/lib/base.glslh", "#include <value.glsl>\nvec4 f(){return val;}\n"},

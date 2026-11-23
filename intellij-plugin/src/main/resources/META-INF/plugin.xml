@@ -1,12 +1,13 @@
 <idea-plugin require-restart="true">
     <id>com.glslsupport.language</id>
     <name>GLSL Support</name>
-    <version>1.1.0</version>
+    <version>1.1.1</version>
     <vendor>GLSL Support</vendor>
     <description>OpenGL and Vulkan GLSL editing, compiler diagnostics, block layout, and SPIR-V inspection.</description>
     <idea-version since-build="261"/>
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.lang</depends>
+    <depends optional="true" config-file="glsl-support-jcef.xml">com.intellij.modules.jcef</depends>
     <incompatible-with>com.glsl_analyzer.intellij</incompatible-with>
     <extensions defaultExtensionNs="com.intellij">
         <fileType name="GLSL" language="GLSL" implementationClass="com.glslsupport.ide.GlslLanguage$Type" fieldName="INSTANCE" extensions="glsl;glslh;vert;vs;tesc;tese;geom;frag;fs;comp;mesh;task;rgen;rint;rahit;rchit;rmiss;rcall"/>
@@ -73,6 +74,7 @@
         <listener class="com.glslsupport.ide.Diagnostics$Saved" topic="com.intellij.openapi.fileEditor.FileDocumentManagerListener"/>
     </applicationListeners>
     <actions>
+        <action id="GlslSupport.SearchReference" class="com.glslsupport.ide.ReferenceDocs$Search" text="Search OpenGL Docs" icon="/icons/docs.svg"><add-to-group group-id="ToolsMenu" anchor="last"/></action>
         <action id="GlslSupport.OpenReference" class="com.glslsupport.ide.ReferenceDocs$Open" text="Open OpenGL Reference" icon="/icons/docs.svg"><add-to-group group-id="EditorPopupMenu" anchor="last"/></action>
         <action id="GlslSupport.New" class="com.glslsupport.ide.Templates" text="GLSL Shader or Header" icon="/icons/shader.svg"><add-to-group group-id="NewGroup" anchor="last"/></action>
         <action id="GlslSupport.Spirv" class="com.glslsupport.ide.ShaderViews$Spirv" text="Show SPIR-V" icon="/icons/inspector.svg"><add-to-group group-id="EditorPopupMenu" anchor="last"/></action>

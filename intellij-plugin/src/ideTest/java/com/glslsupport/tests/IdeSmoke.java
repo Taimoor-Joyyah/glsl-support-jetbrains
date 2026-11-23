@@ -13,11 +13,19 @@ import com.intellij.psi.stubs.StubIndex;
 import com.intellij.refactoring.rename.RenameProcessor;
 import java.nio.file.*;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
 import kotlin.Unit;
 import kotlin.coroutines.EmptyCoroutineContext;
 import kotlinx.coroutines.BuildersKt;
 
 public final class IdeSmoke implements ApplicationStarter {
+    @Override
+    public boolean isHeadless() {
+        return !Boolean.getBoolean("glsl.test.docsWindow");
+    }
     @Override
     public int getRequiredModality() {
         return ApplicationStarter.NOT_IN_EDT;
@@ -25,6 +33,20 @@ public final class IdeSmoke implements ApplicationStarter {
     static void check(boolean ok, String msg) {
         if (!ok)
             throw new AssertionError(msg);
+    }
+    static <T> T onEdt(Supplier<T> action) {
+        var result = new AtomicReference<T>();
+        ApplicationManager.getApplication().invokeAndWait(() -> result.set(action.get()));
+        return result.get();
+    }
+    static void await(BooleanSupplier condition, String description) throws InterruptedException {
+        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(30);
+        while (System.nanoTime() < deadline) {
+            if (condition.getAsBoolean())
+                return;
+            Thread.sleep(100);
+        }
+        throw new AssertionError("Timed out waiting for " + description);
     }
     static void awaitProjectConfiguration(Project project) throws InterruptedException {
         // Smart mode can precede a product's first asynchronous project-model import.
@@ -43,6 +65,14 @@ public final class IdeSmoke implements ApplicationStarter {
             var h = fs.refreshAndFindFileByNioFile(root.resolve("common.glslh"));
             var main = fs.refreshAndFindFileByNioFile(root.resolve("scene.vert"));
             awaitProjectConfiguration(p);
+            if (!isHeadless()) {
+                ReferenceWindow.verify(p, root, true);
+                EditorUpgrade.liveSwizzle(p, root);
+                Files.writeString(result,
+                    "PASS OpenGL Docs tool window, manual search, rendered Chromium pages, pinned results and "
+                        + "editor tracking, live swizzle error underline and correction\n");
+                System.exit(0);
+            }
             var target = ReadAction.compute(() -> {
                 var header = Objects.requireNonNull(PsiManager.getInstance(p).findFile(h));
                 var shader = Objects.requireNonNull(PsiManager.getInstance(p).findFile(main));
@@ -66,13 +96,14 @@ public final class IdeSmoke implements ApplicationStarter {
             });
             Features.verify(p, root);
             EditorUpgrade.verify(p, root);
+            ReferenceWindow.verify(p, root, false);
             Files.writeString(result,
                 "PASS file type, include navigation, symbol index, Find Usages, project Rename, native DLL, "
                     + "SPIR-V, source map, block and struct layout, pipeline link, variants, gated search, "
                     + "folding, "
                     + "structure, documentation, colors, actions, settings, header template, IDE formatting, "
                     + "semantic palette, live swizzles, repeated color edits, cross-language references and "
-                    + "pipeline XML\n");
+                    + "pipeline XML, manual reference search and rendered Swing pages\n");
             System.exit(0);
         } catch (Throwable t) {
             try {

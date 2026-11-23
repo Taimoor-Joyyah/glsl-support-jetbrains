@@ -6,7 +6,9 @@ import com.glslsupport.bridge.NativeCompiler;
 import com.glslsupport.ide.*;
 import com.glslsupport.lang.ShaderConfig;
 import com.intellij.codeInsight.daemon.impl.AnnotationHolderImpl;
+import com.intellij.codeInsight.daemon.impl.DaemonCodeAnalyzerEx;
 import com.intellij.lang.annotation.AnnotationSession;
+import com.intellij.lang.annotation.HighlightSeverity;
 import com.intellij.openapi.application.*;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.*;
@@ -14,6 +16,7 @@ import com.intellij.openapi.editor.colors.*;
 import com.intellij.openapi.fileEditor.*;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.JDOMUtil;
+import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.*;
 import com.intellij.psi.*;
 import com.intellij.util.xmlb.XmlSerializer;
@@ -26,6 +29,42 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.*;
 
 final class EditorUpgrade {
+    static void liveSwizzle(Project project, Path root) throws Exception {
+        var vf = Objects.requireNonNull(
+            LocalFileSystem.getInstance().refreshAndFindFileByNioFile(root.resolve("swizzle.vert")));
+        var editor = IdeSmoke.onEdt(()
+                                        -> FileEditorManager.getInstance(project).openTextEditor(
+                                            new OpenFileDescriptor(project, vf), true));
+        var document = Objects.requireNonNull(editor).getDocument();
+        int component = document.getText().indexOf(".xyl") + 3;
+        check(component >= 3, "test shader contains currentClip.xyl");
+        var expected = new TextRange(component, component + 1);
+        java.util.function.BooleanSupplier underlined =
+            () -> expected.equals(displayedSwizzleError(project, document));
+        IdeSmoke.await(underlined, "glslang error on the l in the displayed shader");
+        var app = ApplicationManager.getApplication();
+        app.invokeAndWait(()
+                              -> WriteCommandAction.runWriteCommandAction(
+                                  project, () -> document.deleteString(component, component + 1)));
+        IdeSmoke.await(
+            () -> displayedSwizzleError(project, document) == null, "swizzle error to clear after removing l");
+        app.invokeAndWait(
+            () -> WriteCommandAction.runWriteCommandAction(project, () -> document.insertString(component, "l")));
+        IdeSmoke.await(underlined, "swizzle error to return after typing l without saving");
+    }
+    private static TextRange displayedSwizzleError(Project project, Document document) {
+        return ReadAction.compute(() -> {
+            var found = new AtomicReference<TextRange>();
+            DaemonCodeAnalyzerEx.processHighlights(
+                document, project, HighlightSeverity.ERROR, 0, document.getTextLength(), info -> {
+                    if (!Objects.toString(info.getDescription(), "").contains("unknown swizzle selection"))
+                        return true;
+                    found.set(new TextRange(info.getActualStartOffset(), info.getActualEndOffset()));
+                    return false;
+                });
+            return found.get();
+        });
+    }
     static void verify(Project p, Path root) throws Exception {
         highlighting(p);
         check(com.intellij.openapi.actionSystem.ActionManager.getInstance().getAction("GlslSupport.OpenReference")
@@ -80,12 +119,12 @@ final class EditorUpgrade {
         var report = annotator.doAnnotate(bad);
         check(report != null
                 && report.issues().stream().anyMatch(i
-                    -> i.message().contains("swizzle") && i.start() == doc.getText().indexOf("v.z") + 2
-                        && i.end() == i.start() + 1),
+                    -> i.message().contains("unknown swizzle selection")
+                        && i.start() == doc.getText().indexOf(".xyl") + 3 && i.end() == i.start() + 1),
             "native swizzle range " + report);
         edt.invokeAndWait(() -> WriteCommandAction.runWriteCommandAction(p, () -> {
-            int at = doc.getText().indexOf("v.z") + 2;
-            doc.replaceString(at, at + 1, "x");
+            int at = doc.getText().indexOf(".xyl") + 3;
+            doc.deleteString(at, at + 1);
             manager.commitDocument(doc);
         }));
         check(ReadAction.compute(() -> annotator.collectInformation(file, editor.get(), true)) == null,

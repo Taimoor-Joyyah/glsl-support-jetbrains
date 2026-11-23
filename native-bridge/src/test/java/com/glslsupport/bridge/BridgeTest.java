@@ -46,6 +46,22 @@ class BridgeTest {
         }
     }
     @Test
+    void trailingUnknownComponentIsReportedAtTheSourceLine() {
+        String path = "shaders/clip.vert";
+        String source = "#version 450\nlayout(location=0) out vec2 uv;\nvoid main(){vec4 currentClip=vec4(1);\n"
+            + "uv = currentClip.xyl / currentClip.w;\ngl_Position=currentClip;}";
+        for (int target : List.of(0, 13)) {
+            var config = new ShaderConfig.Effective(ShaderConfig.Stage.VERTEX, target, 0, "core", Map.of());
+            var result = NativeCompiler.compile(new NativeCompiler.Request(target, NativeCompiler.Operation.CHECK,
+                List.of(new NativeCompiler.Unit(path, source, config)), Map.of(), List.of()));
+            assertFalse(result.success());
+            assertTrue(result.diagnostics(path).stream().anyMatch(d
+                           -> d.file().equals(path) && d.line() == 4 && d.severity().equals("ERROR")
+                               && d.message().contains("'xyl' : unknown swizzle selection")),
+                result.log());
+        }
+    }
+    @Test
     void sourceMap() {
         var r = run("shaders/main.vert", "#version 450\nvoid main(){\n gl_Position=vec4(1);\n}",
             NativeCompiler.Operation.SPIRV, Map.of());

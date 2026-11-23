@@ -104,6 +104,15 @@ public final class Diagnostics
                             var token = input.file.code.get(nearest);
                             a = token.start();
                             b = token.end();
+                            if (d.message().contains("unknown swizzle selection")) {
+                                for (int n = 0; n < word.length(); n++) {
+                                    if ("xyzwrgbastpq".indexOf(word.charAt(n)) < 0) {
+                                        a += n;
+                                        b = a + 1;
+                                        break;
+                                    }
+                                }
+                            }
                         }
                     }
                 } else {

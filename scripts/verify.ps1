@@ -13,7 +13,7 @@ $privateHome=[IO.Path]::GetFullPath('build/verifier-home')
 $reports=[IO.Path]::GetFullPath('build/verification')
 New-Item -Type Directory -Force $reports,$privateHome | Out-Null
 $verdicts=Join-Path $reports ([Guid]::NewGuid().ToString('N'))
-& java -Xmx2500m "-Duser.home=$privateHome" -jar $tool check-plugin build/distributions/GLSL-Support-1.1.0.zip @hosts -offline -verification-reports-dir $verdicts -team-city 2>&1 | Tee-Object -FilePath "$reports/verifier.log"
+& java -Xmx2500m "-Duser.home=$privateHome" -jar $tool check-plugin build/distributions/GLSL-Support-1.1.1.zip @hosts -offline -verification-reports-dir $verdicts -team-city 2>&1 | Tee-Object -FilePath "$reports/verifier.log"
 if($LASTEXITCODE){exit $LASTEXITCODE}
 if(Select-String -Quiet -LiteralPath "$reports/verifier.log" -Pattern 'Plugin is invalid|Scheduled verifications \(0\)|##teamcity\[testFailed'){throw "Verifier reported a failure in $reports/verifier.log"}
 $problems=Get-ChildItem $verdicts -Recurse -File -Filter 'compatibility-problems.txt'|Where-Object Length -gt 0

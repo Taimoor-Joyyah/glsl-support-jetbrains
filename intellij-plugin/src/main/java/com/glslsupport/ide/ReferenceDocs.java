@@ -4,21 +4,20 @@ import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.*;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.*;
 import com.intellij.openapi.editor.event.CaretEvent;
 import com.intellij.openapi.editor.event.CaretListener;
 import com.intellij.openapi.editor.event.SelectionEvent;
 import com.intellij.openapi.editor.event.SelectionListener;
 import com.intellij.openapi.fileEditor.*;
+import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.wm.*;
 import com.intellij.psi.*;
 import com.intellij.ui.components.*;
 import com.intellij.ui.content.ContentFactory;
-import com.intellij.ui.jcef.JBCefApp;
-import com.intellij.ui.jcef.JBCefBrowser;
 import com.intellij.util.concurrency.AppExecutorUtil;
 import java.awt.*;
 import java.io.*;
@@ -40,7 +39,7 @@ import javax.swing.event.HyperlinkEvent;
 import javax.swing.text.html.HTMLDocument;
 import org.jetbrains.annotations.NotNull;
 
-public final class ReferenceDocs implements ToolWindowFactory {
+public final class ReferenceDocs implements ToolWindowFactory, DumbAware {
     private static final Path ROOT = Objects.requireNonNull(PathManager.getJarForClass(ReferenceDocs.class))
                                          .getParent()
                                          .resolveSibling("reference_pages");
@@ -126,7 +125,7 @@ public final class ReferenceDocs implements ToolWindowFactory {
         Runnable follow = () -> {
             long request = generation.incrementAndGet();
             alarm.cancelAllRequests();
-            if (!window.isVisible())
+            if (!window.isVisible() || !browser.follow.isSelected())
                 return;
             alarm.addRequest(() -> {
                 var editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
@@ -145,12 +144,18 @@ public final class ReferenceDocs implements ToolWindowFactory {
                     .coalesceBy(browser)
                     .finishOnUiThread(ModalityState.any(),
                         name -> {
-                            if (name != null && generation.get() == request && window.isVisible())
+                            if (name != null && generation.get() == request && window.isVisible()
+                                && browser.follow.isSelected())
                                 browser.open(name);
                         })
                     .submit(AppExecutorUtil.getAppExecutorService());
             }, 100);
         };
+        browser.follow.addActionListener(e -> {
+            if (browser.follow.isSelected())
+                browser.search.setText("");
+            follow.run();
+        });
         var events = EditorFactory.getInstance().getEventMulticaster();
         events.addCaretListener(new CaretListener() {
             public void caretPositionChanged(@NotNull CaretEvent e) {
@@ -200,40 +205,81 @@ public final class ReferenceDocs implements ToolWindowFactory {
             String name = selected(e);
             if (name == null)
                 return;
-            var window = ToolWindowManager.getInstance(p).getToolWindow("OpenGL Docs");
-            if (window == null)
-                return;
-            window.show(() -> {
-                for (var content : window.getContentManager().getContents())
-                    if (content.getComponent() instanceof Browser b)
-                        b.open(name);
+            show(p, false, browser -> {
+                browser.search.setText("");
+                browser.open(name);
             });
+        }
+    }
+    public static final class Search extends com.intellij.openapi.project.DumbAwareAction {
+        public @NotNull ActionUpdateThread getActionUpdateThread() {
+            return ActionUpdateThread.BGT;
+        }
+        public void update(@NotNull AnActionEvent e) {
+            e.getPresentation().setEnabledAndVisible(e.getProject() != null);
+        }
+        public void actionPerformed(@NotNull AnActionEvent e) {
+            if (e.getProject() != null)
+                show(e.getProject(), true, browser -> {
+                    browser.follow.setSelected(false);
+                    browser.search.requestFocusInWindow();
+                    browser.search.selectAll();
+                });
+        }
+    }
+    private static void show(Project project, boolean focus, java.util.function.Consumer<Browser> action) {
+        var window = ToolWindowManager.getInstance(project).getToolWindow("OpenGL Docs");
+        if (window == null)
+            return;
+        Runnable ready = () -> {
+            for (var content : window.getContentManager().getContents())
+                if (content.getComponent() instanceof Browser browser)
+                    action.accept(browser);
+        };
+        if (focus)
+            window.activate(ready);
+        else
+            window.show(ready);
+    }
+    interface WebViewer {
+        JComponent component();
+        void load(URL page);
+        String address();
+    }
+    private static WebViewer webViewer(Disposable parent) {
+        try {
+            return JcefReferenceViewer.create(parent);
+        } catch (LinkageError | IllegalStateException ex) {
+            Logger.getInstance(ReferenceDocs.class).info("Using the Swing OpenGL reference viewer", ex);
+            return null;
         }
     }
     static final class Browser extends JPanel {
         final List<String> names = entries();
         final JBTextField search = new JBTextField();
+        final JButton submit = new JButton("Search");
+        final JCheckBox follow = new JBCheckBox("Follow editor", true);
         final DefaultListModel<String> results = new DefaultListModel<>();
         final JBList<String> list = new JBList<>(results);
         final JEditorPane html = new JEditorPane("text/html", "");
-        final JBCefBrowser web;
+        final WebViewer web;
         String current = "";
+        boolean updatingList;
         Browser(Disposable parent) {
             super(new BorderLayout(4, 4));
             html.setEditable(false);
-            search.getEmptyText().setText("Search OpenGL and GLSL reference");
+            search.getEmptyText().setText("Search OpenGL or GLSL symbols");
+            search.getAccessibleContext().setAccessibleName("Search OpenGL Docs");
+            var bar = new JPanel(new BorderLayout(4, 0));
+            bar.add(search, BorderLayout.CENTER);
+            bar.add(submit, BorderLayout.EAST);
+            add(bar, BorderLayout.NORTH);
+            list.getEmptyText().setText("No matching reference pages");
             var side = new JPanel(new BorderLayout(4, 4));
-            side.add(search, BorderLayout.NORTH);
+            side.add(follow, BorderLayout.NORTH);
             side.add(new JBScrollPane(list));
-            JComponent viewer;
-            if (JBCefApp.isSupported()) {
-                web = new JBCefBrowser();
-                Disposer.register(parent, web);
-                viewer = web.getComponent();
-            } else {
-                web = null;
-                viewer = new JBScrollPane(html);
-            }
+            web = webViewer(parent);
+            JComponent viewer = web == null ? new JBScrollPane(html) : web.component();
             var standalone = new JButton("Open in Browser");
             standalone.addActionListener(e -> {
                 Path displayed = displayedFile();
@@ -252,8 +298,10 @@ public final class ReferenceDocs implements ToolWindowFactory {
             add(split);
             list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             list.addListSelectionListener(e -> {
-                if (!e.getValueIsAdjusting())
+                if (!updatingList && !e.getValueIsAdjusting() && list.getSelectedValue() != null) {
+                    follow.setSelected(false);
                     open(list.getSelectedValue());
+                }
             });
             search.getDocument().addDocumentListener(new DocumentListener() {
                 public void changedUpdate(DocumentEvent e) {
@@ -266,10 +314,8 @@ public final class ReferenceDocs implements ToolWindowFactory {
                     filter();
                 }
             });
-            search.addActionListener(e -> {
-                if (!results.isEmpty())
-                    list.setSelectedIndex(0);
-            });
+            search.addActionListener(e -> search());
+            submit.addActionListener(e -> search());
             html.addHyperlinkListener(e -> {
                 if (e.getEventType() != HyperlinkEvent.EventType.ACTIVATED)
                     return;
@@ -298,16 +344,38 @@ public final class ReferenceDocs implements ToolWindowFactory {
         }
         void filter() {
             String query = search.getText().strip().toLowerCase(Locale.ROOT);
-            results.clear();
-            for (String name : names)
-                if (name.toLowerCase(Locale.ROOT).contains(query))
-                    results.addElement(name);
+            if (!query.isEmpty())
+                follow.setSelected(false);
+            updatingList = true;
+            try {
+                results.clear();
+                results.addAll(
+                    names.stream().filter(name -> name.toLowerCase(Locale.ROOT).contains(query)).toList());
+                list.setSelectedValue(current, true);
+            } finally {
+                updatingList = false;
+            }
+            submit.setEnabled(!query.isEmpty() && !results.isEmpty());
+        }
+
+        private void search() {
+            if (!submit.isEnabled())
+                return;
+            String query = search.getText().strip();
+            String match = results.firstElement();
+            for (int i = 0; i < results.size(); i++)
+                if (results.get(i).equalsIgnoreCase(query)) {
+                    match = results.get(i);
+                    break;
+                }
+            follow.setSelected(false);
+            open(match);
         }
 
         private Path displayedFile() {
             if (web == null)
                 return null;
-            String address = web.getCefBrowser().getURL();
+            String address = web.address();
             if (address == null || !address.startsWith("file:"))
                 return null;
             try {
@@ -322,12 +390,13 @@ public final class ReferenceDocs implements ToolWindowFactory {
             URL url = page(name);
             if (url == null)
                 return false;
+            Path displayed = current.equals(name) ? displayedFile() : null;
             if (current.equals(name)
-                && (web == null
-                    || ROOT.resolve(ALIASES.getOrDefault(name, name) + ".xhtml").equals(displayedFile())))
+                && (displayed == null
+                    || ROOT.resolve(ALIASES.getOrDefault(name, name) + ".xhtml").equals(displayed)))
                 return true;
             if (web != null) {
-                web.loadURL(url.toExternalForm());
+                web.load(url);
             } else {
                 try (var in = new InputStreamReader(url.openStream(), StandardCharsets.UTF_8)) {
                     var doc = (HTMLDocument) html.getEditorKit().createDefaultDocument();
@@ -343,8 +412,13 @@ public final class ReferenceDocs implements ToolWindowFactory {
             current = name;
             int index = results.indexOf(name);
             if (index >= 0 && list.getSelectedIndex() != index) {
-                list.setSelectedIndex(index);
-                list.ensureIndexIsVisible(index);
+                updatingList = true;
+                try {
+                    list.setSelectedIndex(index);
+                    list.ensureIndexIsVisible(index);
+                } finally {
+                    updatingList = false;
+                }
             }
             return true;
         }

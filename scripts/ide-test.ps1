@@ -1,4 +1,4 @@
-param([Parameter(Mandatory)][string]$IdeHome)
+param([Parameter(Mandatory)][string]$IdeHome,[switch]$DocsWindow)
 $ErrorActionPreference='Stop'
 Set-Location (Split-Path $PSScriptRoot)
 $sdk=(Resolve-Path -LiteralPath $IdeHome).Path
@@ -9,7 +9,7 @@ $base=[IO.Path]::GetFullPath("build/ide-tests/$($info.productCode)-$($info.build
 $run=Join-Path $base ([Guid]::NewGuid().ToString('N'))
 $project="$run/project"
 New-Item -Type Directory -Force "$project/.idea","$project/first","$project/second","$base/config","$base/system","$base/plugins","$base/log" | Out-Null
-[IO.Compression.ZipFile]::ExtractToDirectory([IO.Path]::GetFullPath('build/distributions/GLSL-Support-1.1.0.zip'),"$base/plugins",$true)
+[IO.Compression.ZipFile]::ExtractToDirectory([IO.Path]::GetFullPath('build/distributions/GLSL-Support-1.1.1.zip'),"$base/plugins",$true)
 Copy-Item -LiteralPath 'build/test-plugin/GLSLSupportTests' -Destination "$base/plugins" -Recurse -Force
 '<project version="4"><component name="ProjectModuleManager"><modules><module fileurl="file://$PROJECT_DIR$/shader.iml" filepath="$PROJECT_DIR$/shader.iml"/></modules></component></project>' | Set-Content -Encoding utf8NoBOM "$project/.idea/modules.xml"
 '<module type="EMPTY_MODULE" version="4"><component name="NewModuleRootManager"><content url="file://$MODULE_DIR$"/><orderEntry type="sourceFolder" forTests="false"/></component></module>' | Set-Content -Encoding utf8NoBOM "$project/shader.iml"
@@ -19,10 +19,11 @@ Copy-Item -LiteralPath 'build/test-plugin/GLSLSupportTests' -Destination "$base/
 Copy-Item -LiteralPath 'test-data/editor/glslSupport.xml' -Destination "$project/settings-example.xml"
 @'
 #version 450
+layout(location=0) out vec2 uv;
 void main(){
-    vec2 v = vec2(0);
-    float z = v.z;
-    gl_Position = vec4(z);
+    vec4 currentClip = vec4(1);
+    uv = currentClip.xyl / currentClip.w;
+    gl_Position = currentClip;
 }
 '@ | Set-Content -Encoding utf8NoBOM "$project/swizzle.vert"
 '#ifndef ROOT_SHADER
@@ -64,12 +65,14 @@ $priorLength=if(Test-Path -LiteralPath $ideaLog){(Get-Item -LiteralPath $ideaLog
 # Desktop IDEs process external-project file changes in the background. Use the same dispatch
 # in the headless fixture so PyCharm does not collect project settings inside a VFS write action.
 $asyncImport='-Dexternal.system.auto.import.headless.async=true'
-$jvm+=@('-Xmx1300m','-Djava.awt.headless=true',$asyncImport,'-Didea.trust.all.projects=true','-Didea.auto.reload.plugins=false',
+$headless="-Djava.awt.headless=$((!$DocsWindow).ToString().ToLowerInvariant())"
+$docs="-Dglsl.test.docsWindow=$(([bool]$DocsWindow).ToString().ToLowerInvariant())"
+$jvm+=@('-Xmx1300m',$headless,$docs,$asyncImport,'-Didea.trust.all.projects=true','-Didea.auto.reload.plugins=false',
     "-Didea.home.path=$sdk","-Didea.config.path=$base/config","-Didea.system.path=$base/system","-Didea.plugins.path=$base/plugins","-Didea.log.path=$base/log",
     '-Didea.required.plugins.id=com.glslsupport.tests',"-Dglsl.test.result=$result","-Dglsl.test.project=$project",'--enable-native-access=ALL-UNNAMED','-cp',$classpath,$launch.mainClass,'glsl-support-test')
 if($info.productCode -eq 'CL'){
     . "$PSScriptRoot/clion-launch.ps1"
-    $settings=@('-Djava.awt.headless=true',$asyncImport,'-Didea.trust.all.projects=true','-Didea.auto.reload.plugins=false',
+    $settings=@($headless,$docs,$asyncImport,'-Didea.trust.all.projects=true','-Didea.auto.reload.plugins=false',
         '-Didea.required.plugins.id=com.glslsupport.tests',"-Dglsl.test.result=$result","-Dglsl.test.project=$project")
     $start=New-GlslClionLauncher $sdk $base (Join-Path $run 'test.vmoptions') $settings
     $start.ArgumentList.Add('glsl-support-test')
@@ -77,6 +80,11 @@ if($info.productCode -eq 'CL'){
     $start=[Diagnostics.ProcessStartInfo]::new((Join-Path $sdk $launch.javaExecutablePath))
     foreach($arg in $jvm){$start.ArgumentList.Add($arg)}
 }
+# Some IDEs ship a boot classpath longer than the Windows process command line.
+$argsFile=Join-Path $run 'java.args'
+$start.ArgumentList | ForEach-Object {'"'+$_.Replace('\','\\').Replace('"','\"')+'"'} | Set-Content -LiteralPath $argsFile -Encoding utf8NoBOM
+$start.ArgumentList.Clear()
+$start.ArgumentList.Add("@$argsFile")
 $start.UseShellExecute=$false
 $start.CreateNoWindow=$true
 $start.WindowStyle='Hidden'
