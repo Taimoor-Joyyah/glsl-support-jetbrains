@@ -16,7 +16,8 @@ import org.jetbrains.annotations.NotNull;
 
 public final class CompilerSupport implements Disposable {
     private final AnalysisCache cache = new AnalysisCache(32L << 20, NativeCompiler::compile);
-    private final Map<VirtualFile, Set<String>> dependencies = new java.util.concurrent.ConcurrentHashMap<>();
+    private record Dependencies(Set<String> inputs, boolean owner) {}
+    private final Map<VirtualFile, Dependencies> dependencies = new java.util.concurrent.ConcurrentHashMap<>();
     private final Map<VirtualFile, Runnable> pending = new java.util.concurrent.ConcurrentHashMap<>();
     private final com.intellij.util.Alarm alarm =
         new com.intellij.util.Alarm(com.intellij.util.Alarm.ThreadToUse.SWING_THREAD, this);
@@ -33,12 +34,12 @@ public final class CompilerSupport implements Disposable {
                     && FileEditorManager.getInstance(project).isFileOpen(changed))
                     schedule(changed);
                 var headers = dependencies.get(changed);
-                if (headers != null)
+                if (headers != null && headers.owner())
                     for (var open : FileEditorManager.getInstance(project).getOpenFiles())
-                        if (headers.contains(open.getPath()))
+                        if (headers.inputs().contains(open.getPath()))
                             schedule(open);
                 dependencies.forEach((root, included) -> {
-                    if (included.contains(changed.getPath()))
+                    if (included.inputs().contains(changed.getPath()))
                         schedule(root);
                 });
             }
@@ -52,13 +53,13 @@ public final class CompilerSupport implements Disposable {
                 }
             });
     }
-    void track(PsiFile root, Set<String> headers) {
-        VirtualFile file = root.getVirtualFile();
+    void track(PsiFile view, Set<String> inputs, boolean owner) {
+        VirtualFile file = view.getVirtualFile();
         if (file != null) {
-            if (headers.isEmpty())
+            if (inputs.isEmpty())
                 dependencies.remove(file);
             else
-                dependencies.put(file, Set.copyOf(headers));
+                dependencies.put(file, new Dependencies(Set.copyOf(inputs), owner));
         }
     }
     List<PsiFile> owners(PsiFile file) {
@@ -68,7 +69,7 @@ public final class CompilerSupport implements Disposable {
         String path = ProjectAccess.key(file);
         return dependencies.entrySet()
             .stream()
-            .filter(e -> e.getValue().contains(path) && e.getKey().isValid())
+            .filter(e -> e.getValue().owner() && e.getValue().inputs().contains(path) && e.getKey().isValid())
             .sorted(Map.Entry.comparingByKey(Comparator.comparing(VirtualFile::getPath)))
             .map(e -> PsiManager.getInstance(project).findFile(e.getKey()))
             .filter(Objects::nonNull)
@@ -113,30 +114,8 @@ public final class CompilerSupport implements Disposable {
         dependencies.clear();
     }
     public static NativeCompiler.Request request(PsiFile file, String variant, NativeCompiler.Operation op) {
-        var settings = Settings.of(file.getProject());
-        var effective = settings.effective(file, variant);
-        if (file.getName().toLowerCase(Locale.ROOT).endsWith(".glslh") && effective.version() == 0
-            && !ProjectAccess.model(file).hasVersion())
-            effective = new ShaderConfig.Effective(
-                effective.stage(), effective.vulkan(), 460, "core", effective.defines());
-        return request(file, op, effective, variant == null);
-    }
-    private static NativeCompiler.Request request(
-        PsiFile file, NativeCompiler.Operation op, ShaderConfig.Effective effective, boolean useActiveGraph) {
-        var graph =
-            useActiveGraph ? ProjectAccess.graph(file) : ProjectAccess.graph(file, effective.editorDefines());
-        var key = ProjectAccess.key(file);
-        var headers = new LinkedHashMap<String, String>();
-        graph.files.forEach((path, model) -> {
-            if (!key.equals(path))
-                headers.put(path, model.source);
-        });
-        return new NativeCompiler.Request(effective.vulkan(), op,
-            List.of(new NativeCompiler.Unit(key, graph.files.get(key).source, effective)), headers,
-            graphRoots(file));
-    }
-    static List<String> graphRoots(PsiFile file) {
-        return ProjectAccess.roots(file.getProject());
+        var contexts = PipelineContexts.of(file.getProject());
+        return (variant == null ? contexts.current(file) : contexts.build(file, null, "", variant)).request(op);
     }
     public NativeCompiler.Result analyze(NativeCompiler.Request req) {
         var jar = PathManager.getJarForClass(CompilerSupport.class);
@@ -149,33 +128,24 @@ public final class CompilerSupport implements Disposable {
         return p.getService(CompilerSupport.class);
     }
     public static NativeCompiler.Request pipeline(Project p, String name) {
-        var settings = Settings.of(p);
-        var pipeline = settings.pipelines().get(name);
+        return pipelineInput(p, name).request();
+    }
+    record PipelineInput(List<PipelineContexts.Context> stages, NativeCompiler.Request request) {}
+    static PipelineInput pipelineInput(Project p, String name) {
+        return pipelineInput(p, Settings.of(p).pipelines().get(name));
+    }
+    static PipelineInput pipelineInput(Project p, Settings.Pipeline pipeline) {
         if (pipeline == null || pipeline.stages.isEmpty())
             throw new IllegalArgumentException("Add shader stages to this pipeline in GLSL Support settings");
         int target = -1;
         var units = new ArrayList<NativeCompiler.Unit>();
+        var stages = new ArrayList<PipelineContexts.Context>();
         var headers = new LinkedHashMap<String, String>();
         var seen = new HashSet<ShaderConfig.Stage>();
         for (var binding : pipeline.stages) {
-            var path =
-                java.nio.file.Path.of(Objects.requireNonNullElse(p.getBasePath(), "")).resolve(binding.file);
-            var f = ProjectAccess.psi(p, Workspace.path(path.toString()));
-            if (f == null)
-                throw new IllegalArgumentException("Missing stage file " + binding.file);
-            if (!binding.variant.isBlank()
-                && settings.variants(f).stream().noneMatch(
-                    v -> v.id.equals(binding.variant) || v.name.equals(binding.variant)))
-                throw new IllegalArgumentException("Unknown variant " + binding.variant + " in " + binding.file);
-            var base = settings.effective(f, binding.variant.isBlank() ? null : binding.variant);
-            var assigned = binding.stage.isBlank() ? base.stage() : Settings.stage(binding.stage);
-            if (assigned == null)
-                throw new IllegalArgumentException("Unknown shader stage " + binding.stage);
-            var defines = new LinkedHashMap<>(base.defines());
-            defines.putAll(pipeline.definitions);
-            var config = new ShaderConfig.Effective(assigned,
-                pipeline.target < 0 ? base.vulkan() : pipeline.target, base.version(), base.profile(), defines);
-            var r = request(f, NativeCompiler.Operation.CHECK, config, false);
+            var context = PipelineContexts.of(p).binding(pipeline, binding, null);
+            stages.add(context);
+            var r = context.request(NativeCompiler.Operation.LINK);
             if (target >= 0 && target != r.vulkan())
                 throw new IllegalArgumentException("Pipeline stages use different target environments");
             target = r.vulkan();
@@ -185,7 +155,7 @@ public final class CompilerSupport implements Disposable {
             units.add(unit);
             headers.putAll(r.headers());
         }
-        return new NativeCompiler.Request(
-            target, NativeCompiler.Operation.CHECK, units, headers, settings.roots(p));
+        return new PipelineInput(List.copyOf(stages),
+            new NativeCompiler.Request(target, NativeCompiler.Operation.LINK, units, headers, Settings.of(p).roots(p)));
     }
 }

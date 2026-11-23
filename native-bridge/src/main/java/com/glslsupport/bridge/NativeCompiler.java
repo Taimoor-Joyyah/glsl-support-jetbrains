@@ -8,7 +8,7 @@ import java.util.*;
 import java.util.regex.*;
 
 public final class NativeCompiler {
-    public enum Operation { CHECK, SPIRV, LAYOUT }
+    public enum Operation { CHECK, SPIRV, LAYOUT, LINK, TRACE }
     public record Unit(String path, String text, ShaderConfig.Effective config) {}
     public record Request(int vulkan, Operation operation, List<Unit> units, Map<String, String> headers,
         List<String> includeRoots) {
@@ -20,7 +20,12 @@ public final class NativeCompiler {
     }
     public record Diagnostic(String severity, String file, int line, int column, String message) {}
     public record Line(String file, int line) {}
-    public record Result(boolean success, String log, String assembly, String layout, int[] words) {
+    public record TraceEvent(String file, int line, int depth, String kind, String name, String value) {}
+    public record Result(boolean success, String log, String assembly, String layout, int[] words,
+                         List<String> stageLogs, String linkLog, List<TraceEvent> trace) {
+        public Result(boolean success, String log, String assembly, String layout, int[] words) {
+            this(success, log, assembly, layout, words, List.of(), "", List.of());
+        }
         public List<Diagnostic> diagnostics(String fallback) {
             var result = new ArrayList<Diagnostic>();
             for (String line : log.split("\\R")) {
@@ -38,7 +43,7 @@ public final class NativeCompiler {
             }
             return result;
         }
-        private static boolean summary(String s) {
+        static boolean summary(String s) {
             return s.contains("compilation errors.") || s.contains("compilation error.")
                 || s.contains("No code generated") || s.isBlank();
         }
@@ -64,7 +69,7 @@ public final class NativeCompiler {
             return map;
         }
     }
-    private static final Pattern MESSAGE = Pattern.compile("^(ERROR|WARNING): (.+?):(\\d+):(?:(\\d+):)?\\s*(.*)$");
+    static final Pattern MESSAGE = Pattern.compile("^(ERROR|WARNING): (.+?):(\\d+):(?:(\\d+):)?\\s*(.*)$");
     private static final Pattern SPV_STRING = Pattern.compile("\\s*(%\\S+)\\s*=\\s*OpString\\s+\"(.*)\"\\s*");
     private static final Pattern SPV_LINE = Pattern.compile("\\s*OpLine\\s+(%\\S+)\\s+(\\d+)\\s+\\d+\\s*");
     private static volatile boolean loaded;
@@ -75,7 +80,7 @@ public final class NativeCompiler {
         if (loaded)
             return;
         System.load(library.toAbsolutePath().toString());
-        if (abi() != 1)
+        if (abi() != 2)
             throw new UnsatisfiedLinkError("Unsupported GLSL compiler ABI");
         loaded = true;
     }
@@ -111,9 +116,25 @@ public final class NativeCompiler {
             var result = new DataInputStream(new ByteArrayInputStream(invoke(bytes.toByteArray())));
             boolean success = result.readInt() != 0;
             String log = read(result), assembly = read(result), layout = read(result);
-            int[] words = new int[result.readInt()];
+            int[] words = new int[count(result, 4)];
             for (int i = 0; i < words.length; i++) words[i] = result.readInt();
-            return new Result(success, log, assembly, layout, words);
+            var stageLogs = new ArrayList<String>();
+            String linkLog = "";
+            if (request.operation == Operation.LINK) {
+                for (var unit : request.units) stageLogs.add(read(result));
+                linkLog = read(result);
+            }
+            var trace = new ArrayList<TraceEvent>();
+            if (request.operation == Operation.TRACE) {
+                int events = count(result, 24);
+                for (int i = 0; i < events; i++)
+                    trace.add(new TraceEvent(read(result), result.readInt(), result.readInt(),
+                        read(result), read(result), read(result)));
+            }
+            if (result.available() != 0)
+                throw new IOException("Trailing native result data");
+            return new Result(success, log, assembly, layout, words, List.copyOf(stageLogs),
+                linkLog, List.copyOf(trace));
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -123,10 +144,14 @@ public final class NativeCompiler {
         out.writeInt(b.length);
         out.write(b);
     }
-    private static String read(DataInputStream in) throws IOException {
+    private static int count(DataInputStream in, int minimumSize) throws IOException {
         int length = in.readInt();
-        if (length < 0 || length > in.available())
+        if (length < 0 || length > in.available() / minimumSize)
             throw new IOException("Invalid native result length");
+        return length;
+    }
+    private static String read(DataInputStream in) throws IOException {
+        int length = count(in, 1);
         return new String(in.readNBytes(length), StandardCharsets.UTF_8);
     }
     public static int offset(String text, int line, int byteColumn) {

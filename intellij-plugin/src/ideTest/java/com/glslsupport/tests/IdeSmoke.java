@@ -73,10 +73,13 @@ public final class IdeSmoke implements ApplicationStarter {
             if (!isHeadless()) {
                 ReferenceWindow.verify(p, root, true);
                 EditorUpgrade.liveSwizzle(p, root);
+                PipelineEditing.verify(p, root, true);
                 Files.writeString(result,
                     "PASS OpenGL Docs tool window, manual search, rendered Chromium pages, pinned results and "
-                        + "editor tracking, live swizzle error underline and correction\n");
-                System.exit(0);
+                        + "editor tracking, live swizzle correction, visible pipeline selector, declarative argument hints, "
+                        + "batch validation, trace comparison and byte-for-byte SPIR-V export\n");
+                exitGraphical(0);
+                return;
             }
             var target = ReadAction.compute(() -> {
                 var header = Objects.requireNonNull(PsiManager.getInstance(p).findFile(h));
@@ -102,13 +105,14 @@ public final class IdeSmoke implements ApplicationStarter {
             Features.verify(p, root);
             EditorUpgrade.verify(p, root);
             ReferenceWindow.verify(p, root, false);
+            PipelineEditing.verify(p, root, false);
             Files.writeString(result,
                 "PASS file type, include navigation, symbol index, Find Usages, project Rename, native DLL, "
                     + "SPIR-V, source map, block and struct layout, pipeline link, variants, gated search, "
                     + "folding, "
                     + "structure, documentation, colors, actions, settings, header template, IDE formatting, "
                     + "semantic palette, live swizzles, repeated color edits, cross-language references and "
-                    + "pipeline XML, manual reference search and rendered Swing pages\n");
+                    + "pipeline XML, manual reference search, rendered Swing pages, pipeline contexts, clickable batch validation, trace comparison and export action\n");
             System.exit(0);
         } catch (Throwable t) {
             try {
@@ -117,7 +121,12 @@ public final class IdeSmoke implements ApplicationStarter {
                 Files.writeString(result, text.toString());
             } catch (Exception ignored) {
             }
-            System.exit(1);
+            if (isHeadless()) System.exit(1);
+            else exitGraphical(1);
         }
+    }
+    private static void exitGraphical(int code) {
+        var app = ApplicationManager.getApplication();
+        app.invokeLater(() -> app.exit(true, true, false, code), ModalityState.any());
     }
 }

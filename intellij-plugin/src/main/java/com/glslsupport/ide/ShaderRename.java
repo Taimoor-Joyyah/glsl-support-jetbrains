@@ -36,7 +36,7 @@ public final class ShaderRename extends RenamePsiElementProcessor {
                 continue;
             for (var variant : Settings.of(project).variants(root)) {
                 var config = Settings.of(project).effective(root, variant.id);
-                var w = ProjectAccess.graph(root, config.editorDefines());
+                var w = ProjectAccess.graph(root, config);
                 if (!w.files.containsKey(targetPath))
                     continue;
                 if (proposed != null) {

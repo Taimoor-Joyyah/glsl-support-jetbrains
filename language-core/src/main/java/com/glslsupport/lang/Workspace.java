@@ -12,16 +12,17 @@ public final class Workspace {
     private final List<String> roots;
     private final Map<String, String> definitions;
     private final String translationUnit;
+    private final ShaderConfig.Stage stage;
     private final Map<String, Translation> translations = new java.util.concurrent.ConcurrentHashMap<>();
     private final class Translation {
         final Map<String, List<Conditions>> ranges = new LinkedHashMap<>();
         final List<String> visible;
         int includes;
         Translation(String root) {
-            enter(root, new HashMap<>(definitions), new HashSet<>());
+            enter(root, Conditions.macros(definitions), new HashSet<>());
             visible = List.copyOf(ranges.keySet());
         }
-        void enter(String path, Map<String, String> macros, Set<String> stack) {
+        void enter(String path, Map<String, Conditions.Macro> macros, Set<String> stack) {
             var syntax = files.get(path);
             if (syntax == null || stack.size() >= 64 || includes++ >= 4096 || !stack.add(path))
                 return;
@@ -49,6 +50,14 @@ public final class Workspace {
     }
     public Workspace(
         Map<String, Syntax> files, List<String> roots, Map<String, String> definitions, String translationUnit) {
+        this(files, roots, definitions, translationUnit, null);
+    }
+    public Workspace(Map<String, Syntax> files, List<String> roots, ShaderConfig.Effective config, String translationUnit) {
+        this(files, roots, config.editorDefines(), translationUnit, config.stage());
+    }
+    private Workspace(Map<String, Syntax> files, List<String> roots, Map<String, String> definitions,
+                      String translationUnit, ShaderConfig.Stage stage) {
+        this.stage = stage;
         this.translationUnit = translationUnit == null ? null : path(translationUnit);
         var normalized = new LinkedHashMap<String, Syntax>();
         files.forEach((k, v) -> normalized.put(path(k), v));
@@ -61,6 +70,15 @@ public final class Workspace {
         return translation(root).active(root, offset);
     }
     public String include(String file, Syntax.Include inc) {
+        return include(file, inc, null);
+    }
+    /** Includes missing search candidates whose creation would change this snapshot. */
+    public Set<String> inputPaths() {
+        var paths = new HashSet<>(files.keySet());
+        files.forEach((path, syntax) -> syntax.includes.forEach(inc -> include(path, inc, paths)));
+        return paths;
+    }
+    private String include(String file, Syntax.Include inc, Set<String> searched) {
         var dirs = new ArrayList<String>();
         var parent = Path.of(file).getParent();
         if (!inc.system())
@@ -68,6 +86,8 @@ public final class Workspace {
         dirs.addAll(roots);
         for (var dir : dirs) {
             var resolved = resolvePath(dir, inc.path());
+            if (resolved == null) continue;
+            if (searched != null) searched.add(resolved);
             if (files.containsKey(resolved))
                 return resolved;
         }
@@ -349,8 +369,12 @@ public final class Workspace {
                     if (s.kind() != FIELD || exposedField(files.get(k), s))
                         names.add(s.name());
                 }
-            if (builtins)
-                names.addAll(Catalog.codeNames());
+            if (builtins) {
+                boolean vulkan = definitions.containsKey("VULKAN");
+                for (var name : Catalog.codeNames())
+                    if (name.startsWith(prefix) && (stage == null || Catalog.available(name, stage, vulkan)))
+                        names.add(name);
+            }
         }
         return names.stream().filter(n -> n.startsWith(prefix)).toList();
     }

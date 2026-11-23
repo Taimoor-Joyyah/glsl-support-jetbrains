@@ -36,6 +36,28 @@ class EditorTest {
         assertFalse(w.active("main.vert", s.indexOf("no")));
     }
     @Test
+    void headerVisibilityUsesFunctionMacrosInTranslationOrder() {
+        String source = """
+            #include "defines.glslh"
+            #define TWICE(x) ((x) + (x))
+            #if defined(MODE) && PICK(TWICE(MODE), 7) == 6
+            #include "selected.glslh"
+            #endif
+            #undef MODE
+            #if defined(MODE)
+            float inactive;
+            #endif
+            """;
+        var files = Map.of("main.vert", new Syntax(source),
+            "defines.glslh", new Syntax("#define PICK(a,b) ((a) ? (a) : (b))\n"),
+            "selected.glslh", new Syntax("float chosen;\n"));
+        var enabled = new Workspace(files, List.of(), Map.of("MODE","3"), "main.vert");
+        assertTrue(enabled.visible("main.vert").contains("selected.glslh"));
+        assertFalse(enabled.active("main.vert", source.indexOf("inactive")));
+        var disabled = new Workspace(files, List.of(), Map.of("MODE","0"), "main.vert");
+        assertFalse(disabled.visible("main.vert").contains("selected.glslh"));
+    }
+    @Test
     void overloadsAndClosedFiles() {
         String h = "float gain(float x){return x;} int gain(int x){return x;}";
         String s = "#include \"inc.glslh\"\nvoid main(){int y=gain(1);}";

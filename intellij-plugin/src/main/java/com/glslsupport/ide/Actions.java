@@ -8,9 +8,7 @@ import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.*;
 import com.intellij.openapi.project.*;
 import com.intellij.openapi.ui.*;
-import com.intellij.openapi.wm.*;
 import com.intellij.psi.*;
-import com.intellij.ui.content.ContentFactory;
 import java.awt.Dimension;
 import java.util.*;
 import javax.swing.*;
@@ -121,32 +119,16 @@ public final class Actions {
             validate(p, name);
         }
         static void validate(com.intellij.openapi.project.Project p, String name) {
-            ApplicationManager.getApplication().executeOnPooledThread(() -> {
-                String output;
-                try {
-                    var request = ReadAction.computeBlocking(() -> CompilerSupport.pipeline(p, name));
-                    var r = CompilerSupport.of(p).analyze(request);
-                    output =
-                        (r.success() ? "Pipeline linked successfully.\n" : "Pipeline link failed.\n") + r.log();
-                } catch (RuntimeException | LinkageError ex) {
-                    output = ex.getMessage();
-                }
-                String text = output;
-                ApplicationManager.getApplication().invokeLater(() -> {
-                    if (p.isDisposed())
-                        return;
-                    var window = ToolWindowManager.getInstance(p).getToolWindow("GLSL Inspector");
-                    if (window == null)
-                        return;
-                    var area = new JTextArea(text);
-                    area.setEditable(false);
-                    var tab = ContentFactory.getInstance().createContent(
-                        new com.intellij.ui.components.JBScrollPane(area), name, true);
-                    window.getContentManager().addContent(tab);
-                    window.getContentManager().setSelectedContent(tab);
-                    window.activate(null);
-                });
-            });
+            PipelineValidation.open(p, List.of(name));
+        }
+    }
+    public static final class AllPipelines extends DumbAwareAction {
+        public void actionPerformed(@NotNull AnActionEvent e) {
+            var project = e.getProject();
+            if (project != null) validate(project);
+        }
+        static void validate(com.intellij.openapi.project.Project project) {
+            PipelineValidation.open(project, List.copyOf(Settings.of(project).pipelines().keySet()));
         }
     }
 }

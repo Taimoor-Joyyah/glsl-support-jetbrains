@@ -325,7 +325,7 @@ public final class PipelinePanel extends JPanel {
             var wrap = new JPanel(new BorderLayout(4, 4));
             wrap.add(editor);
             var actions = new JPanel(new FlowLayout(FlowLayout.LEADING));
-            for (String label : List.of("Save", "Reload", "Validate")) {
+            for (String label : List.of("Save", "Reload", "Validate", "Validate All")) {
                 var button = new JButton(label);
                 actions.add(button);
                 button.addActionListener(e -> {
@@ -338,6 +338,8 @@ public final class PipelinePanel extends JPanel {
                         editor.status.setText("Pipelines saved.");
                         if (label.equals("Validate") && editor.selected != null)
                             Actions.Pipeline.validate(project, editor.selected);
+                        else if (label.equals("Validate All"))
+                            Actions.AllPipelines.validate(project);
                     } catch (ConfigurationException ex) {
                         editor.status.setText(ex.getMessageHtml().toString());
                     }

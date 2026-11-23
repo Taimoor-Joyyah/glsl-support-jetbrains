@@ -108,6 +108,24 @@ jbyteArray run(JNIEnv *env, jbyteArray request) {
     out.number(static_cast<uint32_t>(n));
     for (size_t i = 0; i < n; ++i)
         out.number(words[i]);
+    if (r.operation == GLSL_LINK) {
+        for (size_t i = 0; i < r.unit_count; ++i)
+            out.string(glsl_stage_log(result.get(), i));
+        out.string(glsl_link_log(result.get()));
+    }
+    if (r.operation == GLSL_TRACE) {
+        size_t count = glsl_trace_count(result.get());
+        out.number(static_cast<uint32_t>(count));
+        for (size_t i = 0; i < count; ++i) {
+            auto e = glsl_trace_at(result.get(), i);
+            out.string(e.file);
+            out.number(e.line);
+            out.number(e.depth);
+            out.string(e.kind);
+            out.string(e.name);
+            out.string(e.value);
+        }
+    }
     if (out.bytes.size() > static_cast<size_t>(std::numeric_limits<jsize>::max()))
         throw std::length_error("Compiler output is too large");
     auto length = static_cast<jsize>(out.bytes.size());

@@ -1,5 +1,6 @@
 #include "SPIRV/GlslangToSpv.h"
 #include "glsl_support.h"
+#include "preprocessor_trace.h"
 #include "glslang/MachineIndependent/localintermediate.h"
 #include "glslang/Public/ResourceLimits.h"
 #include "glslang/Public/ShaderLang.h"
@@ -14,13 +15,29 @@
 #include <unordered_map>
 #include <vector>
 
-struct glsl_result {
+struct TraceEntry {
+    std::string file, kind, name, value;
+    int line;
+    unsigned depth;
+};
+struct glsl_result : glsl_support_trace::Listener {
     bool success{};
-    std::string log, assembly, layout;
+    std::string log, assembly, layout, linkLog;
+    std::vector<std::string> stageLogs;
+    std::vector<TraceEntry> trace;
     std::vector<uint32_t> words;
+    void event(const char *file, int line, unsigned depth, const char *kind,
+               const char *name, const char *value) override {
+        trace.push_back({file, kind, name, value, line, depth});
+    }
 };
 
 namespace {
+struct TraceScope {
+    glsl_support_trace::Listener *previous = glsl_support_trace::listener;
+    explicit TraceScope(glsl_support_trace::Listener *current) { glsl_support_trace::listener = current; }
+    ~TraceScope() { glsl_support_trace::listener = previous; }
+};
 struct CompilerProcess {
     CompilerProcess() {
         if (!glslang::InitializeProcess())
@@ -195,8 +212,8 @@ std::string reflect(const glslang::TIntermediate &ir) {
 void compile(const glsl_request &r, glsl_result &out) {
     if (!r.units || r.unit_count == 0 || r.unit_count > EShLangCount || (r.header_count && !r.headers) ||
         (r.root_count && !r.include_roots) || (r.vulkan && (r.vulkan < 10 || r.vulkan > 14)) ||
-        r.operation < GLSL_CHECK || r.operation > GLSL_LAYOUT ||
-        (r.operation != GLSL_CHECK && r.unit_count != 1))
+        r.operation < GLSL_CHECK || r.operation > GLSL_TRACE ||
+        (r.operation != GLSL_CHECK && r.operation != GLSL_LINK && r.unit_count != 1))
         throw std::invalid_argument("Invalid compiler request");
     static CompilerProcess process;
     SnapshotIncludes includes(r);
@@ -240,8 +257,11 @@ void compile(const glsl_request &r, glsl_result &out) {
                                 r.vulkan ? spvVersions[r.vulkan - 10] : glslang::EShTargetSpv_1_0);
         }
         shader.setDebugInfo(spirv);
+        TraceScope trace(r.operation == GLSL_TRACE ? &out : nullptr);
         bool ok = shader.parse(GetDefaultResources(), 110, false, messages, includes);
         out.log += shader.getInfoLog();
+        if (r.operation == GLSL_LINK)
+            out.stageLogs.emplace_back(shader.getInfoLog());
         if (ok) {
             program.addShader(&shader);
             if (r.operation == GLSL_LAYOUT)
@@ -251,9 +271,11 @@ void compile(const glsl_request &r, glsl_result &out) {
     }
     if (!parsed)
         return;
-    if (r.unit_count > 1 || spirv) {
+    if (r.operation == GLSL_LINK || r.unit_count > 1 || spirv) {
         bool ok = program.link(messages);
         out.log += program.getInfoLog();
+        if (r.operation == GLSL_LINK)
+            out.linkLog = program.getInfoLog();
         if (!ok)
             return;
     }
@@ -282,7 +304,7 @@ void compile(const glsl_request &r, glsl_result &out) {
 }
 } // namespace
 extern "C" {
-unsigned glsl_abi_version() { return 1; }
+unsigned glsl_abi_version() { return 2; }
 glsl_result *glsl_compile(const glsl_request *r) {
     auto out = std::unique_ptr<glsl_result>(new (std::nothrow) glsl_result);
     if (!out)
@@ -310,6 +332,17 @@ const uint32_t *glsl_words(const glsl_result *r, size_t *count) {
     if (count)
         *count = r ? r->words.size() : 0;
     return r ? r->words.data() : nullptr;
+}
+const char *glsl_stage_log(const glsl_result *r, size_t i) {
+    return r && i < r->stageLogs.size() ? r->stageLogs[i].c_str() : "";
+}
+const char *glsl_link_log(const glsl_result *r) { return r ? r->linkLog.c_str() : ""; }
+size_t glsl_trace_count(const glsl_result *r) { return r ? r->trace.size() : 0; }
+glsl_trace_event glsl_trace_at(const glsl_result *r, size_t i) {
+    if (!r || i >= r->trace.size())
+        return {};
+    const auto &e = r->trace[i];
+    return {e.file.c_str(), e.kind.c_str(), e.name.c_str(), e.value.c_str(), e.line, e.depth};
 }
 void glsl_free(glsl_result *r) { delete r; }
 }

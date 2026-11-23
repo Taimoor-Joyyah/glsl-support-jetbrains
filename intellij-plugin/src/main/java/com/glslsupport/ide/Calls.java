@@ -1,6 +1,6 @@
 package com.glslsupport.ide;
 import com.glslsupport.lang.*;
-import com.intellij.codeInsight.hints.*;
+import com.intellij.codeInsight.hints.declarative.*;
 import com.intellij.lang.parameterInfo.*;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.ElementColorProvider;
@@ -40,7 +40,7 @@ public final class Calls {
         String key = ProjectAccess.key(c.element.getContainingFile()), name = c.syntax.word(c.open - 1);
         for (var k : c.workspace.visible(key))
             for (var s : c.workspace.files.get(k).symbols)
-                if (s.kind() == Syntax.Kind.FUNCTION && s.name().equals(name)) {
+                if (s.kind() == Syntax.Kind.FUNCTION && s.name().equals(name) && c.workspace.active(k, s.at())) {
                     var f = c.workspace.files.get(k);
                     int idx = f.indexAt(s.at()) + 1;
                     int close = f.match[idx];
@@ -97,22 +97,23 @@ public final class Calls {
                 false, false, ctx.getDefaultParameterColor());
         }
     }
-    public static final class Hints implements InlayParameterHintsProvider {
-        public @NotNull Set<String> getDefaultBlackList() {
-            return Set.of();
+    public static final class Hints implements InlayHintsProvider {
+        public InlayHintsCollector createCollector(@NotNull PsiFile file, @NotNull com.intellij.openapi.editor.Editor editor) {
+            if (!(file instanceof GlslLanguage.File) || !Settings.of(file.getProject()).getState().inlays) return null;
+            return (SharedBypassCollector) this::collect;
         }
-        public @NotNull List<InlayInfo> getParameterHints(@NotNull PsiElement element) {
+        private void collect(PsiElement element, InlayTreeSink sink) {
             if (!(element instanceof GlslLanguage.Element)
-                || element.getNode().getElementType() != GlslLanguage.Elements.REF
-                || !Settings.of(element.getProject()).getState().inlays)
-                return List.of();
+                || element.getNode().getElementType() != GlslLanguage.Elements.REF)
+                return;
             var file = element.getContainingFile();
             var f = ProjectAccess.model(file);
             int i = f.indexAt(element.getTextOffset()), open = i + 1;
             if (!f.word(open).equals("(") || f.match[open] <= open + 1)
-                return List.of();
+                return;
             var w = ProjectAccess.graph(file);
             String key = ProjectAccess.key(file);
+            if (!w.active(key, element.getTextOffset())) return;
             var hits = w.resolve(key, element.getTextOffset());
             var args = Workspace.arguments(f, open);
             List<String> names = new ArrayList<>();
@@ -142,15 +143,17 @@ public final class Calls {
                         names.add(words[words.length - 1]);
                     }
             }
-            var hints = new ArrayList<InlayInfo>();
             int first = open + 1;
             for (int j = 0; j < Math.min(names.size(), args.size()); j++) {
                 String name = names.get(j);
                 if (!f.word(first).equals(name))
-                    hints.add(new InlayInfo(name, f.code.get(first).start()));
+                    sink.addPresentation(new InlineInlayPosition(f.code.get(first).start(), false, 0),
+                        null, null, HintFormat.Companion.getDefault(), tree -> {
+                            tree.text(name + ":", null);
+                            return kotlin.Unit.INSTANCE;
+                        });
                 first = args.get(j) + 2;
             }
-            return hints;
         }
     }
     public static final class Colors implements ElementColorProvider {

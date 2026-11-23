@@ -16,3 +16,11 @@ The project file is `.idea/glslSupport.xml`. Copy the example into that location
 | Editor switches | Boolean options `diagnostics`, `builtins`, `semantic`, `colors`, `inlays`, `signatures`, `format`, `range`, and `onType` default to true. Set `imported` to true for an explicitly authored configuration that has already accounted for legacy settings. |
 
 Stage names are `VERTEX`, `TESS_CONTROL`, `TESS_EVAL`, `GEOMETRY`, `FRAGMENT`, `COMPUTE`, `TASK`, `MESH`, `RAYGEN`, `INTERSECTION`, `ANY_HIT`, `CLOSEST_HIT`, `MISS`, and `CALLABLE`.
+
+## Pipeline contexts in the editor
+
+The GLSL status-bar selector defaults to **Auto**. A shader assigned to one pipeline stage uses that stage's variant, target and definitions. An included header inherits the translation unit that includes it. Auto uses the file's active variant when it finds zero or multiple matching stages. Choose a stage or **File variant** explicitly to pin your preference for that file. The IDE saves these choices in your local project workspace. Deleting a pinned binding restores Auto.
+
+Open **Show Include and Macro Trace** from the shader editor to inspect the compiler's include choices, active macro definitions, removals and conditional results. Double-click a source directive to open it. To compare, choose another saved variant of the same root shader. Both columns use the selected pipeline's overrides. Bold rows show differences. Incomplete shaders show the events the compiler collected and its diagnostics.
+
+**Validate All** links each configured pipeline on demand, including single-stage compute pipelines. A failed pipeline has its own entry in the results tree. Select an entry to read its compiler log, or expand a stage-interface mismatch to navigate to its declarations. **Show SPIR-V → Export SPIR-V…** saves the validated binary for the currently displayed context.

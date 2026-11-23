@@ -47,6 +47,20 @@ public final class Catalog {
     public static List<String> codeNames() {
         return CODE;
     }
+    static boolean available(String name, ShaderConfig.Stage stage, boolean vulkan) {
+        return switch (name) {
+            case "gl_VertexID", "gl_InstanceID" -> !vulkan && stage == ShaderConfig.Stage.VERTEX;
+            case "gl_VertexIndex", "gl_InstanceIndex" -> vulkan && stage == ShaderConfig.Stage.VERTEX;
+            case "gl_FragCoord", "gl_FragDepth", "gl_FrontFacing", "gl_HelperInvocation", "gl_PointCoord",
+                 "gl_SampleID", "gl_SamplePosition", "gl_SampleMaskIn", "gl_SampleMask" -> stage == ShaderConfig.Stage.FRAGMENT;
+            case "gl_WorkGroupSize", "gl_WorkGroupID", "gl_GlobalInvocationID", "gl_LocalInvocationID",
+                 "gl_LocalInvocationIndex", "gl_NumWorkGroups" ->
+                stage == ShaderConfig.Stage.COMPUTE || stage == ShaderConfig.Stage.TASK || stage == ShaderConfig.Stage.MESH;
+            case "EmitVertex", "EndPrimitive", "EmitStreamVertex", "EndStreamPrimitive" -> stage == ShaderConfig.Stage.GEOMETRY;
+            case "gl_TessCoord" -> stage == ShaderConfig.Stage.TESS_EVAL;
+            default -> true;
+        };
+    }
     public static List<Entry> entries(String name) {
         return NAMES.getOrDefault(name, List.of());
     }

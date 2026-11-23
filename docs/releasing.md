@@ -12,11 +12,11 @@ Use a JDK 25 toolchain with the 2026.1 IntelliJ Platform SDK. See the repository
 | `checkDistribution` and `verifyPlugin` | Check the contents of the final ZIP and run JetBrains Plugin Verifier against the installed test hosts. |
 | `benchmarks` | Measures editing, workspace indexing, recompilation after a header edit and process memory. |
 
-Run `.\gradlew.bat checkAll --continue` for the release gates. Use `scripts/ide-test.ps1 -IdeHome '<CLion installation>' -DocsWindow` for the additional graphical CLion check. It exercises the Chromium tool window, cross-language selection and live swizzle diagnostics. Test reports are under `build/reports`, `build/verification` and `build/ide-tests`.
+Run `.\gradlew.bat checkAll --continue` for the release gates. Use `scripts/ide-test.ps1 -IdeHome '<CLion installation>' -DocsWindow` for the additional graphical CLion check. It exercises the Chromium tool window, cross-language selection, live swizzle diagnostics, the pipeline context selector, batch validation, trace comparison and the SPIR-V export control. Test reports are under `build/reports`, `build/verification` and `build/ide-tests`.
 
 `GLSL_IDEA_263` can point to an installed IntelliJ IDEA 2026.3. Otherwise the harness downloads and verifies that distribution. `GLSL_TEST_IDES` accepts additional paths separated by semicolons. To activate a CLion test installation, run `scripts/open-clion-test-profile.ps1`, activate it through JetBrains and close the window before testing.
 
-The offline verifier checks IntelliJ APIs. Its `-ignore-os-arch` option applies to synthetic OS and architecture modules. The release checks read the native DLL’s PE header and each IDE’s Windows x64 launch record, then load the compiler inside those IDEs.
+The offline verifier checks IntelliJ APIs. Each run keeps the tested ZIP and its SHA-256 in `build/verification/<run>/input`, alongside the run’s log and per-IDE verdicts. Its `-ignore-os-arch` option applies to synthetic OS and architecture modules. The release checks read the native DLL’s PE header and each IDE’s Windows x64 launch record, then load the compiler inside those IDEs.
 
 ## Preparing the reference edition
 

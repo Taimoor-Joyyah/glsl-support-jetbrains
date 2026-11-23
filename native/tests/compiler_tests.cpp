@@ -89,6 +89,13 @@ void run(const std::string &name) {
         defs[0].value = "2";
         x.run(false);
     } else if (name == "pipeline") {
+        x.request.operation = GLSL_LINK;
+        x.unit.stage = GLSL_COMPUTE;
+        x.unit.source.text = "#version 450\nlayout(local_size_x=1) in; void helper(){}";
+        auto missing = x.run(false);
+        require(std::string(glsl_link_log(missing.get())).find("entry point") != std::string::npos,
+                glsl_log(missing.get()));
+        x.unit.stage = GLSL_VERTEX;
         glsl_unit units[] = {
             x.unit,
             {{"shaders/test.frag", "#version 450\nin vec3 c; out vec4 f; void main(){f=vec4(c,1);}"},
@@ -98,7 +105,29 @@ void run(const std::string &name) {
         x.request.unit_count = 2;
         x.run(true);
         units[1].source.text = "#version 450\nin vec2 c; out vec4 f; void main(){f=vec4(c,1,1);}";
-        x.run(false);
+        auto bad = x.run(false);
+        require(std::string(glsl_link_log(bad.get())).find("fragment") != std::string::npos, glsl_log(bad.get()));
+    } else if (name == "trace") {
+        x.request.operation = GLSL_TRACE;
+        x.unit.source.text = "#version 450\n#define TWICE(x) ((x)*2)\n#if TWICE(2)==4\n"
+                             "#include \"head.glslh\"\n#else\n#ifdef NO\n#endif\n#endif\n"
+                             "#undef FLAG\n#include \"head.glslh\"\nvoid main(){}";
+        glsl_source header{"shaders/head.glslh", "#define FLAG 3\n"};
+        x.request.headers = &header;
+        x.request.header_count = 1;
+        auto result = x.run(true);
+        size_t includeCount = 0, defines = 0;
+        bool taken = false, skipped = false, undef = false;
+        for (size_t i = 0; i < glsl_trace_count(result.get()); ++i) {
+            auto e = glsl_trace_at(result.get(), i);
+            std::string kind = e.kind, key = e.name, value = e.value;
+            if (kind == "include" && value == header.path) ++includeCount;
+            if (kind == "define" && key == "FLAG" && e.depth == 1) ++defines;
+            if (kind == "undef" && key == "FLAG") undef = true;
+            if (kind == "branch" && value == "taken" && e.line == 3) taken = true;
+            if (kind == "branch" && key == "ifdef" && value == "skipped (inactive parent)") skipped = true;
+        }
+        require(includeCount == 2 && defines == 2 && taken && skipped && undef, "native preprocessor trace");
     } else if (name == "spirv") {
         x.request.operation = GLSL_SPIRV;
         for (int target : {0, 10, 11, 12, 13, 14}) {
@@ -200,7 +229,7 @@ void run(const std::string &name) {
         for (auto &job : jobs)
             job.get();
     } else if (name == "ownership") {
-        require(glsl_abi_version() == 1, "ABI");
+        require(glsl_abi_version() == 2, "ABI");
         glsl_free(nullptr);
         Result bad(glsl_compile(nullptr), glsl_free);
         require(bad && !glsl_success(bad.get()), "invalid request");

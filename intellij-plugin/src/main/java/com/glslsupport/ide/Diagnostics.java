@@ -17,8 +17,18 @@ public final class Diagnostics
     private static final java.util.regex.Pattern QUOTED = java.util.regex.Pattern.compile("'([^']+)'");
     static final Key<Long> SAVED = Key.create("glslsupport.savedVariants");
     record Job(String variant, NativeCompiler.Request request) {}
-    public record Input(Project project, String main, Syntax file, List<Job> jobs, long stamp) {}
-    public record Report(long stamp, List<Issue> issues) {}
+    public record Revision(long document, long psi, long settings, long choices, long structure) {
+        static Revision of(PsiFile file) {
+            var project = file.getProject();
+            return new Revision(file.getModificationStamp(),
+                com.intellij.psi.util.PsiModificationTracker.getInstance(project).getModificationCount(),
+                Settings.of(project).changes.getModificationCount(),
+                PipelineContexts.of(project).selectionChanges.getModificationCount(),
+                com.intellij.openapi.vfs.VirtualFileManager.VFS_STRUCTURE_MODIFICATIONS.getModificationCount());
+        }
+    }
+    public record Input(Project project, String main, Syntax file, List<Job> jobs, Revision stamp) {}
+    public record Report(Revision stamp, List<Issue> issues) {}
     public record Issue(HighlightSeverity severity, int start, int end, String message) {}
     @Override
     public Input collectInformation(@NotNull PsiFile file, @NotNull Editor editor, boolean hasErrors) {
@@ -28,6 +38,7 @@ public final class Diagnostics
     public Input collectInformation(@NotNull PsiFile file) {
         if (!(file instanceof GlslLanguage.File))
             return null;
+        var revision = Revision.of(file);
         var settings = Settings.of(file.getProject());
         if (!settings.getState().diagnostics
             || CompilerSupport.of(file.getProject()).waiting(file.getVirtualFile()))
@@ -37,24 +48,29 @@ public final class Diagnostics
         boolean saved =
             document != null && Objects.equals(document.getUserData(SAVED), document.getModificationStamp());
         var compiler = CompilerSupport.of(file.getProject());
-        var roots = compiler.owners(file);
-        if (roots.isEmpty())
-            roots = List.of(file);
+        var contexts = PipelineContexts.of(file.getProject());
+        var context = contexts.current(file);
+        var roots = context.pipeline() != null || !contexts.automatic(file) || !contexts.matches(file).isEmpty()
+            ? List.of(context.root()) : compiler.owners(file);
+        if (roots.isEmpty()) roots = List.of(file);
+        if (context.pipeline() != null)
+            jobs.add(new Job(context.label(), context.request(NativeCompiler.Operation.CHECK)));
         for (var root : roots) {
             if (saved)
                 for (var v : settings.variants(root))
                     jobs.add(new Job(v.name, CompilerSupport.request(root, v.id, NativeCompiler.Operation.CHECK)));
-            else
+            else if (context.pipeline() == null)
                 jobs.add(new Job(root == file ? "" : root.getName(),
-                    CompilerSupport.request(root, null, NativeCompiler.Operation.CHECK)));
+                    contexts.standalone(root).request(NativeCompiler.Operation.CHECK)));
         }
-        if (roots.size() == 1 && roots.getFirst() == file) {
-            var watched = new HashSet<String>();
-            for (var job : jobs) watched.addAll(job.request.headers().keySet());
-            compiler.track(file, watched);
+        var watched = new HashSet<String>();
+        for (var job : jobs) {
+            watched.addAll(job.request.headers().keySet());
+            job.request.units().forEach(unit -> watched.add(unit.path()));
         }
-        return new Input(file.getProject(), ProjectAccess.key(file), ProjectAccess.model(file), jobs,
-            file.getModificationStamp());
+        watched.remove(ProjectAccess.key(file));
+        compiler.track(file, watched, roots.size() == 1 && roots.getFirst().equals(file));
+        return new Input(file.getProject(), ProjectAccess.key(file), ProjectAccess.model(file), jobs, revision);
     }
     @Override
     public Report doAnnotate(Input input) {
@@ -165,7 +181,7 @@ public final class Diagnostics
     }
     @Override
     public void apply(@NotNull PsiFile file, Report report, @NotNull AnnotationHolder holder) {
-        if (report != null && report.stamp == file.getModificationStamp()
+        if (report != null && report.stamp.equals(Revision.of(file))
             && PsiDocumentManager.getInstance(file.getProject()).isCommitted(file.getViewProvider().getDocument()))
             for (var i : report.issues) {
                 int len = file.getTextLength();

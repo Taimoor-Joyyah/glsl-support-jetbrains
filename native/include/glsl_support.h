@@ -28,7 +28,7 @@ enum glsl_stage {
     GLSL_TASK,
     GLSL_MESH
 };
-enum glsl_operation { GLSL_CHECK, GLSL_SPIRV, GLSL_LAYOUT };
+enum glsl_operation { GLSL_CHECK, GLSL_SPIRV, GLSL_LAYOUT, GLSL_LINK, GLSL_TRACE };
 /* UTF-8 strings. Source names use / and are unique within a request.
    vulkan is zero for OpenGL or 10..14 for Vulkan 1.0..1.4. */
 typedef struct {
@@ -66,6 +66,15 @@ GLSL_API const char *glsl_log(const glsl_result *result);
 GLSL_API const char *glsl_assembly(const glsl_result *result);
 GLSL_API const char *glsl_layout(const glsl_result *result);
 GLSL_API const uint32_t *glsl_words(const glsl_result *result, size_t *count);
+GLSL_API const char *glsl_stage_log(const glsl_result *result, size_t index);
+GLSL_API const char *glsl_link_log(const glsl_result *result);
+typedef struct {
+    const char *file, *kind, *name, *value;
+    int line;
+    unsigned depth;
+} glsl_trace_event;
+GLSL_API size_t glsl_trace_count(const glsl_result *result);
+GLSL_API glsl_trace_event glsl_trace_at(const glsl_result *result, size_t index);
 GLSL_API void glsl_free(glsl_result *result);
 #ifdef __cplusplus
 }

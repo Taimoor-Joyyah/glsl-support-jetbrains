@@ -32,6 +32,10 @@ public final class AnalysisCache {
             var result = compiler.apply(request);
             long bytes = 4L * result.words().length
                 + 2L * (result.log().length() + result.layout().length() + result.assembly().length());
+            bytes += 2L * result.linkLog().length();
+            for (var stage : result.stageLogs()) bytes += 2L * stage.length();
+            for (var e : result.trace())
+                bytes += 96L + 2L * (e.file().length() + e.kind().length() + e.name().length() + e.value().length());
             for (var s : request.units()) bytes += 2L * s.text().length();
             for (var s : request.headers().values()) bytes += 2L * s.length();
             synchronized (results) {

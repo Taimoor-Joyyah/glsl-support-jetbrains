@@ -4,7 +4,7 @@ Edit OpenGL and Vulkan shaders in JetBrains IDEs on **Windows x64, 2026.1 or lat
 
 ## Installation
 
-Download the Windows x64 ZIP, then choose **Settings → Plugins → ⚙ → Install Plugin from Disk** and restart the IDE. The Windows compiler and its C++ runtime are included. Existing projects using GLSL Analyzer can import compatible settings and variants when first opened. [Download version 1.2.0](dist/GLSL-Support-OpenGL-Vulkan-1.2.0-windows-x86_64.zip?raw=true) · [SHA-256 checksum](dist/SHA256SUMS)
+Download the Windows x64 ZIP, then choose **Settings → Plugins → ⚙ → Install Plugin from Disk** and restart the IDE. The Windows compiler and its C++ runtime are included. Existing projects using GLSL Analyzer can import compatible settings and variants when first opened. [Download version 1.3.0](dist/GLSL-Support-OpenGL-Vulkan-1.3.0-windows-x86_64.zip?raw=true) · [SHA-256 checksums](dist/SHA256SUMS)
 
 ## Working with shaders
 
@@ -14,8 +14,10 @@ Download the Windows x64 ZIP, then choose **Settings → Plugins → ⚙ → Ins
 | Edit and format | Complete GLSL built-ins, layout qualifiers and struct fields. Set indentation and spacing under **Editor → Code Style → GLSL** and token colors under **Editor → Color Scheme → GLSL**. |
 | Validate unsaved code | glslang reports errors and warnings for the selected stage and target, including invalid vector swizzles. The default delay is six seconds after the last edit. Choose immediate validation or a five- to ten-second delay in GLSL Support settings. |
 | Configure compilation | **Languages & Frameworks → GLSL Support** manages target overrides, includes and ordered macros. **Shader Variants** selects the active stage, profile and definitions. New variants default to the core profile. |
-| Link shader stages | **GLSL Pipelines** lets you assign files and variants to named pipelines, override definitions and validate stage interfaces. On IDE builds 262 and newer, named pipelines and variants are also searchable as symbols. |
-| Inspect the result | **Show GLSL Block Layout** displays member offsets, padding, array and matrix strides. **Show SPIR-V** opens validated disassembly with source navigation where debug information provides a location. |
+| Choose an editing context | Click the GLSL status-bar selector. **Auto** uses a unique matching pipeline stage for a shader or shared header. Choose a stage explicitly when a file belongs to several pipelines. |
+| Link shader stages | Run **Validate** or **Validate All** in **GLSL Pipelines**. Expand an error in **GLSL Inspector** and open a source location with Enter or a double-click. The original compiler log is available below the results. |
+| Trace compilation | **Show Include and Macro Trace** lists resolved includes, macro origins and conditional branches. Choose a second variant to see its differences alongside the first. |
+| Inspect and export | **Show GLSL Block Layout** displays offsets, padding and strides. **Show SPIR-V** opens validated disassembly with source navigation. Use **Export SPIR-V…** to save the displayed OpenGL or Vulkan module. |
 | Create and refactor | **New → GLSL Shader or Header** includes stage templates and guarded headers. GLSL Live Templates, folding and Structure help with editing. **Inline GLSL Local Variable** and **Extract GLSL Function** preview supported edits before applying them. |
 
 The project settings guide includes a tested XML example for sharing targets, includes, variants and pipelines with your team. [Project configuration](docs/project-settings.md)

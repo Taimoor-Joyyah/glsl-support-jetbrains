@@ -16,7 +16,7 @@ public final class Inspections extends LocalInspectionTool {
                     && (ShaderConfig.Stage.fromPath(key).isPresent()
                         || f.getName().endsWith(".glsl")
                             && syntax.named("main").stream().anyMatch(s -> s.kind() == Syntax.Kind.FUNCTION))
-                    && Settings.of(f.getProject()).effective(f, null).version() == 0) {
+                    && PipelineContexts.of(f.getProject()).current(f).config().version() == 0) {
                     holder.registerProblem(f, "Missing #version directive",
                         ProblemHighlightType.GENERIC_ERROR_OR_WARNING,
                         new com.intellij.openapi.util.TextRange(0, 1), new Intentions.Version());

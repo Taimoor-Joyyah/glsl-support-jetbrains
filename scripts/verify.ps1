@@ -22,17 +22,32 @@ $privateHome=[IO.Path]::GetFullPath('build/verifier-home')
 $reports=[IO.Path]::GetFullPath('build/verification')
 New-Item -Type Directory -Force $reports,$privateHome | Out-Null
 $verdicts=Join-Path $reports ([Guid]::NewGuid().ToString('N'))
-& java -Xmx2500m "-Duser.home=$privateHome" -jar $tool check-plugin (Get-GlslDistribution) @hosts -offline -ignore-os-arch -verification-reports-dir $verdicts -team-city 2>&1 | Tee-Object -FilePath "$reports/verifier.log"
+$inputDir=Join-Path $verdicts 'input'
+$ideReports=Join-Path $verdicts 'ides'
+[void][IO.Directory]::CreateDirectory($inputDir)
+$built=Get-GlslDistribution
+$filename=[IO.Path]::GetFileName($built)
+$candidate=Join-Path $inputDir $filename
+[IO.File]::Copy($built,$candidate)
+$digest=(Get-FileHash -LiteralPath $candidate -Algorithm SHA256).Hash.ToLowerInvariant()
+"$digest  $filename" | Set-Content -Encoding utf8NoBOM (Join-Path $inputDir 'SHA256SUMS')
+$log=Join-Path $verdicts 'verifier.log'
+& java -Xmx2500m "-Duser.home=$privateHome" -jar $tool check-plugin $candidate @hosts -offline -ignore-os-arch -verification-reports-dir $ideReports -team-city 2>&1 | Tee-Object -FilePath $log
 if($LASTEXITCODE){exit $LASTEXITCODE}
-if(Select-String -Quiet -LiteralPath "$reports/verifier.log" -Pattern 'Plugin is invalid|Scheduled verifications \(0\)|##teamcity\[testFailed'){throw "Verifier reported a failure in $reports/verifier.log"}
-$problems=Get-ChildItem $verdicts -Recurse -File -Filter 'compatibility-problems.txt'|Where-Object Length -gt 0
+if(Select-String -Quiet -LiteralPath $log -Pattern 'Plugin is invalid|Scheduled verifications \(0\)|##teamcity\[testFailed'){throw "Verifier reported a failure in $log"}
+$problems=Get-ChildItem $ideReports -Recurse -File -Filter 'compatibility-problems.txt'|Where-Object Length -gt 0
 if($problems){throw ("Plugin compatibility problems: "+($problems.FullName -join ', '))}
-$verifications=@(Get-ChildItem $verdicts -Recurse -File -Filter 'verification-verdict.txt')
+$verifications=@(Get-ChildItem $ideReports -Recurse -File -Filter 'verification-verdict.txt')
 if($verifications.Count -ne $hosts.Count){throw "Expected $($hosts.Count) IDE verdicts, received $($verifications.Count)"}
 $summary=foreach($result in $verifications){
     $verdict=(Get-Content -Raw -LiteralPath $result.FullName).Trim()
     if(!$verdict.StartsWith('Compatible')){throw "$($result.FullName): $verdict"}
     "$($result.Directory.Parent.Parent.Parent.Name)  $verdict"
 }
-$summary | Set-Content -Encoding utf8NoBOM "$reports/summary.txt"
+$summary | Set-Content -Encoding utf8NoBOM "$verdicts/summary.txt"
+foreach($name in 'verifier.log','summary.txt'){
+    $staged=Join-Path $verdicts "$name.latest"
+    [IO.File]::Copy((Join-Path $verdicts $name),$staged)
+    [IO.File]::Move($staged,(Join-Path $reports $name),$true)
+}
 $summary

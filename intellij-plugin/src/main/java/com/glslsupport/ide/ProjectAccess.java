@@ -20,7 +20,7 @@ public final class ProjectAccess {
     }
     static PsiFile psi(Project project, String path) {
         var v = LocalFileSystem.getInstance().findFileByPath(path);
-        return v == null ? null : PsiManager.getInstance(project).findFile(v);
+        return v == null || !v.isValid() ? null : PsiManager.getInstance(project).findFile(v);
     }
     static GlslLanguage.Named named(PsiFile origin, Workspace.Location hit) {
         var file = key(origin).equals(hit.file()) ? origin : psi(origin.getProject(), hit.file());
@@ -33,20 +33,9 @@ public final class ProjectAccess {
         return Settings.of(project).roots(project);
     }
     static Workspace graph(PsiFile file) {
-        return CachedValuesManager.getCachedValue(file, () -> {
-            var config = Settings.of(file.getProject());
-            var graph = graph(file, config.effective(file, null).editorDefines());
-            List<Object> deps =
-                new ArrayList<>(List.of(file, config.changes, VirtualFileManager.VFS_STRUCTURE_MODIFICATIONS));
-            for (String key : graph.files.keySet()) {
-                var dep = psi(file.getProject(), key);
-                if (dep != null && dep != file)
-                    deps.add(dep);
-            }
-            return CachedValueProvider.Result.create(graph, deps.toArray());
-        });
+        return PipelineContexts.of(file.getProject()).current(file).graph();
     }
-    static Workspace graph(PsiFile file, Map<String, String> defines) {
+    static Workspace graph(PsiFile file, ShaderConfig.Effective config) {
         var project = file.getProject();
         var path = key(file);
         var map = new LinkedHashMap<String, Syntax>();
@@ -77,6 +66,6 @@ public final class ProjectAccess {
                 }
             }
         }
-        return new Workspace(map, roots, defines, path);
+        return new Workspace(map, roots, config, path);
     }
 }

@@ -72,11 +72,16 @@ public final class Settings implements PersistentStateComponent<Settings.Data> {
             for (var s : ShaderConfig.Stage.values()) stageMacros.put(s.name() + "_SHADER", s.name());
         }
     }
-    private Data data = new Data();
+    private volatile Data data = new Data();
+    private final Project project;
+    public Settings(Project project) {
+        this.project = project;
+    }
     final com.intellij.openapi.util.SimpleModificationTracker changes =
         new com.intellij.openapi.util.SimpleModificationTracker();
     void changed() {
         changes.incModificationCount();
+        PipelineContexts.notifyChanged(project);
     }
     public static Settings of(Project p) {
         var settings = p.getService(Settings.class);
@@ -129,15 +134,19 @@ public final class Settings implements PersistentStateComponent<Settings.Data> {
         var f = data.files.get(relative(file.getProject(), ProjectAccess.key(file)));
         return f == null || f.variants.isEmpty() ? List.of(new Variant()) : List.copyOf(f.variants);
     }
-    ShaderConfig.Effective effective(PsiFile file, String id) {
+    Variant variant(PsiFile file, String id) {
         var path = relative(file.getProject(), ProjectAccess.key(file));
         var options = data.files.get(path);
         String wanted = id != null ? id : options == null ? "Default" : options.active;
-        Variant v = variants(file)
+        return variants(file)
                         .stream()
                         .filter(x -> x.id.equals(wanted) || x.name.equals(wanted))
                         .findFirst()
                         .orElseGet(() -> variants(file).getFirst());
+    }
+    ShaderConfig.Effective effective(PsiFile file, String id) {
+        var path = relative(file.getProject(), ProjectAccess.key(file));
+        Variant v = variant(file, id);
         var macros = new LinkedHashMap<String, ShaderConfig.Stage>();
         data.stageMacros.forEach((k, s) -> {
             var stage = stage(s);

@@ -69,7 +69,8 @@ public final class ShaderViews implements ToolWindowFactory {
         content.setDisposer(panel);
         w.getContentManager().addContent(content);
         w.getContentManager().setSelectedContent(content);
-        w.activate(panel::refresh);
+        w.activate(null);
+        panel.refresh();
     }
     record Selected(String struct, String block) {}
     static Selected selection(PsiFile file, int offset) {
@@ -140,8 +141,8 @@ public final class ShaderViews implements ToolWindowFactory {
         return new NativeCompiler.Request(req.vulkan(), req.operation(),
             List.of(new NativeCompiler.Unit(base.path(), text, cfg)), req.headers(), req.includeRoots());
     }
-    record Output(NativeCompiler.Result result, Set<String> deps, String target, Selected selected) {}
-    record CompileInput(NativeCompiler.Request request, Selected selected) {}
+    record CompileInput(NativeCompiler.Request request, Selected selected, String label, String variant, Set<String> paths) {}
+    record Output(NativeCompiler.Result result, CompileInput input, long revision) {}
     static final class Panel extends JPanel implements Disposable {
         final Project project;
         final VirtualFile file;
@@ -151,6 +152,8 @@ public final class ShaderViews implements ToolWindowFactory {
         volatile Set<String> deps;
         volatile boolean disposed;
         final JLabel status = new JBLabel();
+        final JButton export = new JButton("Export SPIR-V…");
+        volatile Output displayed;
         final JComboBox<String> packing = new JComboBox<>(new String[] {"std140", "std430", "scalar"}),
                                 blocks = new JComboBox<>();
         final JTextArea assembly = new JTextArea(), errors = new JTextArea();
@@ -171,6 +174,11 @@ public final class ShaderViews implements ToolWindowFactory {
             var refresh = new JButton("Refresh");
             refresh.addActionListener(e -> refresh());
             bar.add(refresh);
+            if (op == NativeCompiler.Operation.SPIRV) {
+                export.setEnabled(false);
+                export.addActionListener(e -> export());
+                bar.add(export);
+            }
             if (op == NativeCompiler.Operation.LAYOUT) {
                 bar.add(blocks);
                 bar.add(packing);
@@ -204,13 +212,7 @@ public final class ShaderViews implements ToolWindowFactory {
                 }
             });
             var events = EditorFactory.getInstance().getEventMulticaster();
-            events.addDocumentListener(new DocumentListener() {
-                public void documentChanged(@NotNull DocumentEvent e) {
-                    var changed = FileDocumentManager.getInstance().getFile(e.getDocument());
-                    if (changed != null && deps.contains(changed.getPath()))
-                        refresh();
-                }
-            }, this);
+            ShaderChanges.watch(p, this, () -> deps, true, this::refresh);
             events.addCaretListener(new CaretListener() {
                 public void caretPositionChanged(@NotNull CaretEvent e) {
                     var v = FileDocumentManager.getInstance().getFile(e.getEditor().getDocument());
@@ -243,12 +245,15 @@ public final class ShaderViews implements ToolWindowFactory {
         }
         void refresh() {
             if (!SwingUtilities.isEventDispatchThread()) {
+                revision.incrementAndGet();
                 ApplicationManager.getApplication().invokeLater(this::refresh);
                 return;
             }
             if (disposed || project.isDisposed())
                 return;
             long ticket = revision.incrementAndGet();
+            displayed = null;
+            export.setEnabled(false);
             if (pending != null)
                 pending.cancel(false);
             status.setText("Compiling…");
@@ -259,19 +264,23 @@ public final class ShaderViews implements ToolWindowFactory {
                 pending = AppExecutorUtil.getAppScheduledExecutorService().schedule(() -> {
                     try {
                         var data = ReadAction.computeBlocking(() -> {
-                            var f = PsiManager.getInstance(project).findFile(file);
+                            if (disposed || project.isDisposed() || revision.get() != ticket)
+                                return null;
+                            var f = file.isValid() ? PsiManager.getInstance(project).findFile(file) : null;
                             if (f == null)
                                 throw new IllegalStateException("Shader file is unavailable");
-                            var req = CompilerSupport.request(f, null, op);
+                            var context = PipelineContexts.of(project).current(f);
+                            var req = context.request(op);
                             var selected = op == NativeCompiler.Operation.LAYOUT ? selection(f, offset)
                                                                                  : new Selected(null, null);
-                            return new CompileInput(preview(req, selected.struct, requested), selected);
+                            return new CompileInput(preview(req, selected.struct, requested), selected,
+                                context.label(), context.variantName(), context.graph().inputPaths());
                         });
+                        if (data == null || revision.get() != ticket) return;
                         var req = data.request;
-                        var watched = new HashSet<>(req.headers().keySet());
-                        watched.add(file.getPath());
+                        if (revision.get() == ticket) deps = data.paths();
                         var r = CompilerSupport.of(project).analyze(req);
-                        var output = new Output(r, watched, SettingsUI.target(req.vulkan()), data.selected);
+                        var output = new Output(r, data, ticket);
                         ApplicationManager.getApplication().invokeLater(() -> {
                             if (!disposed && revision.get() == ticket)
                                 show(output);
@@ -291,14 +300,17 @@ public final class ShaderViews implements ToolWindowFactory {
             ((CardLayout) pages.getLayout()).show(pages, "errors");
         }
         void show(Output out) {
-            deps = out.deps;
+            deps = out.input.paths;
             if (!out.result.success()) {
                 failure(out.result.log());
                 return;
             }
-            String struct = out.selected.struct;
-            status.setText(out.target + (struct == null ? "" : " · " + struct + " preview"));
+            String struct = out.input.selected.struct;
+            status.setText(SettingsUI.target(out.input.request.vulkan()) + " · " + out.input.label
+                + (struct == null ? "" : " · " + struct + " preview"));
             if (op == NativeCompiler.Operation.SPIRV) {
+                displayed = out;
+                export.setEnabled(out.result.words().length > 0);
                 assembly.setText(out.result.assembly());
                 assembly.setCaretPosition(0);
                 lines = out.result.instructions();
@@ -314,7 +326,7 @@ public final class ShaderViews implements ToolWindowFactory {
                              .toList();
                 Object selected = blocks.getSelectedItem();
                 if (selected == null)
-                    selected = out.selected.block;
+                    selected = out.input.selected.block;
                 blocks.removeAllItems();
                 layout.forEach(b -> blocks.addItem(b.name().equals("GlslSupportPreview") ? struct : b.name()));
                 if (selected != null)
@@ -338,6 +350,43 @@ public final class ShaderViews implements ToolWindowFactory {
             int i = blocks.getSelectedIndex();
             if (!installing && i >= 0 && i < layout.size())
                 table.display(layout.get(i));
+        }
+        private boolean current(Output out) {
+            if (disposed || project.isDisposed() || revision.get() != out.revision || displayed != out) return false;
+            return ReadAction.computeBlocking(() -> {
+                if (disposed || project.isDisposed() || !file.isValid()) return false;
+                var f = PsiManager.getInstance(project).findFile(file);
+                if (f == null) return false;
+                var ctx = PipelineContexts.of(project).current(f);
+                return ctx.label().equals(out.input.label) && ctx.request(op).equals(out.input.request)
+                    && revision.get() == out.revision;
+            });
+        }
+        private void export() {
+            var out = displayed;
+            if (out == null) return;
+            var root = java.nio.file.Path.of(out.input.request.units().getFirst().path());
+            var chooser = new JFileChooser(root.getParent().toFile());
+            chooser.setDialogTitle("Export validated SPIR-V");
+            chooser.setSelectedFile(root.resolveSibling(root.getFileName() + "." +
+                out.input.variant.replaceAll("[^\\p{L}\\p{N}._-]", "_") + ".spv").toFile());
+            if (chooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) return;
+            var chosen = chooser.getSelectedFile().toPath();
+            var target = chosen.toString().toLowerCase(Locale.ROOT).endsWith(".spv")
+                ? chosen : chosen.resolveSibling(chosen.getFileName() + ".spv");
+            boolean overwrite = java.nio.file.Files.exists(target);
+            if (overwrite && com.intellij.openapi.ui.Messages.showYesNoDialog(project,
+                "Replace " + target + "?", "Export SPIR-V", null) != com.intellij.openapi.ui.Messages.YES) return;
+            PsiDocumentManager.getInstance(project).commitAllDocuments();
+            ApplicationManager.getApplication().executeOnPooledThread(() -> {
+                try {
+                    SpirvExport.write(target, out.result, overwrite, () -> current(out));
+                    LocalFileSystem.getInstance().refreshIoFiles(List.of(target.toFile()), true, false, null);
+                } catch (java.io.IOException | RuntimeException ex) {
+                    ApplicationManager.getApplication().invokeLater(() -> com.intellij.openapi.ui.Messages.showErrorDialog(
+                        project, ex.getMessage(), "Export SPIR-V"), project.getDisposed());
+                }
+            });
         }
         public void dispose() {
             disposed = true;
