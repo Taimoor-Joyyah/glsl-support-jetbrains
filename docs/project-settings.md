@@ -24,3 +24,9 @@ The GLSL status-bar selector defaults to **Auto**. A shader assigned to one pipe
 Open **Show Include and Macro Trace** from the shader editor to inspect the compiler's include choices, active macro definitions, removals and conditional results. Double-click a source directive to open it. To compare, choose another saved variant of the same root shader. Both columns use the selected pipeline's overrides. Bold rows show differences. Incomplete shaders show the events the compiler collected and its diagnostics.
 
 **Validate All** links each configured pipeline on demand, including single-stage compute pipelines. A failed pipeline has its own entry in the results tree. Select an entry to read its compiler log, or expand a stage-interface mismatch to navigate to its declarations. **Show SPIR-V → Export SPIR-V…** saves the validated binary for the currently displayed context.
+
+### Pipeline and trace shortcuts in 1.3.1
+
+- Type a pipeline name in the focused pipeline list or the status-bar selector to find it.
+- In a trace comparison, select **Differences only** to hide matching entries. Select a directive and press **Enter** to open its source.
+- When validation results show **Inputs changed**, click **Rerun**. A single-pipeline run checks that pipeline again. After **Validate All**, it checks every pipeline currently configured.

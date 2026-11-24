@@ -13,6 +13,7 @@ public final class Workspace {
     private final Map<String, String> definitions;
     private final String translationUnit;
     private final ShaderConfig.Stage stage;
+    private Set<String> inputPaths;
     private final Map<String, Translation> translations = new java.util.concurrent.ConcurrentHashMap<>();
     private final class Translation {
         final Map<String, List<Conditions>> ranges = new LinkedHashMap<>();
@@ -36,7 +37,10 @@ public final class Workspace {
         }
         boolean active(String path, int offset) {
             var contexts = ranges.get(path);
-            return contexts != null && contexts.stream().anyMatch(c -> c.active(offset));
+            if (contexts != null)
+                for (var context : contexts)
+                    if (context.active(offset)) return true;
+            return false;
         }
     }
     private Translation translation(String root) {
@@ -73,10 +77,13 @@ public final class Workspace {
         return include(file, inc, null);
     }
     /** Includes missing search candidates whose creation would change this snapshot. */
-    public Set<String> inputPaths() {
-        var paths = new HashSet<>(files.keySet());
-        files.forEach((path, syntax) -> syntax.includes.forEach(inc -> include(path, inc, paths)));
-        return paths;
+    public synchronized Set<String> inputPaths() {
+        if (inputPaths == null) {
+            var paths = new HashSet<>(files.keySet());
+            files.forEach((path, syntax) -> syntax.includes.forEach(inc -> include(path, inc, paths)));
+            inputPaths = Set.copyOf(paths);
+        }
+        return inputPaths;
     }
     private String include(String file, Syntax.Include inc, Set<String> searched) {
         var dirs = new ArrayList<String>();
@@ -181,8 +188,8 @@ public final class Workspace {
         return found;
     }
     static boolean exposedField(Syntax f, Syntax.Symbol field) {
-        for (var b : f.symbols)
-            if (b.kind() == BLOCK && b.name().equals(field.owner())) {
+        for (var b : f.named(field.owner()))
+            if (b.kind() == BLOCK) {
                 String tail =
                     f.source.substring(Math.max(b.start(), f.source.lastIndexOf('}', b.end() - 1) + 1), b.end())
                         .trim();
@@ -344,8 +351,8 @@ public final class Workspace {
         if (f.word(i - 1).equals(".")) {
             String type = typeAt(file, i - 2, 0);
             for (String k : visible(file))
-                for (var s : files.get(k).symbols)
-                    if (s.kind() == FIELD && s.owner().equals(type) && translation(file).active(k, s.at()))
+                for (var s : files.get(k).fields(type))
+                    if (translation(file).active(k, s.at()))
                         names.add(s.name());
             if (vector(type)) {
                 int count = type.charAt(type.length() - 1) - '0';

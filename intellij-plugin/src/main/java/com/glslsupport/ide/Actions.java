@@ -119,7 +119,7 @@ public final class Actions {
             validate(p, name);
         }
         static void validate(com.intellij.openapi.project.Project p, String name) {
-            PipelineValidation.open(p, List.of(name));
+            PipelineValidation.open(p, name);
         }
     }
     public static final class AllPipelines extends DumbAwareAction {
@@ -128,7 +128,7 @@ public final class Actions {
             if (project != null) validate(project);
         }
         static void validate(com.intellij.openapi.project.Project project) {
-            PipelineValidation.open(project, List.copyOf(Settings.of(project).pipelines().keySet()));
+            PipelineValidation.open(project, null);
         }
     }
 }

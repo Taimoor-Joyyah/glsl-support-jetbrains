@@ -24,8 +24,10 @@ import java.io.*;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Pattern;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -34,6 +36,7 @@ import javax.swing.text.html.HTMLDocument;
 import org.jetbrains.annotations.NotNull;
 
 public final class ReferenceDocs implements ToolWindowFactory, DumbAware {
+    private static final Pattern QUALIFIED_NAME = Pattern.compile("[A-Za-z_]\\w*(?:(?:::|\\.|->)[A-Za-z_]\\w*)*");
     public static List<String> entries() { return ReferenceAccess.instance().library.names(); }
     public static URL page(String name) {
         if (name == null || ReferenceAccess.instance().library.filename(name) == null) return null;
@@ -62,7 +65,7 @@ public final class ReferenceDocs implements ToolWindowFactory, DumbAware {
             if (end <= start || end - start > 256)
                 return null;
             String selected = text.subSequence(start, end).toString();
-            if (!selected.matches("[A-Za-z_]\\w*(?:(?:::|\\.|->)[A-Za-z_]\\w*)*"))
+            if (!QUALIFIED_NAME.matcher(selected).matches())
                 return null;
             start = end;
             while (start > selectionStart && Character.isJavaIdentifierPart(text.charAt(start - 1))) start--;
@@ -116,7 +119,7 @@ public final class ReferenceDocs implements ToolWindowFactory, DumbAware {
                     .finishOnUiThread(ModalityState.any(),
                         name -> {
                             if (name != null && generation.get() == request && window.isVisible()
-                                && browser.follow.isSelected())
+                                && browser.follow.isSelected() && !(name.equals(browser.current) && browser.retry.isVisible()))
                                 browser.open(name);
                         })
                     .submit(AppExecutorUtil.getAppExecutorService());
@@ -228,7 +231,9 @@ public final class ReferenceDocs implements ToolWindowFactory, DumbAware {
         }
     }
     static final class Browser extends JPanel {
-        final List<String> names = entries();
+        private record SearchEntry(String name, String folded) {}
+        final List<SearchEntry> names = entries().stream()
+            .map(n -> new SearchEntry(n, n.toLowerCase(Locale.ROOT))).toList();
         final JBTextField search = new JBTextField();
         final JButton submit = new JButton("Search");
         final JCheckBox follow = new JBCheckBox("Follow editor", true);
@@ -243,9 +248,10 @@ public final class ReferenceDocs implements ToolWindowFactory, DumbAware {
         final java.util.concurrent.ExecutorService loader;
         final ReferenceAccess access = ReferenceAccess.instance();
         final JButton offline = new JButton("Download all pages");
+        final JButton retry = new JButton("Retry");
         int dividerWidth = 185;
         volatile long sequence;
-        String current = "", loaded = "";
+        String current = "", loaded = "", currentAnchor;
         boolean updatingList, loading;
         volatile boolean disposed;
         Browser(Disposable parent) {
@@ -281,7 +287,12 @@ public final class ReferenceDocs implements ToolWindowFactory, DumbAware {
             controls.add(offline);
             var footer = new JPanel(new BorderLayout());
             footer.add(controls, BorderLayout.NORTH);
-            footer.add(status, BorderLayout.SOUTH);
+            var message = new JPanel(new BorderLayout(4, 0));
+            message.add(status);
+            retry.setVisible(false);
+            retry.addActionListener(e -> open(current, currentAnchor));
+            message.add(retry, BorderLayout.EAST);
+            footer.add(message, BorderLayout.SOUTH);
             add(footer, BorderLayout.SOUTH);
             if (access.library.complete()) offline.setText("All pages saved");
             offline.addActionListener(e -> download());
@@ -340,6 +351,12 @@ public final class ReferenceDocs implements ToolWindowFactory, DumbAware {
         }
         void filter() {
             String query = search.getText().strip().toLowerCase(Locale.ROOT);
+            if (QUALIFIED_NAME.matcher(query).matches()) {
+                int start = query.length();
+                while (start > 0 && Character.isJavaIdentifierPart(query.charAt(start - 1))) start--;
+                query = query.substring(start);
+                if (query.startsWith("glad_gl")) query = query.substring(5);
+            }
             if (!query.isEmpty()) {
                 follow.setSelected(false);
                 showIndex(true);
@@ -347,8 +364,15 @@ public final class ReferenceDocs implements ToolWindowFactory, DumbAware {
             updatingList = true;
             try {
                 results.clear();
-                results.addAll(
-                    names.stream().filter(name -> name.toLowerCase(Locale.ROOT).contains(query)).toList());
+                var matches = new ArrayList<String>();
+                var partial = new ArrayList<String>();
+                for (var entry : names) {
+                    if (entry.folded.equals(query)) matches.addFirst(entry.name);
+                    else if (entry.folded.startsWith(query)) matches.add(entry.name);
+                    else if (entry.folded.contains(query)) partial.add(entry.name);
+                }
+                matches.addAll(partial);
+                results.addAll(matches);
                 list.setSelectedValue(current, true);
             } finally {
                 updatingList = false;
@@ -359,15 +383,8 @@ public final class ReferenceDocs implements ToolWindowFactory, DumbAware {
         private void search() {
             if (!submit.isEnabled())
                 return;
-            String query = search.getText().strip();
-            String match = results.firstElement();
-            for (int i = 0; i < results.size(); i++)
-                if (results.get(i).equalsIgnoreCase(query)) {
-                    match = results.get(i);
-                    break;
-                }
             follow.setSelected(false);
-            open(match);
+            open(results.firstElement());
         }
 
         void showIndex(boolean visible) {
@@ -434,8 +451,10 @@ public final class ReferenceDocs implements ToolWindowFactory, DumbAware {
             if (current.equals(name) && anchor == null && (loading ||
                 name.equals(loaded) && url.toExternalForm().equals(String.valueOf(displayed())))) return true;
             current = name;
+            currentAnchor = anchor;
             loaded = "";
             loading = true;
+            retry.setVisible(false);
             long request = ++sequence;
             status.setText("Loading " + name + "…");
             loader.execute(() -> {
@@ -470,7 +489,8 @@ public final class ReferenceDocs implements ToolWindowFactory, DumbAware {
                     SwingUtilities.invokeLater(() -> {
                         if (disposed || request != sequence) return;
                         loading = false;
-                        status.setText(name + " is unavailable offline. Reconnect and press Search to retry.");
+                        status.setText("Could not load " + name + ".");
+                        retry.setVisible(true);
                     });
                 }
             });

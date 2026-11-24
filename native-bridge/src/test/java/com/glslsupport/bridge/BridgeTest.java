@@ -72,6 +72,27 @@ class BridgeTest {
             r.assembly());
     }
     @Test
+    void reverseSourceMapKeepsTheFirstInstructionForEachFileAndLine() {
+        String assembly = """
+            %a = OpString "main.vert"
+            %b = OpString "common.glslh"
+            OpLine %a 7 0
+            OpNop
+            OpNoLine
+            OpNop
+            OpLine %b 7 0
+            OpNop
+            OpLine %a 7 1
+            OpNop
+            OpFunctionEnd
+            """;
+        var map = new NativeCompiler.Result(true, "", assembly, "", new int[0]).sourceMap();
+        var shader = new NativeCompiler.Line("main.vert", 7);
+        var header = new NativeCompiler.Line("common.glslh", 7);
+        assertEquals(Map.of(shader, 2, header, 6), map.firstInstruction());
+        assertEquals(Map.of(2, shader, 3, shader, 6, header, 7, header, 8, shader, 9, shader), map.instructions());
+    }
+    @Test
     void explicitOffsets() {
         assertEquals(5, NativeCompiler.offset("foo\né😀b", 2, 3));
         assertEquals(7, NativeCompiler.offset("foo\né😀b", 2, 7));

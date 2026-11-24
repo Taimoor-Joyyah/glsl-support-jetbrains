@@ -56,6 +56,8 @@ public final class PipelinePanel extends JPanel {
         }
         left.add(actions, BorderLayout.SOUTH);
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        com.intellij.ui.ListSpeedSearch.installOn(list);
+        list.getAccessibleContext().setAccessibleName("GLSL pipelines");
         list.getEmptyText().setText("No pipelines");
         list.setCellRenderer(new DefaultListCellRenderer() {
             public Component getListCellRendererComponent(

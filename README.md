@@ -4,7 +4,7 @@ Edit OpenGL and Vulkan shaders in JetBrains IDEs on **Windows x64, 2026.1 or lat
 
 ## Installation
 
-Download the Windows x64 ZIP, then choose **Settings → Plugins → ⚙ → Install Plugin from Disk** and restart the IDE. The Windows compiler and its C++ runtime are included. Existing projects using GLSL Analyzer can import compatible settings and variants when first opened. [Download version 1.3.0](dist/GLSL-Support-OpenGL-Vulkan-1.3.0-windows-x86_64.zip?raw=true) · [SHA-256 checksums](dist/SHA256SUMS)
+Download the Windows x64 ZIP, then choose **Settings → Plugins → ⚙ → Install Plugin from Disk** and restart the IDE. The Windows compiler and its C++ runtime are included. Existing projects using GLSL Analyzer can import compatible settings and variants when first opened. [Download version 1.3.1](dist/GLSL-Support-OpenGL-Vulkan-1.3.1-windows-x86_64.zip?raw=true) · [SHA-256 checksums](dist/SHA256SUMS)
 
 ## Working with shaders
 

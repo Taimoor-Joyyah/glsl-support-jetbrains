@@ -29,6 +29,53 @@ class EditorTest {
             Syntax.Kind.PARAMETER, w.resolve("main.vert", s.lastIndexOf("p;")).getFirst().symbol().kind());
     }
     @Test
+    void localInspectionsRespectScopesMembersAndInactiveCode() {
+        String source = """
+            #include "other.glslh"
+            struct Surface { float tint; };
+            #if 0
+            float disabled;
+            #endif
+            void main() {
+                Surface s;
+                float tint;
+                float value;
+                { float value; s.tint = value; }
+                float disabled;
+                #if 0
+                tint = disabled;
+                #endif
+            }
+            """;
+        var w = new Workspace(Map.of("main.vert", new Syntax(source), "other.glslh",
+            new Syntax("void other(){float tint; tint = 0.;}")), List.of(), Map.of(), "main.vert");
+        var findings = Editing.inspect(w, "main.vert");
+        assertEquals(List.of("Unused local 'tint'", "Unused local 'value'", "Declaration shadows 'value'",
+            "Unused local 'disabled'"), findings.stream().map(Editing.Finding::message).toList());
+        assertEquals(source.indexOf("value;"), findings.get(1).start());
+        assertEquals(source.lastIndexOf("float value;") + 6, findings.get(2).start());
+    }
+    @Test
+    void memberCompletionUsesActiveFieldsOfTheResolvedOwner() {
+        String source = "#include \"types.glslh\"\nvoid main(){Surface s; s.}";
+        String header = """
+            struct Other { float unrelated; };
+            struct Surface {
+                float base;
+                #if DETAIL
+                float detail;
+                #endif
+            };
+            """;
+        var files = Map.of("main.vert", new Syntax(source), "types.glslh", new Syntax(header));
+        int caret = source.lastIndexOf('.') + 1;
+        for (int detail : List.of(0, 1)) {
+            var w = new Workspace(files, List.of(), Map.of("DETAIL", Integer.toString(detail)), "main.vert");
+            assertEquals(detail == 0 ? List.of("base") : List.of("base", "detail"),
+                w.completions("main.vert", caret, false));
+        }
+    }
+    @Test
     void conditional() {
         String s = "#define A 2\n#if defined(A) && (A << 1) == 4\nfloat yes;\n#else\nfloat no;\n#endif";
         var w = workspace(s);

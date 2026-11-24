@@ -266,6 +266,7 @@ final class EditorUpgrade {
             var panel = tabs.getComponentAt(tabs.indexOfTab("Pipelines"));
             var lists = children(panel, JList.class);
             var list = lists.stream().filter(l -> l.getModel().getSize() == 2).findFirst().orElseThrow();
+            check(com.intellij.ui.speedSearch.SpeedSearchSupply.getSupply(list, true) != null, "keyboard pipeline search");
             list.setSelectedValue("Forward", true);
             var tables = children(panel, JTable.class);
             var stages = tables.stream().filter(t -> t.getColumnCount() == 3).findFirst().orElseThrow();

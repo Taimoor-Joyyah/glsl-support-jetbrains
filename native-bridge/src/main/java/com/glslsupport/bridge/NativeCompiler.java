@@ -20,6 +20,7 @@ public final class NativeCompiler {
     }
     public record Diagnostic(String severity, String file, int line, int column, String message) {}
     public record Line(String file, int line) {}
+    public record SourceMap(Map<Integer, Line> instructions, Map<Line, Integer> firstInstruction) {}
     public record TraceEvent(String file, int line, int depth, String kind, String name, String value) {}
     public record Result(boolean success, String log, String assembly, String layout, int[] words,
                          List<String> stageLogs, String linkLog, List<TraceEvent> trace) {
@@ -48,8 +49,12 @@ public final class NativeCompiler {
                 || s.contains("No code generated") || s.isBlank();
         }
         public Map<Integer, Line> instructions() {
+            return sourceMap().instructions();
+        }
+        public SourceMap sourceMap() {
             var files = new HashMap<String, String>();
-            var map = new TreeMap<Integer, Line>();
+            var map = new LinkedHashMap<Integer, Line>();
+            var first = new HashMap<Line, Integer>();
             Line current = null;
             int i = 0;
             for (String line : assembly.split("\n", -1)) {
@@ -60,13 +65,14 @@ public final class NativeCompiler {
                 if (loc.matches()) {
                     String file = files.get(loc.group(1));
                     current = file == null ? null : new Line(file, Integer.parseInt(loc.group(2)));
+                    if (current != null) first.putIfAbsent(current, i);
                 } else if (line.strip().equals("OpNoLine") || line.strip().equals("OpFunctionEnd"))
                     current = null;
                 if (current != null)
                     map.put(i, current);
                 i++;
             }
-            return map;
+            return new SourceMap(map, first);
         }
     }
     static final Pattern MESSAGE = Pattern.compile("^(ERROR|WARNING): (.+?):(\\d+):(?:(\\d+):)?\\s*(.*)$");

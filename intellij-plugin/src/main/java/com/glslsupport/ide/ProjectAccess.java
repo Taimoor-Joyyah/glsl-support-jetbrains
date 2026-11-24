@@ -1,12 +1,14 @@
 package com.glslsupport.ide;
 
 import com.glslsupport.lang.*;
+import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.*;
 import com.intellij.openapi.vfs.*;
 import com.intellij.psi.*;
 import com.intellij.psi.util.*;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class ProjectAccess {
     private ProjectAccess() {}
@@ -36,36 +38,62 @@ public final class ProjectAccess {
         return PipelineContexts.of(file.getProject()).current(file).graph();
     }
     static Workspace graph(PsiFile file, ShaderConfig.Effective config) {
+        var sources = sources(file);
+        return sources.workspaces.computeIfAbsent(config,
+            c -> new Workspace(sources.files, sources.roots, c, sources.root));
+    }
+    static final class SourceFiles {
+        final String root;
+        final List<String> roots;
+        final Map<String, Syntax> files = new LinkedHashMap<>();
+        final List<PsiFile> dependencies = new ArrayList<>();
+        final Map<ShaderConfig.Effective, Workspace> workspaces = new ConcurrentHashMap<>();
+        SourceFiles(String root, List<String> roots) {
+            this.root = root;
+            this.roots = roots;
+        }
+        void add(String path, PsiFile file) {
+            files.put(path, model(file));
+            dependencies.add(file);
+        }
+    }
+    static SourceFiles sources(PsiFile file) {
         var project = file.getProject();
-        var path = key(file);
-        var map = new LinkedHashMap<String, Syntax>();
-        map.put(path, model(file));
+        var owner = PipelineContexts.of(project).sourceCache(file);
+        return CachedValuesManager.getManager(project).getCachedValue(owner, () -> discover(file));
+    }
+    private static CachedValueProvider.Result<SourceFiles> discover(PsiFile file) {
+        var project = file.getProject();
+        var sources = new SourceFiles(key(file), roots(project));
+        sources.add(sources.root, file);
         var queue = new ArrayDeque<String>();
-        queue.add(path);
-        var roots = roots(project);
+        queue.add(sources.root);
         while (!queue.isEmpty()) {
+            ProgressManager.checkCanceled();
             String here = queue.remove();
-            for (var inc : map.get(here).includes) {
+            for (var inc : sources.files.get(here).includes) {
                 var dirs = new ArrayList<String>();
                 var parent = Path.of(here).getParent();
                 if (!inc.system())
                     dirs.add(parent == null ? "" : parent.toString());
-                dirs.addAll(roots);
+                dirs.addAll(sources.roots);
                 for (var dir : dirs) {
                     var k = Workspace.resolvePath(dir, inc.path());
                     if (k == null)
                         continue;
-                    if (map.containsKey(k))
+                    if (sources.files.containsKey(k))
                         break;
                     var included = psi(project, k);
                     if (included != null) {
-                        map.put(k, model(included));
+                        sources.add(k, included);
                         queue.add(k);
                         break;
                     }
                 }
             }
         }
-        return new Workspace(map, roots, config, path);
+        var deps = new ArrayList<Object>(sources.dependencies);
+        deps.add(VirtualFileManager.VFS_STRUCTURE_MODIFICATIONS);
+        return CachedValueProvider.Result.create(sources, deps.toArray());
     }
 }

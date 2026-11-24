@@ -3,12 +3,14 @@ package com.glslsupport.ide;
 import com.intellij.openapi.application.*;
 import com.intellij.openapi.fileEditor.*;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.popup.*;
+import com.intellij.openapi.ui.popup.util.BaseListPopupStep;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.*;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiModificationTracker;
 import com.intellij.util.concurrency.AppExecutorUtil;
-import java.util.List;
+import java.util.*;
 import javax.swing.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -18,7 +20,8 @@ public final class ContextWidget implements StatusBarWidgetFactory {
     public @NotNull StatusBarWidget createWidget(@NotNull Project project) { return new Widget(project); }
 
     private record Options(PsiFile file, PipelineContexts.Context standalone,
-                           List<PipelineContexts.Context> matches, String label) {}
+                           List<PipelineContexts.Context> matches, PipelineContexts.Context pinned, String label) {}
+    private record Choice(String label, PipelineContexts.Context context) {}
     private static final class Widget implements CustomStatusBarWidget {
         final Project project;
         final JButton button = new JButton();
@@ -66,7 +69,7 @@ public final class ContextWidget implements StatusBarWidgetFactory {
                 var contexts = PipelineContexts.of(project);
                 var current = contexts.current(file);
                 boolean auto = contexts.automatic(file);
-                return new Options(file, contexts.standalone(file), contexts.matches(file),
+                return new Options(file, contexts.standalone(file), contexts.matches(file), auto ? null : current,
                     (auto ? "Auto · " : "") + current.label());
             }).withDocumentsCommitted(project).expireWith(this).coalesceBy(this)
                 .finishOnUiThread(ModalityState.any(), next -> {
@@ -80,16 +83,25 @@ public final class ContextWidget implements StatusBarWidgetFactory {
         private void popup() {
             var shown = options;
             if (shown == null) return;
-            var menu = new JPopupMenu();
-            item(menu, shown, "Auto", null);
-            item(menu, shown, shown.standalone().label(), shown.standalone());
-            for (var stage : shown.matches()) item(menu, shown, stage.label(), stage);
-            menu.show(button, 0, -menu.getPreferredSize().height);
-        }
-        private void item(JPopupMenu menu, Options shown, String name, PipelineContexts.Context context) {
-            menu.add(name).addActionListener(event -> {
-                if (shown.file().isValid()) PipelineContexts.of(project).select(shown.file(), context);
-            });
+            var choices = new ArrayList<Choice>();
+            choices.add(new Choice("Auto", null));
+            choices.add(new Choice(shown.standalone().label(), shown.standalone()));
+            for (var stage : shown.matches()) choices.add(new Choice(stage.label(), stage));
+            var step = new BaseListPopupStep<Choice>("GLSL pipeline context", choices) {
+                public @NotNull String getTextFor(Choice choice) { return choice.label(); }
+                public boolean isSpeedSearchEnabled() { return true; }
+                public PopupStep<?> onChosen(Choice choice, boolean finalChoice) {
+                    return doFinalStep(() -> {
+                        if (shown.file().isValid()) PipelineContexts.of(project).select(shown.file(), choice.context());
+                    });
+                }
+            };
+            for (int i = 0; i < choices.size(); i++)
+                if (Objects.equals(choices.get(i).context(), shown.pinned())) {
+                    step.setDefaultOptionIndex(i);
+                    break;
+                }
+            JBPopupFactory.getInstance().createListPopup(step).showUnderneathOf(button);
         }
     }
 }

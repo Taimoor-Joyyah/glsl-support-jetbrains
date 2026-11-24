@@ -8,6 +8,7 @@ import com.glslsupport.ide.ReferenceDocs;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.impl.SimpleDataContext;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.PathManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.project.Project;
@@ -15,7 +16,9 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.wm.*;
 import java.awt.Component;
 import java.awt.Container;
+import java.nio.channels.FileChannel;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.function.Predicate;
 import javax.swing.*;
@@ -72,8 +75,15 @@ final class ReferenceWindow {
             ui.query.setText("bindtexture");
             ui.query.postActionEvent();
             check("glBindTexture".equals(ui.list.getSelectedValue()), "Enter opens partial match");
+            for (String query : List.of("GL.glBindTexture", "glad_glBindTexture", "api::glBindTexture")) {
+                ui.query.setText(query);
+                ui.query.postActionEvent();
+                check(ui.search.isEnabled() && "glBindTexture".equals(ui.list.getModel().getElementAt(0))
+                    && "glBindTexture".equals(ui.list.getSelectedValue()), "qualified search for " + query);
+            }
         });
         assertPage(ui, "glBindTexture", "bind a named texture", graphical);
+        verifyRetry(ui, graphical);
         app.invokeAndWait(() -> {
             ui.query.setText("not_a_documented_symbol");
             ui.query.postActionEvent();
@@ -105,6 +115,29 @@ final class ReferenceWindow {
             });
             assertPage(ui, "glBindTexture", "bind a named texture", true);
         }
+    }
+
+    private static void verifyRetry(Controls ui, boolean graphical) throws Exception {
+        var cache = new com.glslsupport.reference.ReferenceLibrary(PathManager.getSystemDir().resolve("glsl-support/reference"),
+            (uri, limit) -> { throw new AssertionError("The overview is bundled"); });
+        var overview = cache.get("OpenGL46.xhtml");
+        // The isolated Windows test cache can simulate a transient read error without making a network request.
+        try (var channel = FileChannel.open(overview, StandardOpenOption.WRITE); var lock = channel.lock()) {
+            onEdt(() -> {
+                ui.query.setText("OpenGL46");
+                ui.query.postActionEvent();
+                ui.query.setText("");
+                return true;
+            });
+            await(() -> onEdt(() -> find(ui.panel, JButton.class, b -> "Retry".equals(b.getText()) && b.isVisible()) != null),
+                "a failed reference can be retried with an empty search");
+        }
+        onEdt(() -> {
+            check(!ui.search.isEnabled(), "retry does not depend on a search match");
+            find(ui.panel, JButton.class, b -> "Retry".equals(b.getText())).doClick(0);
+            return true;
+        });
+        assertPage(ui, "OpenGL46", "OpenGL 4.6 and GLSL 4.60", graphical);
     }
 
     private static void verifyTheme(boolean graphical, Controls ui) throws Exception {

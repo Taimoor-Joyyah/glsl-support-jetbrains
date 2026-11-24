@@ -9,6 +9,8 @@ import java.util.zip.CRC32;
 public final class Editing {
     private static final Set<String> ASSIGNMENTS =
         Set.of("=", "+=", "-=", "*=", "/=", "%=", "<<=", ">>=", "&=", "^=", "|=");
+    private static final java.util.regex.Pattern MACRO_DIRECTIVE =
+        java.util.regex.Pattern.compile("#\\s*(define|undef)\\s+([A-Za-z_]\\w*)");
     private Editing() {}
     public record Change(String file, int start, int end, String text) {}
     public record Finding(int start, int end, String message) {}
@@ -177,10 +179,14 @@ public final class Editing {
         var f = w.files.get(file);
         var found = new ArrayList<Finding>();
         var defined = new HashSet<String>();
-        var directive = java.util.regex.Pattern.compile("#\\s*(define|undef)\\s+([A-Za-z_]\\w*)");
-        for (var t : f.code)
+        var localNames = new HashSet<String>();
+        for (var s : f.symbols)
+            if (s.kind() == LOCAL) localNames.add(s.name());
+        var used = new HashSet<Integer>();
+        for (int i = 0; i < f.code.size(); i++) {
+            var t = f.code.get(i);
             if (t.kind() == Lexer.Kind.DIRECTIVE && w.active(file, t.start())) {
-                var m = directive.matcher(t.text());
+                var m = MACRO_DIRECTIVE.matcher(t.text());
                 if (!m.lookingAt())
                     continue;
                 if (m.group(1).equals("undef"))
@@ -188,15 +194,19 @@ public final class Editing {
                 else if (!defined.add(m.group(2)))
                     found.add(new Finding(t.start() + m.start(2), t.start() + m.end(2),
                         "Duplicate macro definition '" + m.group(2) + "'"));
+            } else if (f.ident(i) && localNames.contains(t.text()) && f.declaration(t.start()) == null
+                       && !f.word(i - 1).equals(".") && w.active(file, t.start())) {
+                for (var hit : w.resolve(file, t.start()))
+                    if (hit.symbol().kind() == LOCAL) used.add(hit.symbol().at());
             }
+        }
         for (var s : f.symbols) {
             if (s.kind() != LOCAL || !w.active(file, s.at()))
                 continue;
-            if (w.usages(new Workspace.Location(file, s)).size() == 1)
+            if (!used.contains(s.at()))
                 found.add(new Finding(s.at(), s.at() + s.name().length(), "Unused local '" + s.name() + "'"));
-            if (f.symbols.stream().anyMatch(other
-                    -> other != s && other.name().equals(s.name()) && other.at() < s.at()
-                        && other.scopeStart() < s.scopeStart() && other.scopeEnd() > s.at()))
+            if (f.named(s.name()).stream().anyMatch(other -> other.at() < s.at()
+                    && other.scopeStart() < s.scopeStart() && other.scopeEnd() > s.at() && w.active(file, other.at())))
                 found.add(
                     new Finding(s.at(), s.at() + s.name().length(), "Declaration shadows '" + s.name() + "'"));
         }

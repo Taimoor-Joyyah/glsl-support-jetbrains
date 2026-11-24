@@ -1,7 +1,7 @@
 <idea-plugin require-restart="true" url="https://github.com/Taimoor-Joyyah/glsl-support-jetbrains">
     <id>com.glslsupport.language</id>
     <name>GLSL Support (OpenGL/Vulkan)</name>
-    <version>1.3.0</version>
+    <version>1.3.1</version>
     <vendor email="mtaimoor0167@gmail.com" url="https://github.com/Taimoor-Joyyah">Taimoor Joyyah</vendor>
     <description><![CDATA[
         <p>Edit and validate OpenGL and Vulkan shaders on Windows x64 with the bundled glslang compiler.</p>
@@ -15,10 +15,11 @@
     ]]></description>
     <change-notes><![CDATA[
         <ul>
-            <li>Edit shaders and shared headers in a selected pipeline stage with its target, variant and definitions.</li>
-            <li>Validate one or all pipelines and navigate compiler errors and mismatched stage declarations.</li>
-            <li>Trace includes, macros and conditional branches and compare two shader variants.</li>
-            <li>Export validated OpenGL and Vulkan binaries from the SPIR-V inspector.</li>
+            <li>Unused-local inspections and struct field completion do less work in large shaders. Editing a header reuses the include graphs of unaffected stages.</li>
+            <li>Search pipeline names in settings and in the status-bar selector. Rerun validation directly from its results.</li>
+            <li>Reopen SPIR-V, Layout and Trace in their existing tabs. Layout follows the new caret location, and SPIR-V source navigation uses a background index.</li>
+            <li>Filter trace comparisons to changed entries and press Enter to open a directive in the editor.</li>
+            <li>Search OpenGL Docs with qualified names such as GL.glBindTexture and glad_glBindTexture. Retry a failed page directly.</li>
         </ul>
     ]]></change-notes>
     <idea-version since-build="261"/>

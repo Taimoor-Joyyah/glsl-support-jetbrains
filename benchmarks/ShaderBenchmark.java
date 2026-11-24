@@ -1,5 +1,6 @@
 import com.glslsupport.bridge.AnalysisCache;
 import com.glslsupport.bridge.NativeCompiler;
+import com.glslsupport.lang.Editing;
 import com.glslsupport.lang.ShaderConfig;
 import com.glslsupport.lang.Syntax;
 import com.glslsupport.lang.Workspace;
@@ -12,6 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public final class ShaderBenchmark {
     private static final int FILES = 256;
     private static final int DECLARATIONS = 96;
+    private static final int LOCALS = 256;
     private static final ShaderConfig.Effective CONFIG =
         new ShaderConfig.Effective(ShaderConfig.Stage.VERTEX, 0, 0, "", Map.of());
 
@@ -21,6 +23,26 @@ public final class ShaderBenchmark {
             "#version 450\n#include \"" + header + "\"\nvoid main(){ gl_Position=vec4(v); }", CONFIG);
         return new NativeCompiler.Request(0, NativeCompiler.Operation.CHECK, List.of(unit),
             Map.of(header, "const float v=" + value + ";"), List.of());
+    }
+
+    private static double inspectionMedianMillis() {
+        var text = new StringBuilder("void main(){\n");
+        for (int i = 0; i < LOCALS; i++) {
+            text.append("float local").append(i).append(" = 1.0;\n");
+            if (i % 2 == 0) text.append("local").append(i).append(" += 1.0;\n");
+        }
+        text.append("}");
+        var workspace = new Workspace(Map.of("locals.vert", new Syntax(text.toString())), List.of(), Map.of());
+        long[] samples = new long[51];
+        for (int i = -20; i < samples.length; i++) {
+            long start = System.nanoTime();
+            var findings = Editing.inspect(workspace, "locals.vert");
+            long elapsed = System.nanoTime() - start;
+            if (findings.size() != LOCALS / 2) throw new AssertionError(findings);
+            if (i >= 0) samples[i] = elapsed;
+        }
+        Arrays.sort(samples);
+        return samples[samples.length / 2] / 1e6;
     }
 
     public static void main(String[] args) {
@@ -52,6 +74,7 @@ public final class ShaderBenchmark {
                 samples[i] = elapsed;
         }
         Arrays.sort(samples);
+        double inspectMillis = inspectionMedianMillis();
         var calls = new AtomicInteger();
         var cache = new AnalysisCache(32L << 20, r -> {
             calls.incrementAndGet();
@@ -71,8 +94,9 @@ public final class ShaderBenchmark {
         System.out.printf(Locale.ROOT,
             "{\"files\":%d,\"globalsPerShader\":%d,\"sourceIndexMs\":%.3f,\"warmCompletionSamples\":%d,"
                 + "\"warmCompletionMedianUs\":%.3f,\"warmCompletionP95Us\":%.3f,\"singleHeaderSweepMs\":%.3f,"
-                + "\"shaderRequestsAfterEdit\":64,\"recompiledAfterEdit\":%d,\"heapUsedAtEndBytes\":%d}%n",
+                + "\"shaderRequestsAfterEdit\":64,\"recompiledAfterEdit\":%d,\"inspectionLocals\":%d,"
+                + "\"warmInspectionMedianMs\":%.3f,\"heapUsedAtEndBytes\":%d}%n",
             trees.size(), DECLARATIONS, indexMillis, samples.length, samples[511] / 1e3, samples[972] / 1e3,
-            editMillis, calls.get() - before, heap);
+            editMillis, calls.get() - before, LOCALS, inspectMillis, heap);
     }
 }

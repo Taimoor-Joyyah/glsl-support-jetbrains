@@ -63,18 +63,31 @@ public final class ShaderViews implements ToolWindowFactory {
         var w = ToolWindowManager.getInstance(p).getToolWindow("GLSL Inspector");
         if (w == null || f.getVirtualFile() == null)
             return;
+        var manager = w.getContentManager();
+        for (var existing : manager.getContents()) {
+            if (existing.getComponent() instanceof Panel panel && panel.op == op && panel.file.equals(f.getVirtualFile())) {
+                manager.setSelectedContent(existing);
+                w.activate(null);
+                if (op == NativeCompiler.Operation.LAYOUT) {
+                    panel.offset = offset;
+                    panel.blocks.setSelectedItem(null);
+                    panel.refresh();
+                }
+                return;
+            }
+        }
         var panel = new Panel(p, f.getVirtualFile(), offset, op);
         var content = ContentFactory.getInstance().createContent(
             panel, (op == NativeCompiler.Operation.SPIRV ? "SPIR-V · " : "Layout · ") + f.getName(), false);
+        content.setDescription(f.getVirtualFile().getPresentableUrl());
         content.setDisposer(panel);
-        w.getContentManager().addContent(content);
-        w.getContentManager().setSelectedContent(content);
+        manager.addContent(content);
+        manager.setSelectedContent(content);
         w.activate(null);
         panel.refresh();
     }
     record Selected(String struct, String block) {}
-    static Selected selection(PsiFile file, int offset) {
-        var graph = ProjectAccess.graph(file);
+    static Selected selection(PsiFile file, int offset, Workspace graph) {
         String key = ProjectAccess.key(file);
         var syntax = graph.files.get(key);
         for (var s : syntax.symbols)
@@ -92,13 +105,12 @@ public final class ShaderViews implements ToolWindowFactory {
         types.add(syntax.word(syntax.indexAt(offset)));
         for (String type : types)
             for (var path : graph.visible(key))
-                for (var s : graph.files.get(path).symbols)
-                    if (s.name().equals(type)) {
-                        if (s.kind() == Syntax.Kind.TYPE)
-                            return new Selected(type, null);
-                        if (s.kind() == Syntax.Kind.BLOCK)
-                            return new Selected(null, type);
-                    }
+                for (var s : graph.files.get(path).named(type)) {
+                    if (s.kind() == Syntax.Kind.TYPE)
+                        return new Selected(type, null);
+                    if (s.kind() == Syntax.Kind.BLOCK)
+                        return new Selected(null, type);
+                }
         return new Selected(null, null);
     }
     public static NativeCompiler.Request preview(NativeCompiler.Request req, String struct, String packing) {
@@ -142,11 +154,21 @@ public final class ShaderViews implements ToolWindowFactory {
             List.of(new NativeCompiler.Unit(base.path(), text, cfg)), req.headers(), req.includeRoots());
     }
     record CompileInput(NativeCompiler.Request request, Selected selected, String label, String variant, Set<String> paths) {}
-    record Output(NativeCompiler.Result result, CompileInput input, long revision) {}
+    record Output(NativeCompiler.Result result, CompileInput input, long revision,
+                  NativeCompiler.SourceMap sourceMap, List<BlockLayout.Block> layout) {
+        static Output prepare(NativeCompiler.Result result, CompileInput input, long revision) {
+            boolean spirv = input.request.operation() == NativeCompiler.Operation.SPIRV;
+            var lines = result.success() && spirv ? result.sourceMap() : null;
+            var layout = result.success() && !spirv ? BlockLayout.parse(result.layout()).stream()
+                .filter(b -> input.selected.struct == null || b.name().equals("GlslSupportPreview")).toList()
+                : List.<BlockLayout.Block>of();
+            return new Output(result, input, revision, lines, layout);
+        }
+    }
     static final class Panel extends JPanel implements Disposable {
         final Project project;
         final VirtualFile file;
-        final int offset;
+        int offset;
         final NativeCompiler.Operation op;
         final AtomicLong revision = new AtomicLong();
         volatile Set<String> deps;
@@ -159,7 +181,7 @@ public final class ShaderViews implements ToolWindowFactory {
         final JTextArea assembly = new JTextArea(), errors = new JTextArea();
         final JPanel pages = new JPanel(new CardLayout());
         final LayoutTable table = new LayoutTable();
-        Map<Integer, NativeCompiler.Line> lines = Map.of();
+        int highlighted = -1;
         List<BlockLayout.Block> layout = List.of();
         boolean installing;
         ScheduledFuture<?> pending;
@@ -200,41 +222,47 @@ public final class ShaderViews implements ToolWindowFactory {
             pages.add(table, "layout");
             pages.add(new JBScrollPane(errors), "errors");
             add(pages);
+            ShaderChanges.watch(p, this, () -> deps, true, this::refresh);
+            if (op == NativeCompiler.Operation.SPIRV) installSourceNavigation();
+        }
+        private void installSourceNavigation() {
             assembly.addMouseListener(new MouseAdapter() {
                 public void mouseClicked(MouseEvent e) {
+                    var current = displayed;
+                    if (current == null) return;
                     try {
                         int line = assembly.getLineOfOffset(assembly.viewToModel2D(e.getPoint()));
-                        var loc = lines.get(line);
+                        var loc = current.sourceMap.instructions().get(line);
                         if (loc != null)
                             navigate(loc);
                     } catch (BadLocationException ignored) {
                     }
                 }
             });
-            var events = EditorFactory.getInstance().getEventMulticaster();
-            ShaderChanges.watch(p, this, () -> deps, true, this::refresh);
-            events.addCaretListener(new CaretListener() {
+            EditorFactory.getInstance().getEventMulticaster().addCaretListener(new CaretListener() {
                 public void caretPositionChanged(@NotNull CaretEvent e) {
+                    var current = displayed;
+                    if (current == null || e.getEditor().getProject() != project) return;
                     var v = FileDocumentManager.getInstance().getFile(e.getEditor().getDocument());
-                    if (v != null && op == NativeCompiler.Operation.SPIRV) {
-                        int line = e.getNewPosition().line + 1;
-                        lines.entrySet()
-                            .stream()
-                            .filter(k -> k.getValue().file().equals(v.getPath()) && k.getValue().line() == line)
-                            .findFirst()
-                            .ifPresent(k -> highlight(k.getKey()));
+                    if (v != null && current.input.paths.contains(v.getPath())) {
+                        var line = new NativeCompiler.Line(v.getPath(), e.getNewPosition().line + 1);
+                        highlight(current.sourceMap.firstInstruction().getOrDefault(line, -1));
                     }
                 }
             }, this);
         }
         void highlight(int line) {
+            if (highlighted == line) return;
+            highlighted = line;
+            assembly.getHighlighter().removeAllHighlights();
+            if (line < 0) return;
             try {
                 int a = assembly.getLineStartOffset(line), b = assembly.getLineEndOffset(line);
-                assembly.getHighlighter().removeAllHighlights();
                 assembly.getHighlighter().addHighlight(a, b,
                     new DefaultHighlighter.DefaultHighlightPainter(
                         JBColor.namedColor("SearchMatch.startBackground", new JBColor(0xDBEAFE, 0x344660))));
-                assembly.scrollRectToVisible(assembly.modelToView2D(a).getBounds());
+                var bounds = assembly.modelToView2D(a);
+                if (bounds != null) assembly.scrollRectToVisible(bounds.getBounds());
             } catch (BadLocationException ignored) {
             }
         }
@@ -253,11 +281,13 @@ public final class ShaderViews implements ToolWindowFactory {
                 return;
             long ticket = revision.incrementAndGet();
             displayed = null;
+            highlight(-1);
             export.setEnabled(false);
             if (pending != null)
                 pending.cancel(false);
             status.setText("Compiling…");
             String requested = (String) packing.getSelectedItem();
+            int caretOffset = offset;
             PsiDocumentManager.getInstance(project).performLaterWhenAllCommitted(() -> {
                 if (disposed || revision.get() != ticket)
                     return;
@@ -271,7 +301,7 @@ public final class ShaderViews implements ToolWindowFactory {
                                 throw new IllegalStateException("Shader file is unavailable");
                             var context = PipelineContexts.of(project).current(f);
                             var req = context.request(op);
-                            var selected = op == NativeCompiler.Operation.LAYOUT ? selection(f, offset)
+                            var selected = op == NativeCompiler.Operation.LAYOUT ? selection(f, caretOffset, context.graph())
                                                                                  : new Selected(null, null);
                             return new CompileInput(preview(req, selected.struct, requested), selected,
                                 context.label(), context.variantName(), context.graph().inputPaths());
@@ -280,7 +310,8 @@ public final class ShaderViews implements ToolWindowFactory {
                         var req = data.request;
                         if (revision.get() == ticket) deps = data.paths();
                         var r = CompilerSupport.of(project).analyze(req);
-                        var output = new Output(r, data, ticket);
+                        if (revision.get() != ticket) return;
+                        var output = Output.prepare(r, data, ticket);
                         ApplicationManager.getApplication().invokeLater(() -> {
                             if (!disposed && revision.get() == ticket)
                                 show(output);
@@ -313,17 +344,13 @@ public final class ShaderViews implements ToolWindowFactory {
                 export.setEnabled(out.result.words().length > 0);
                 assembly.setText(out.result.assembly());
                 assembly.setCaretPosition(0);
-                lines = out.result.instructions();
                 ((CardLayout) pages.getLayout()).show(pages, "assembly");
                 return;
             }
             installing = true;
             try {
                 packing.setVisible(struct != null);
-                layout = BlockLayout.parse(out.result.layout())
-                             .stream()
-                             .filter(b -> struct == null || b.name().equals("GlslSupportPreview"))
-                             .toList();
+                layout = out.layout;
                 Object selected = blocks.getSelectedItem();
                 if (selected == null)
                     selected = out.input.selected.block;

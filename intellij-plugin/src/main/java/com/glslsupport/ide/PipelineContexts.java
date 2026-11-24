@@ -76,6 +76,9 @@ public final class PipelineContexts implements PersistentStateComponent<Pipeline
             return cache;
         }
     }
+    UserDataHolder sourceCache(PsiFile root) {
+        return cache(root);
+    }
     Set<String> configuredInputs() {
         var current = project.getUserData(GRAPH_CACHE);
         return current == null ? Set.of() : current.inputs;
@@ -146,11 +149,7 @@ public final class PipelineContexts implements PersistentStateComponent<Pipeline
         return new HashSet<>(List.of(Settings.of(project).changes, VirtualFileManager.VFS_STRUCTURE_MODIFICATIONS));
     }
     private void collectDependencies(Context c, Set<Object> deps) {
-        deps.add(c.root());
-        for (String path : c.graph().files.keySet()) {
-            var psi = ProjectAccess.psi(project, path);
-            if (psi != null) deps.add(psi);
-        }
+        deps.addAll(ProjectAccess.sources(c.root()).dependencies);
     }
     public Context current(PsiFile file) {
         var options = matches(file);

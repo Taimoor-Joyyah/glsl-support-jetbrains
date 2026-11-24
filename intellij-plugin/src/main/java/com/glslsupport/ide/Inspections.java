@@ -9,14 +9,15 @@ public final class Inspections extends LocalInspectionTool {
             public void visitFile(@NotNull PsiFile f) {
                 if (!(f instanceof GlslLanguage.File))
                     return;
-                var w = ProjectAccess.graph(f);
+                var context = PipelineContexts.of(f.getProject()).current(f);
+                var w = context.graph();
                 var key = ProjectAccess.key(f);
                 var syntax = w.files.get(key);
                 if (!syntax.source.isEmpty() && !syntax.hasVersion()
                     && (ShaderConfig.Stage.fromPath(key).isPresent()
                         || f.getName().endsWith(".glsl")
                             && syntax.named("main").stream().anyMatch(s -> s.kind() == Syntax.Kind.FUNCTION))
-                    && PipelineContexts.of(f.getProject()).current(f).config().version() == 0) {
+                    && context.config().version() == 0) {
                     holder.registerProblem(f, "Missing #version directive",
                         ProblemHighlightType.GENERIC_ERROR_OR_WARNING,
                         new com.intellij.openapi.util.TextRange(0, 1), new Intentions.Version());

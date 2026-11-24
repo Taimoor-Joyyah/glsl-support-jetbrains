@@ -6,8 +6,11 @@ import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.impl.SimpleDataContext;
 import com.intellij.openapi.application.*;
 import com.intellij.openapi.command.WriteCommandAction;
+import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.*;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.popup.ListPopup;
+import com.intellij.openapi.ui.popup.util.PopupUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.wm.*;
 import com.intellij.psi.*;
@@ -20,9 +23,13 @@ import static com.glslsupport.tests.ReferenceWindow.find;
 
 final class PipelineEditing {
     private static void perform(Project p, PsiFile file, String id) {
+        perform(p, file, id, null);
+    }
+    private static void perform(Project p, PsiFile file, String id, Editor editor) {
         var action = Objects.requireNonNull(ActionManager.getInstance().getAction(id), id);
-        var data = SimpleDataContext.builder().add(CommonDataKeys.PROJECT, p).add(CommonDataKeys.PSI_FILE, file).build();
-        action.actionPerformed(AnActionEvent.createEvent(action, data, null, "test", ActionUiKind.NONE, null));
+        var data = SimpleDataContext.builder().add(CommonDataKeys.PROJECT, p).add(CommonDataKeys.PSI_FILE, file);
+        if (editor != null) data.add(CommonDataKeys.EDITOR, editor);
+        action.actionPerformed(AnActionEvent.createEvent(action, data.build(), null, "test", ActionUiKind.NONE, null));
     }
     private static PsiFile file(Project p, Path path, String text) throws Exception {
         Files.writeString(path, text);
@@ -76,6 +83,36 @@ final class PipelineEditing {
         check(bytes.remaining() == words.length * Integer.BYTES, "exported module size");
         for (int word : words) check(bytes.getInt() == word, "exported displayed module");
     }
+    private static void verifyLayoutRetarget(Project project, Path root, ToolWindow inspector) throws Exception {
+        var vf = LocalFileSystem.getInstance().findFileByNioFile(root.resolve("tools.vert"));
+        var file = ReadAction.compute(() -> Objects.requireNonNull(PsiManager.getInstance(project).findFile(vf)));
+        var editor = onEdt(() -> FileEditorManager.getInstance(project).openTextEditor(new OpenFileDescriptor(project, vf), true));
+        try {
+            var panel = onEdt(() -> {
+                editor.getCaretModel().moveToOffset(file.getText().indexOf("struct Light") + 7);
+                perform(project, file, "GlslSupport.Layout", editor);
+                return inspector.getContentManager().getSelectedContent().getComponent();
+            });
+            await(() -> onEdt(() -> find(panel, JComboBox.class, b -> "Light".equals(b.getSelectedItem())) != null),
+                "layout displays the struct under the caret");
+            onEdt(() -> {
+                editor.getCaretModel().moveToOffset(file.getText().indexOf("uniform Scene") + 8);
+                perform(project, file, "GlslSupport.Layout", editor);
+                check(inspector.getContentManager().getSelectedContent().getComponent() == panel, "one layout tab per shader");
+                return true;
+            });
+            await(() -> onEdt(() -> find(panel, JComboBox.class, b -> "Scene".equals(b.getSelectedItem())) != null),
+                "reopening layout selects the new block");
+        } finally {
+            onEdt(() -> {
+                var manager = inspector.getContentManager();
+                var content = manager.findContent("Layout · tools.vert");
+                if (content != null) manager.removeContent(content, true);
+                FileEditorManager.getInstance(project).closeFile(vf);
+                return true;
+            });
+        }
+    }
     static void verify(Project p, Path root, boolean graphical) throws Exception {
         String headerText = "#if MODE == 9\nconst float fromPipeline=1.;\n#else\nconst float fromFile=2.;\n#endif\n";
         var header = file(p,root.resolve("context.glslh"),headerText);
@@ -95,7 +132,7 @@ final class PipelineEditing {
             float exposure(float gain){return gain;}
             void main(){tint=vec3(exposure(1.));gl_Position=vec4(1);}
             """);
-        file(p,root.resolve("context.frag"),"""
+        var fragment = file(p,root.resolve("context.frag"),"""
             #version 450
             layout(location=3) in vec4 tint;
             layout(location=0) out vec4 c;
@@ -120,6 +157,14 @@ final class PipelineEditing {
         var app = ApplicationManager.getApplication();
         try {
             app.invokeAndWait(() -> settings.loadState(configuration(opts, forward)));
+            var lateRoot = file(p, root.resolve("late.vert"), "#include \"late.glslh\"\nvoid main(){}");
+            var missing = ReadAction.compute(() -> contexts.current(lateRoot).graph());
+            var lateHeader = file(p, root.resolve("late.glslh"), "const int added = 1;");
+            ReadAction.run(() -> {
+                String path = lateHeader.getVirtualFile().getPath();
+                check(missing.inputPaths().contains(path) && !missing.files.containsKey(path), "missing include is watched");
+                check(contexts.current(lateRoot).graph().files.containsKey(path), "creating an include renews the graph");
+            });
             if (graphical) {
                 onEdt(() -> FileEditorManager.getInstance(p).openFile(header.getVirtualFile(), true));
                 await(() -> onEdt(() -> {
@@ -128,6 +173,27 @@ final class PipelineEditing {
                     return widget instanceof CustomStatusBarWidget custom && custom.getComponent() instanceof JButton b
                         && b.isShowing() && b.getText().contains("Auto · Forward → VERTEX");
                 }), "visible status-bar selector for a header opened before its root");
+                onEdt(() -> {
+                    var widget = (CustomStatusBarWidget)WindowManager.getInstance().getStatusBar(p).getWidget("GlslPipelineContext");
+                    var button = (JButton)widget.getComponent();
+                    button.doClick(0);
+                    return true;
+                });
+                await(() -> onEdt(() -> {
+                    for (var window : java.awt.Window.getWindows()) {
+                        if (!window.isShowing()) continue;
+                        var list = find(window, JList.class, l -> l.isShowing() && PopupUtil.getPopupContainerFor(l) instanceof ListPopup lp
+                            && "GLSL pipeline context".equals(lp.getListStep().getTitle()));
+                        if (list == null) continue;
+                        var popup = (ListPopup)PopupUtil.getPopupContainerFor(list);
+                        var step = popup.getListStep();
+                        check(step.isSpeedSearchEnabled() && list.getSelectedIndex() == 0 && step.getValues().size() == 3,
+                            "the searchable context chooser opens on Auto and includes the pipeline");
+                        popup.cancel();
+                        return true;
+                    }
+                    return false;
+                }), "visible pipeline context popup");
                 var editor = onEdt(() -> FileEditorManager.getInstance(p).openTextEditor(
                     new OpenFileDescriptor(p, vs.getVirtualFile()), true));
                 int argument = ReadAction.compute(() -> vs.getText().indexOf("exposure(1.)") + "exposure(".length());
@@ -149,7 +215,13 @@ final class PipelineEditing {
                 check(CompilerSupport.request(header,null,NativeCompiler.Operation.CHECK).equals(
                     c.request(NativeCompiler.Operation.CHECK)), "inspector and editor share root and settings");
             });
+            var vertexGraph = ReadAction.compute(() -> contexts.current(vs).graph());
+            var fragmentGraph = ReadAction.compute(() -> contexts.current(fragment).graph());
             edit(p,header,headerText + "#error unsaved_context_header\n");
+            ReadAction.run(() -> {
+                check(contexts.current(header).graph() != vertexGraph, "editing an include renews its owner graph");
+                check(contexts.current(fragment).graph() == fragmentGraph, "an independent stage reuses its graph");
+            });
             var unsaved = ReadAction.compute(() -> CompilerSupport.request(header,null,NativeCompiler.Operation.CHECK));
             check(compiler.analyze(unsaved).log().contains("unsaved_context_header"),"unsaved included buffer in JNI");
             edit(p,header,headerText);
@@ -191,6 +263,12 @@ final class PipelineEditing {
                 var labels = Collections.list(nodes).stream().map(Object::toString).toList();
                 check(labels.stream().anyMatch(s -> s.contains("vertex · tint")) &&
                     labels.stream().anyMatch(s -> s.contains("fragment · tint")), "both links in validation tree: " + labels);
+                find(batch,JButton.class,b -> "Rerun".equals(b.getText()) && b.isEnabled()).doClick(0);
+                return true;
+            });
+            await(() -> onEdt(() -> find(batch,JLabel.class,l -> "1 passed, 1 failed".equals(l.getText())) != null),
+                "rerunning from the results clears the stale state");
+            onEdt(() -> {
                 perform(p,vs,"GlslSupport.AllPipelines");
                 check(inspector.getContentManager().findContent("Pipeline validation").getComponent() == batch,"reused validation tab");
                 find(batch,JButton.class,b -> "Cancel".equals(b.getText())).doClick();
@@ -208,14 +286,57 @@ final class PipelineEditing {
             });
             await(() -> onEdt(() -> find(trace,JTable.class,t -> t.getColumnCount() == 4 && t.getColumnName(3).equals("night")) != null),
                 "independent variant comparison");
+            onEdt(() -> {
+                var table = find(trace,JTable.class,t -> true);
+                int all = table.getRowCount();
+                var differences = find(trace,JCheckBox.class,b -> "Differences only".equals(b.getText()));
+                differences.doClick(0);
+                check(table.getRowCount() > 0 && table.getRowCount() < all, "comparison hides equal directives");
+                for (int i = 0; i < table.getRowCount(); i++)
+                    check(!Objects.equals(table.getValueAt(i,2),table.getValueAt(i,3)), "every visible trace value differs");
+                perform(p,vs,"GlslSupport.Trace");
+                check(inspector.getContentManager().getSelectedContent().getComponent() == trace && differences.isSelected(),
+                    "reopening the trace retains the comparison and its filter");
+                if (graphical) {
+                    boolean navigated = false;
+                    for (int i = 0; i < table.getRowCount(); i++) {
+                        if (!"#if DAY".equals(table.getValueAt(i,1))) continue;
+                        table.setRowSelectionInterval(i, i);
+                        var key = table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
+                            .get(KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_ENTER, 0));
+                        table.getActionMap().get(key).actionPerformed(new java.awt.event.ActionEvent(table,0,""));
+                        var editor = FileEditorManager.getInstance(p).getSelectedTextEditor();
+                        check(editor != null && vs.getVirtualFile().equals(FileDocumentManager.getInstance().getFile(editor.getDocument()))
+                            && editor.getDocument().getLineNumber(editor.getCaretModel().getOffset()) ==
+                            vs.getText().substring(0, vs.getText().indexOf("#if DAY")).lines().count(),
+                            "Enter opens the filtered directive at its source line");
+                        navigated = true;
+                        break;
+                    }
+                    check(navigated, "the filtered trace contains the conditional source directive");
+                }
+                var compare = find(trace,JComboBox.class,b -> "night".equals(Objects.toString(b.getSelectedItem())));
+                compare.setSelectedIndex(1);
+                return true;
+            });
+            await(() -> onEdt(() -> find(trace,JTable.class,t -> t.getColumnCount() == 4 &&
+                t.getColumnName(3).equals("day") && t.getRowCount() == 0) != null),
+                "comparing the active variant to itself produces an empty differences view");
             onEdt(() -> { perform(p,vs,"GlslSupport.Spirv"); return true; });
             var spv = onEdt(() -> inspector.getContentManager().findContent("SPIR-V · context.vert").getComponent());
             await(() -> onEdt(() -> find(spv,JButton.class,b -> "Export SPIR-V…".equals(b.getText()) && b.isEnabled()) != null),
                 "validated export action");
+            onEdt(() -> {
+                perform(p,vs,"GlslSupport.Spirv");
+                check(inspector.getContentManager().getSelectedContent().getComponent() == spv,
+                    "reopening the SPIR-V inspector selects the compiled tab");
+                return true;
+            });
             if (graphical) {
                 var req = ReadAction.compute(() -> CompilerSupport.request(vs,null,NativeCompiler.Operation.SPIRV));
                 var button = onEdt(() -> find(spv,JButton.class,b -> "Export SPIR-V…".equals(b.getText())));
                 exportFromInspector(button,root.resolve("context-export.spv"),compiler.analyze(req).words());
+                verifyLayoutRetarget(p, root, inspector);
             }
             onEdt(() -> {
                 contexts.select(vs,contexts.matches(vs).getFirst());
@@ -230,6 +351,12 @@ final class PipelineEditing {
                     "missing pinned binding returns to Auto");
                 return true;
             });
+            onEdt(() -> {
+                find(batch,JButton.class,b -> "Rerun".equals(b.getText())).doClick(0);
+                return true;
+            });
+            await(() -> onEdt(() -> find(batch,JLabel.class,l -> "1 passed, 0 failed".equals(l.getText())) != null),
+                "rerunning all pipelines uses the current configuration");
         } finally {
             app.invokeAndWait(() -> {
                 var window = ToolWindowManager.getInstance(p).getToolWindow("GLSL Inspector");

@@ -34,9 +34,17 @@ public final class TraceInspector extends JPanel implements Disposable {
             if (file == null || file.getVirtualFile() == null) return;
             var window = ToolWindowManager.getInstance(file.getProject()).getToolWindow("GLSL Inspector");
             if (window == null) return;
-            var panel = new TraceInspector(file.getProject(), file.getVirtualFile());
             var manager = window.getContentManager();
+            for (var existing : manager.getContents()) {
+                if (existing.getComponent() instanceof TraceInspector trace && trace.file.equals(file.getVirtualFile())) {
+                    manager.setSelectedContent(existing);
+                    window.activate(null);
+                    return;
+                }
+            }
+            var panel = new TraceInspector(file.getProject(), file.getVirtualFile());
             var content = ContentFactory.getInstance().createContent(panel, "Trace · " + file.getName(), false);
+            content.setDescription(file.getVirtualFile().getPresentableUrl());
             content.setDisposer(panel);
             manager.addContent(content);
             manager.setSelectedContent(content);
@@ -58,11 +66,13 @@ public final class TraceInspector extends JPanel implements Disposable {
     private final AtomicLong generation = new AtomicLong();
     private final JLabel status = new JLabel();
     private final JComboBox<Variant> left = new JComboBox<>(), right = new JComboBox<>();
+    private final JCheckBox differences = new JCheckBox("Differences only");
     private final JTextArea log = new JTextArea(3, 40);
     private final DefaultTableModel model = new DefaultTableModel() {
         public boolean isCellEditable(int row, int col) { return false; }
     };
     private final JBTable table = new JBTable(model);
+    private final TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(model);
     private List<PreprocessorTrace.Row> rows = List.of();
     private volatile Set<String> deps = Set.of();
     private boolean installing;
@@ -73,15 +83,21 @@ public final class TraceInspector extends JPanel implements Disposable {
         this.project = project;
         this.file = file;
         deps = Set.of(file.getPath());
-        var bar = new JPanel(new FlowLayout(FlowLayout.LEADING));
-        bar.add(new JLabel("Variant"));
-        bar.add(left);
-        bar.add(new JLabel("Compare with"));
-        bar.add(right);
+        var header = new JPanel(new BorderLayout(4, 2));
+        var variants = new JPanel(new GridLayout(1, 2, 8, 0));
+        variants.add(selector("Variant", left));
+        variants.add(selector("Compare with", right));
+        header.add(variants, BorderLayout.NORTH);
+        var buttons = new JPanel(new FlowLayout(FlowLayout.LEADING, 4, 0));
         var refresh = new JButton("Refresh");
-        bar.add(refresh);
-        bar.add(status);
-        add(bar, BorderLayout.NORTH);
+        buttons.add(refresh);
+        differences.setEnabled(false);
+        buttons.add(differences);
+        header.add(buttons, BorderLayout.WEST);
+        header.add(status, BorderLayout.CENTER);
+        add(header, BorderLayout.NORTH);
+        table.setRowSorter(sorter);
+        table.getAccessibleContext().setAccessibleName("Preprocessor trace");
         add(new JBScrollPane(table));
         log.setEditable(false);
         var errors = new JBScrollPane(log);
@@ -92,7 +108,7 @@ public final class TraceInspector extends JPanel implements Disposable {
                                                             int row, int col) {
                 super.getTableCellRendererComponent(t, value, selected, focus, row, col);
                 setToolTipText(Objects.toString(value, ""));
-                if (model.getColumnCount() == 4 && row < rows.size() && rows.get(row).changed())
+                if (model.getColumnCount() == 4 && rows.get(t.convertRowIndexToModel(row)).changed())
                     setFont(getFont().deriveFont(Font.BOLD));
                 return this;
             }
@@ -100,17 +116,42 @@ public final class TraceInspector extends JPanel implements Disposable {
         table.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 int row = table.rowAtPoint(e.getPoint());
-                if (e.getClickCount() == 2 && row >= 0) {
-                    var site = rows.get(row).site();
-                    var v = site.line() > 0 ? LocalFileSystem.getInstance().findFileByPath(site.file()) : null;
-                    if (v != null) new OpenFileDescriptor(project, v, site.line() - 1, 0).navigate(true);
-                }
+                if (e.getClickCount() == 2) navigate(row);
             }
         });
+        table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
+            .put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "openGLSLSource");
+        table.getActionMap().put("openGLSLSource", new AbstractAction() {
+            public void actionPerformed(ActionEvent e) { navigate(table.getSelectedRow()); }
+        });
+        differences.addActionListener(e -> filter());
         left.addActionListener(e -> { if (!installing) refresh(); });
         right.addActionListener(e -> { if (!installing) refresh(); });
         refresh.addActionListener(e -> refresh());
         ShaderChanges.watch(project, this, () -> deps, true, this::refresh);
+    }
+    private static JPanel selector(String caption, JComboBox<Variant> box) {
+        var panel = new JPanel(new BorderLayout(4, 0));
+        var label = new JLabel(caption);
+        label.setLabelFor(box);
+        panel.add(label, BorderLayout.WEST);
+        panel.add(box);
+        return panel;
+    }
+    private void navigate(int viewRow) {
+        if (viewRow < 0) return;
+        var site = rows.get(table.convertRowIndexToModel(viewRow)).site();
+        var v = site.line() > 0 ? LocalFileSystem.getInstance().findFileByPath(site.file()) : null;
+        if (v != null) new OpenFileDescriptor(project, v, site.line() - 1, 0).navigate(true);
+    }
+    private void filter() {
+        boolean changedOnly = differences.isEnabled() && differences.isSelected();
+        table.getEmptyText().setText(changedOnly ? "No differences between these variants" : "No trace entries");
+        sorter.setRowFilter(changedOnly ? new RowFilter<>() {
+            public boolean include(Entry<? extends DefaultTableModel, ? extends Integer> entry) {
+                return rows.get(entry.getIdentifier()).changed();
+            }
+        } : null);
     }
     private Inputs inputs(String leftId, String rightId) {
         var psi = file.isValid() ? PsiManager.getInstance(project).findFile(file) : null;
@@ -160,6 +201,9 @@ public final class TraceInspector extends JPanel implements Disposable {
                     ApplicationManager.getApplication().invokeLater(() -> {
                         if (ticket == generation.get()) {
                             model.setRowCount(0);
+                            rows = List.of();
+                            differences.setEnabled(false);
+                            filter();
                             status.setText("Trace unavailable");
                             showLog(e.toString());
                         }
@@ -200,6 +244,8 @@ public final class TraceInspector extends JPanel implements Disposable {
             if (b != null) data[i][3] = row.right() == null ? "—" : row.right().value();
         }
         model.setDataVector(data, columns.toArray());
+        differences.setEnabled(b != null);
+        filter();
     }
     private void showLog(String message) {
         log.setText(message);

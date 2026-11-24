@@ -32,6 +32,8 @@ public final class PipelineValidation extends JPanel implements Disposable {
     private final JTextArea raw = new JTextArea();
     private final JLabel status = new JLabel();
     private final JButton cancel = new JButton("Cancel");
+    private final JButton rerun = new JButton("Rerun");
+    private String selectedPipeline;
     private volatile Set<String> paths = Set.of();
     private volatile long generation;
     private volatile ProgressIndicator running;
@@ -39,7 +41,7 @@ public final class PipelineValidation extends JPanel implements Disposable {
     private int passed, failed;
     private String summary = "";
 
-    static void open(Project project, List<String> names) {
+    static void open(Project project, String pipeline) {
         var window = ToolWindowManager.getInstance(project).getToolWindow("GLSL Inspector");
         if (window == null) return;
         var manager = window.getContentManager();
@@ -52,14 +54,20 @@ public final class PipelineValidation extends JPanel implements Disposable {
         }
         manager.setSelectedContent(content);
         window.activate(null);
-        ((PipelineValidation) content.getComponent()).start(List.copyOf(names));
+        var panel = (PipelineValidation) content.getComponent();
+        panel.selectedPipeline = pipeline;
+        panel.start();
     }
     private PipelineValidation(Project project) {
         super(new BorderLayout(4, 4));
         this.project = project;
-        var bar = new JPanel(new FlowLayout(FlowLayout.LEADING));
-        bar.add(status);
-        bar.add(cancel);
+        var bar = new JPanel(new BorderLayout(4, 0));
+        var buttons = new JPanel(new FlowLayout(FlowLayout.LEADING));
+        buttons.add(rerun);
+        buttons.add(cancel);
+        bar.add(buttons, BorderLayout.WEST);
+        bar.add(status, BorderLayout.CENTER);
+        rerun.addActionListener(e -> start());
         cancel.addActionListener(e -> stop());
         add(bar, BorderLayout.NORTH);
         raw.setEditable(false);
@@ -118,11 +126,14 @@ public final class PipelineValidation extends JPanel implements Disposable {
         if (indicator != null) indicator.cancel();
         running = null;
         cancel.setEnabled(false);
+        rerun.setEnabled(true);
         summary = "Cancelled · " + passed + " passed, " + failed + " failed";
         updateStatus();
     }
-    private void start(List<String> names) {
+    private void start() {
         stop();
+        var names = selectedPipeline == null ? List.copyOf(Settings.of(project).pipelines().keySet())
+                                             : List.of(selectedPipeline);
         PsiDocumentManager.getInstance(project).commitAllDocuments();
         long ticket = generation;
         Set<String> watched = java.util.concurrent.ConcurrentHashMap.newKeySet();
@@ -135,6 +146,7 @@ public final class PipelineValidation extends JPanel implements Disposable {
         summary = names.isEmpty() ? "No configured pipelines" : "Validating " + names.size() + " pipeline(s)…";
         updateStatus();
         cancel.setEnabled(!names.isEmpty());
+        rerun.setEnabled(names.isEmpty());
         if (names.isEmpty()) return;
         new Task.Backgroundable(project, "Validate GLSL pipelines", true) {
             public void run(@NotNull ProgressIndicator indicator) {
@@ -170,6 +182,7 @@ public final class PipelineValidation extends JPanel implements Disposable {
                 post(ticket, () -> {
                     running = null;
                     cancel.setEnabled(false);
+                    rerun.setEnabled(true);
                     summary = passed + " passed, " + failed + " failed";
                     updateStatus();
                 });
@@ -186,7 +199,8 @@ public final class PipelineValidation extends JPanel implements Disposable {
             if (ticket != generation) return List.of();
             var pipeline = configured.get(name);
             try {
-                if (pipeline != null) for (var binding : pipeline.stages) {
+                if (pipeline == null) throw new IllegalArgumentException("Pipeline '" + name + "' is no longer configured");
+                for (var binding : pipeline.stages) {
                     String path = Workspace.resolvePath(Objects.requireNonNullElse(project.getBasePath(), ""), binding.file);
                     if (path != null) watched.add(path);
                 }

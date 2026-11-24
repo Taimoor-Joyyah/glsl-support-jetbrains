@@ -35,6 +35,10 @@ public final class Syntax {
     public final List<Include> includes = new ArrayList<>();
     public final int[] match;
     private final Map<String, List<Symbol>> byName = new HashMap<>();
+    private final Map<String, List<Symbol>> fieldsByOwner = new HashMap<>();
+    List<Symbol> fields(String owner) {
+        return fieldsByOwner.getOrDefault(owner, List.of());
+    }
     public List<Symbol> named(String name) {
         return byName.getOrDefault(name, List.of());
     }
@@ -108,6 +112,8 @@ public final class Syntax {
     private void add(Symbol s) {
         symbols.add(s);
         byName.computeIfAbsent(s.name(), key -> new ArrayList<>()).add(s);
+        if (s.kind() == Kind.FIELD)
+            fieldsByOwner.computeIfAbsent(s.owner(), key -> new ArrayList<>()).add(s);
         declarations.put(s.at, s);
     }
     private int afterPair(int i, int end) {
